@@ -90,3 +90,103 @@ class MenuIngredient(Base):
     removable: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
     menu_item: Mapped[MenuItem] = relationship(back_populates="ingredients")
+
+
+class Order(Base):
+    __tablename__ = "orders"
+
+    order_id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    order_number: Mapped[str] = mapped_column(String(64), unique=True, nullable=False)
+    user_id: Mapped[str] = mapped_column(ForeignKey("users.user_id"), nullable=False, index=True)
+    brand_id: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
+    store_id: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
+    order_status: Mapped[str] = mapped_column(String(32), nullable=False, default="pending_payment")
+    total_price: Mapped[int] = mapped_column(Integer, nullable=False)
+    created_at: Mapped[str] = mapped_column(String(32), nullable=False)
+
+    user: Mapped[User] = relationship()
+    items: Mapped[list["OrderItem"]] = relationship(
+        back_populates="order",
+        cascade="all, delete-orphan",
+        order_by="OrderItem.id",
+    )
+    payment: Mapped["Payment"] = relationship(
+        back_populates="order",
+        cascade="all, delete-orphan",
+        uselist=False,
+    )
+    receipt: Mapped["Receipt"] = relationship(
+        back_populates="order",
+        cascade="all, delete-orphan",
+        uselist=False,
+    )
+
+
+class OrderItem(Base):
+    __tablename__ = "order_items"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    order_id: Mapped[str] = mapped_column(ForeignKey("orders.order_id"), nullable=False, index=True)
+    menu_item_id: Mapped[str] = mapped_column(ForeignKey("menu_items.menu_item_id"), nullable=False)
+    menu_name: Mapped[str] = mapped_column(String(120), nullable=False)
+    quantity: Mapped[int] = mapped_column(Integer, nullable=False)
+    unit_price: Mapped[int] = mapped_column(Integer, nullable=False)
+    line_total: Mapped[int] = mapped_column(Integer, nullable=False)
+    removed_ingredient_ids_json: Mapped[str] = mapped_column(Text, nullable=False, default="[]")
+    selected_options_json: Mapped[str] = mapped_column(Text, nullable=False, default="[]")
+
+    order: Mapped[Order] = relationship(back_populates="items")
+    menu_item: Mapped[MenuItem] = relationship()
+
+
+class Payment(Base):
+    __tablename__ = "payments"
+
+    payment_id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    order_id: Mapped[str] = mapped_column(
+        ForeignKey("orders.order_id"),
+        unique=True,
+        nullable=False,
+        index=True,
+    )
+    user_id: Mapped[str] = mapped_column(ForeignKey("users.user_id"), nullable=False, index=True)
+    provider: Mapped[str] = mapped_column(String(32), nullable=False, default="mock")
+    payment_status: Mapped[str] = mapped_column(String(32), nullable=False, default="ready")
+    approved_amount: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    idempotency_key: Mapped[str | None] = mapped_column(String(120), unique=True, nullable=True)
+    approved_at: Mapped[str | None] = mapped_column(String(32), nullable=True)
+
+    order: Mapped[Order] = relationship(back_populates="payment")
+    user: Mapped[User] = relationship()
+
+
+class PointLedger(Base):
+    __tablename__ = "point_ledger"
+
+    point_id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    user_id: Mapped[str] = mapped_column(ForeignKey("users.user_id"), nullable=False, index=True)
+    order_id: Mapped[str] = mapped_column(ForeignKey("orders.order_id"), nullable=False, index=True)
+    points: Mapped[int] = mapped_column(Integer, nullable=False)
+    reason: Mapped[str] = mapped_column(String(64), nullable=False)
+    created_at: Mapped[str] = mapped_column(String(32), nullable=False)
+
+    user: Mapped[User] = relationship()
+    order: Mapped[Order] = relationship()
+
+
+class Receipt(Base):
+    __tablename__ = "receipts"
+
+    receipt_id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    order_id: Mapped[str] = mapped_column(
+        ForeignKey("orders.order_id"),
+        unique=True,
+        nullable=False,
+        index=True,
+    )
+    receipt_number: Mapped[str] = mapped_column(String(64), unique=True, nullable=False)
+    total_price: Mapped[int] = mapped_column(Integer, nullable=False)
+    payment_status: Mapped[str] = mapped_column(String(32), nullable=False)
+    issued_at: Mapped[str] = mapped_column(String(32), nullable=False)
+
+    order: Mapped[Order] = relationship(back_populates="receipt")

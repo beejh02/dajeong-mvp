@@ -69,3 +69,76 @@ class MenuSummaryResponse(BaseModel):
 class MenuDetailResponse(MenuSummaryResponse):
     ingredients: list[MenuIngredientResponse]
     options: list[MenuOptionGroupResponse]
+
+
+class SelectedOptionRequest(BaseModel):
+    option_group_id: str
+    choice_id: str
+
+
+class OrderItemCreateRequest(BaseModel):
+    menu_item_id: str
+    quantity: int = Field(ge=1, le=20)
+    removed_ingredient_ids: list[str] = Field(default_factory=list)
+    selected_options: list[SelectedOptionRequest] = Field(default_factory=list)
+
+
+class OrderCreateRequest(BaseModel):
+    items: list[OrderItemCreateRequest] = Field(min_length=1)
+    client_total_price: int | None = None
+
+
+class OrderItemResponse(BaseModel):
+    menu_item_id: str
+    menu_name: str
+    quantity: int
+    unit_price: int
+    line_total: int
+    removed_ingredient_ids: list[str]
+    selected_options: list[SelectedOptionRequest]
+
+
+class OrderResponse(BaseModel):
+    order_id: str
+    order_number: str
+    user_id: str
+    brand_id: str
+    store_id: str
+    order_status: str
+    payment_status: str
+    total_price: int
+    items: list[OrderItemResponse]
+    created_at: str
+
+
+class PaymentApproveRequest(BaseModel):
+    order_id: str
+    idempotency_key: str | None = None
+
+
+class PaymentApproveResponse(BaseModel):
+    payment_id: str
+    order_id: str
+    payment_status: str
+    order_status: str
+    approved_amount: int
+    points_earned: int
+
+
+class PointBalanceResponse(BaseModel):
+    user_id: str
+    balance: int
+
+
+class ReceiptResponse(BaseModel):
+    receipt_id: str
+    receipt_number: str
+    order_id: str
+    order_number: str
+    total_price: int
+    payment_status: str
+    issued_at: str
+
+
+class AdminOrderStatusUpdateRequest(BaseModel):
+    order_status: str
