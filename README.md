@@ -2,7 +2,7 @@
 
 다정(Dajeong)은 기업마다 다른 키오스크, 결제, 예약 화면을 사용자가 매번 새로 학습하지 않아도 자연어 대화로 필요한 작업을 진행하게 돕는 접근성 중심 AI 플랫폼 MVP입니다.
 
-현재 저장소는 Phase 1 scaffold 단계입니다. 코드보다 먼저 고정한 MVP 흐름을 기준으로, 각 앱이 최소 실행될 수 있는 폴더와 placeholder를 먼저 만듭니다.
+현재 저장소는 Phase 2 backend 기반 구현 단계입니다. 앱 골격과 더미 데이터는 준비되어 있고, FastAPI backend에서 SQLite seed, 인증, 사용자 조회, A기업 메뉴 조회 API를 제공합니다.
 
 ## MVP 핵심 흐름
 
@@ -54,9 +54,9 @@ MVP는 많은 기능보다 아래 세 가지를 안정적으로 보여주는 데
 
 ## 더미 데이터
 
-`shared/dummy-data`에는 Phase 2 이후 seed 변환에 사용할 fake demo 데이터가 들어 있습니다. 현재 포함된 데이터는 사용자, 브랜드, 매장, 메뉴, 선호/비선호 재료, 최근 주문, mock 결제 profile, mock 포인트 membership입니다.
+`shared/dummy-data`에는 backend seed 변환에 사용하는 fake demo 데이터가 들어 있습니다. 현재 포함된 데이터는 사용자, 브랜드, 매장, 메뉴, 선호/비선호 재료, 최근 주문, mock 결제 profile, mock 포인트 membership입니다.
 
-대표 demo 계정은 `user1 / user1234`, 관리자 계정은 `admin / dajeong`입니다. 비밀번호 값은 demo seed 변환용이며 backend 구현 시에는 해시로 저장해야 합니다.
+대표 demo 계정은 `user1 / user1234`, 관리자 계정은 `admin / dajeong`입니다. 비밀번호 값은 demo seed 변환용이며 backend SQLite 저장 시에는 `pbkdf2_sha256` 해시로 저장합니다.
 
 ## 로컬 실행
 
@@ -88,6 +88,22 @@ python -m uvicorn main:app --reload --host 127.0.0.1 --port 8000
 
 Health check: `http://127.0.0.1:8000/health`
 
+Phase 2 API:
+
+```text
+POST /auth/register
+POST /auth/login
+GET /auth/me
+GET /menu
+GET /menu/{menu_item_id}
+```
+
+Backend test:
+
+```powershell
+python -m pytest backend\tests
+```
+
 ### MCP Server
 
 ```powershell
@@ -106,4 +122,4 @@ python -m pip install -r requirements.txt
 streamlit run app.py
 ```
 
-현재 화면들은 실행 확인용 scaffold입니다. 실제 주문, 결제, MCP 호출, 챗봇 로직은 다음 Phase에서 추가합니다.
+현재 frontend 화면들은 실행 확인용 scaffold입니다. 실제 주문, 결제, MCP 호출, 챗봇 로직은 다음 Phase에서 추가합니다.

@@ -24,13 +24,13 @@
 
 ## Phase 2. Backend 인증, 사용자, 메뉴 기반
 
-- [ ] SQLite 연결
-- [ ] 사용자, 프로필, 선호/비선호, 메뉴 seed
-- [ ] `POST /auth/register`
-- [ ] `POST /auth/login`
-- [ ] `GET /auth/me`
-- [ ] `GET /menu`
-- [ ] `GET /menu/{menu_item_id}`
+- [x] SQLite 연결
+- [x] 사용자, 프로필, 선호/비선호, 메뉴 seed
+- [x] `POST /auth/register`
+- [x] `POST /auth/login`
+- [x] `GET /auth/me`
+- [x] `GET /menu`
+- [x] `GET /menu/{menu_item_id}`
 
 ## Phase 3. A기업 주문, 결제 Mock, 관리자 조회 API
 
