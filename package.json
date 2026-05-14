@@ -1,0 +1,10 @@
+{
+  "name": "dajeong-mvp",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@10.33.2",
+  "scripts": {
+    "build": "pnpm --filter @dajeong/kiosk build && pnpm --filter @dajeong/admin build",
+    "typecheck": "pnpm --filter @dajeong/kiosk typecheck && pnpm --filter @dajeong/admin typecheck"
+  }
+}

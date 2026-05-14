@@ -2,7 +2,7 @@
 
 다정(Dajeong)은 기업마다 다른 키오스크, 결제, 예약 화면을 사용자가 매번 새로 학습하지 않아도 자연어 대화로 필요한 작업을 진행하게 돕는 접근성 중심 AI 플랫폼 MVP입니다.
 
-현재 저장소는 구현 전 Phase 0 문서화 단계입니다. 코드보다 먼저 발표에서 보여줄 핵심 흐름, 구현 범위, 제외 범위, Phase별 작업 순서를 고정합니다.
+현재 저장소는 Phase 1 scaffold 단계입니다. 코드보다 먼저 고정한 MVP 흐름을 기준으로, 각 앱이 최소 실행될 수 있는 폴더와 placeholder를 먼저 만듭니다.
 
 ## MVP 핵심 흐름
 
@@ -51,3 +51,53 @@ MVP는 많은 기능보다 아래 세 가지를 안정적으로 보여주는 데
 - 결제는 Mock 또는 테스트 결제까지만 사용합니다.
 - 실제 카드번호, 실제 코레일 예약/발권, 비공식 예약 자동화는 구현하지 않습니다.
 - Voice, STT/TTS, Vector DB/RAG, 실제 LLM Provider는 MVP 필수 범위 밖입니다.
+
+## 로컬 실행
+
+### Kiosk Frontend
+
+```powershell
+pnpm.cmd --dir frontend/kiosk install
+pnpm.cmd --dir frontend/kiosk dev
+```
+
+기본 주소: `http://127.0.0.1:5173`
+
+### Admin Frontend
+
+```powershell
+pnpm.cmd --dir frontend/admin install
+pnpm.cmd --dir frontend/admin dev
+```
+
+기본 주소: `http://127.0.0.1:5174`
+
+### Backend API
+
+```powershell
+cd backend/app
+python -m pip install -r requirements.txt
+python -m uvicorn main:app --reload --host 127.0.0.1 --port 8000
+```
+
+Health check: `http://127.0.0.1:8000/health`
+
+### MCP Server
+
+```powershell
+cd mcp-server/app
+python -m pip install -r requirements.txt
+python -m uvicorn main:app --reload --host 127.0.0.1 --port 8100
+```
+
+Health check: `http://127.0.0.1:8100/health`
+
+### AI Agent
+
+```powershell
+cd ai-agent/app
+python -m pip install -r requirements.txt
+streamlit run app.py
+```
+
+현재 화면들은 실행 확인용 scaffold입니다. 실제 주문, 결제, MCP 호출, 챗봇 로직은 다음 Phase에서 추가합니다.

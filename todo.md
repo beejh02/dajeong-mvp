@@ -14,13 +14,13 @@
 
 ## Phase 1. 프로젝트 골격과 더미 데이터
 
-- [ ] `frontend/kiosk` Vite React 앱 생성
-- [ ] `frontend/admin` Vite React 앱 생성
-- [ ] `backend/app` FastAPI 앱 생성
-- [ ] `mcp-server/app` FastAPI 또는 local adapter 앱 생성
-- [ ] `ai-agent/app` Streamlit placeholder 생성
+- [x] `frontend/kiosk` Vite React 앱 생성
+- [x] `frontend/admin` Vite React 앱 생성
+- [x] `backend/app` FastAPI 앱 생성
+- [x] `mcp-server/app` FastAPI 또는 local adapter 앱 생성
+- [x] `ai-agent/app` Streamlit placeholder 생성
 - [ ] `shared/dummy-data` seed JSON 작성
-- [ ] 최소 실행/health check 검증
+- [x] 최소 실행/health check 검증
 
 ## Phase 2. Backend 인증, 사용자, 메뉴 기반
 
