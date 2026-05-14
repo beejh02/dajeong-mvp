@@ -1,0 +1,41 @@
+[
+  {
+    "user_id": "user_demo_001",
+    "username": "user1",
+    "demo_password": "user1234",
+    "role": "user",
+    "display_name": "데모 사용자",
+    "profile": {
+      "age_group": "60s",
+      "communication_mode": "text",
+      "easy_mode_enabled": true,
+      "demo_contact_label": "demo-user-contact"
+    }
+  },
+  {
+    "user_id": "user_demo_002",
+    "username": "user2",
+    "demo_password": "user2345",
+    "role": "user",
+    "display_name": "테스트 사용자",
+    "profile": {
+      "age_group": "40s",
+      "communication_mode": "text",
+      "easy_mode_enabled": false,
+      "demo_contact_label": "demo-secondary-contact"
+    }
+  },
+  {
+    "user_id": "admin_demo_001",
+    "username": "admin",
+    "demo_password": "dajeong",
+    "role": "admin",
+    "display_name": "관리자",
+    "profile": {
+      "age_group": "30s",
+      "communication_mode": "text",
+      "easy_mode_enabled": false,
+      "demo_contact_label": "demo-admin-contact"
+    }
+  }
+]

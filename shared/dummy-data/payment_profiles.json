@@ -1,0 +1,18 @@
+[
+  {
+    "payment_profile_id": "pay_profile_user1_default",
+    "user_id": "user_demo_001",
+    "provider": "mock",
+    "display_name": "Mock 간편결제",
+    "token": "mock_payment_token_user1_default",
+    "is_default": true
+  },
+  {
+    "payment_profile_id": "pay_profile_user2_default",
+    "user_id": "user_demo_002",
+    "provider": "mock",
+    "display_name": "Mock 테스트결제",
+    "token": "mock_payment_token_user2_default",
+    "is_default": true
+  }
+]

@@ -110,10 +110,6 @@ def check_readme_and_todo() -> None:
         "- [x] 최소 실행/health check 검증",
     ]:
         require(completed in todo, f"todo.md missing completed item: {completed}")
-    require(
-        "- [ ] `shared/dummy-data` seed JSON 작성" in todo,
-        "shared dummy-data must remain unchecked for the next process",
-    )
 
 
 def main() -> None:

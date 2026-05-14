@@ -1,0 +1,18 @@
+[
+  {
+    "membership_id": "point_user1_burger_a",
+    "user_id": "user_demo_001",
+    "brand_id": "brand_burger_a",
+    "display_name": "A기업 버거 포인트",
+    "points_balance": 1280,
+    "save_rate": 0.01
+  },
+  {
+    "membership_id": "point_user2_burger_a",
+    "user_id": "user_demo_002",
+    "brand_id": "brand_burger_a",
+    "display_name": "A기업 버거 포인트",
+    "points_balance": 430,
+    "save_rate": 0.01
+  }
+]

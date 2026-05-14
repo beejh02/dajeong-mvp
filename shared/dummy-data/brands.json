@@ -1,0 +1,26 @@
+[
+  {
+    "brand_id": "brand_burger_a",
+    "display_name": "A기업 버거",
+    "service_type": "burger",
+    "integration_mode": "live_demo",
+    "kiosk_pattern": "classic_grid",
+    "description": "실제 주문 생성 demo 대상 브랜드"
+  },
+  {
+    "brand_id": "brand_burger_b",
+    "display_name": "B기업 버거",
+    "service_type": "burger",
+    "integration_mode": "mock_ui",
+    "kiosk_pattern": "vertical_step",
+    "description": "세로형 mock 키오스크 비교 대상"
+  },
+  {
+    "brand_id": "brand_burger_c",
+    "display_name": "C기업 버거",
+    "service_type": "burger",
+    "integration_mode": "mock_ui",
+    "kiosk_pattern": "popup_heavy",
+    "description": "팝업 중심 mock 키오스크 비교 대상"
+  }
+]

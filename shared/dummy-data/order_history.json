@@ -1,0 +1,72 @@
+[
+  {
+    "order_id": "order_demo_20260510_001",
+    "user_id": "user_demo_001",
+    "brand_id": "brand_burger_a",
+    "store_id": "store_burger_a_demo",
+    "ordered_at": "2026-05-10T12:10:00+09:00",
+    "status": "completed",
+    "payment_status": "paid",
+    "total_price": 7900,
+    "items": [
+      {
+        "menu_item_id": "menu_dajeong_classic_set",
+        "quantity": 1,
+        "removed_ingredient_ids": [
+          "ingredient_pickle_cucumber"
+        ],
+        "selected_options": [
+          {
+            "option_group_id": "drink_choice",
+            "choice_id": "drink_zero_cola"
+          },
+          {
+            "option_group_id": "side_choice",
+            "choice_id": "side_fries"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "order_id": "order_demo_20260508_001",
+    "user_id": "user_demo_001",
+    "brand_id": "brand_burger_a",
+    "store_id": "store_burger_a_demo",
+    "ordered_at": "2026-05-08T18:35:00+09:00",
+    "status": "completed",
+    "payment_status": "paid",
+    "total_price": 8500,
+    "items": [
+      {
+        "menu_item_id": "menu_dajeong_teriyaki_set",
+        "quantity": 1,
+        "removed_ingredient_ids": [],
+        "selected_options": [
+          {
+            "option_group_id": "drink_choice",
+            "choice_id": "drink_cola"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "order_id": "order_demo_20260509_002",
+    "user_id": "user_demo_002",
+    "brand_id": "brand_burger_a",
+    "store_id": "store_burger_a_demo",
+    "ordered_at": "2026-05-09T13:25:00+09:00",
+    "status": "completed",
+    "payment_status": "paid",
+    "total_price": 6200,
+    "items": [
+      {
+        "menu_item_id": "menu_dajeong_shrimp_single",
+        "quantity": 1,
+        "removed_ingredient_ids": [],
+        "selected_options": []
+      }
+    ]
+  }
+]

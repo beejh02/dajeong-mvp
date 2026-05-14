@@ -17,7 +17,7 @@
 
 - [x] **Step 1: Write the failing scaffold verifier**
 
-Create a Python verifier that checks the exact file structure, package scripts, health endpoint markers, README run commands, and `todo.md` Phase 1 checkboxes.
+Create a Python verifier that checks the exact app scaffold file structure, package scripts, health endpoint markers, README run commands, and app scaffold `todo.md` Phase 1 checkboxes. The later dummy-data completion check is owned by `scripts/verify_dummy_data.py`.
 
 - [x] **Step 2: Run verifier to confirm it fails before scaffold files exist**
 

@@ -1,0 +1,26 @@
+[
+  {
+    "preference_id": "pref_user1_no_cucumber",
+    "user_id": "user_demo_001",
+    "preference_type": "disliked_ingredient",
+    "ingredient_id": "ingredient_pickle_cucumber",
+    "display_name": "오이 피클",
+    "description": "자연어 주문 시 오이는 빼달라는 요청을 우선 반영"
+  },
+  {
+    "preference_id": "pref_user1_easy_text",
+    "user_id": "user_demo_001",
+    "preference_type": "interaction",
+    "ingredient_id": null,
+    "display_name": "쉬운 문장 안내",
+    "description": "주문 후보는 짧은 문장과 금액 중심으로 안내"
+  },
+  {
+    "preference_id": "pref_user2_no_onion",
+    "user_id": "user_demo_002",
+    "preference_type": "disliked_ingredient",
+    "ingredient_id": "ingredient_onion",
+    "display_name": "양파",
+    "description": "보조 demo 사용자용 비선호 재료"
+  }
+]

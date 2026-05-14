@@ -19,7 +19,7 @@
 - [x] `backend/app` FastAPI 앱 생성
 - [x] `mcp-server/app` FastAPI 또는 local adapter 앱 생성
 - [x] `ai-agent/app` Streamlit placeholder 생성
-- [ ] `shared/dummy-data` seed JSON 작성
+- [x] `shared/dummy-data` seed JSON 작성
 - [x] 최소 실행/health check 검증
 
 ## Phase 2. Backend 인증, 사용자, 메뉴 기반

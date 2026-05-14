@@ -1,0 +1,23 @@
+[
+  {
+    "store_id": "store_burger_a_demo",
+    "brand_id": "brand_burger_a",
+    "display_name": "A기업 버거 데모점",
+    "location_label": "presentation-demo-zone",
+    "is_demo_store": true
+  },
+  {
+    "store_id": "store_burger_b_mock",
+    "brand_id": "brand_burger_b",
+    "display_name": "B기업 버거 Mock점",
+    "location_label": "presentation-demo-zone",
+    "is_demo_store": true
+  },
+  {
+    "store_id": "store_burger_c_mock",
+    "brand_id": "brand_burger_c",
+    "display_name": "C기업 버거 Mock점",
+    "location_label": "presentation-demo-zone",
+    "is_demo_store": true
+  }
+]

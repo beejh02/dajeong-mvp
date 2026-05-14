@@ -52,6 +52,12 @@ MVP는 많은 기능보다 아래 세 가지를 안정적으로 보여주는 데
 - 실제 카드번호, 실제 코레일 예약/발권, 비공식 예약 자동화는 구현하지 않습니다.
 - Voice, STT/TTS, Vector DB/RAG, 실제 LLM Provider는 MVP 필수 범위 밖입니다.
 
+## 더미 데이터
+
+`shared/dummy-data`에는 Phase 2 이후 seed 변환에 사용할 fake demo 데이터가 들어 있습니다. 현재 포함된 데이터는 사용자, 브랜드, 매장, 메뉴, 선호/비선호 재료, 최근 주문, mock 결제 profile, mock 포인트 membership입니다.
+
+대표 demo 계정은 `user1 / user1234`, 관리자 계정은 `admin / dajeong`입니다. 비밀번호 값은 demo seed 변환용이며 backend 구현 시에는 해시로 저장해야 합니다.
+
 ## 로컬 실행
 
 ### Kiosk Frontend

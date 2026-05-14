@@ -1,0 +1,196 @@
+[
+  {
+    "menu_item_id": "menu_dajeong_classic_set",
+    "brand_id": "brand_burger_a",
+    "store_id": "store_burger_a_demo",
+    "name": "다정 클래식 버거 세트",
+    "category": "burger_set",
+    "price": 7900,
+    "description": "MVP 기준 자연어 주문 시나리오에 사용하는 A기업 대표 세트",
+    "is_available": true,
+    "ingredients": [
+      {
+        "ingredient_id": "ingredient_bun",
+        "name": "번",
+        "removable": false
+      },
+      {
+        "ingredient_id": "ingredient_beef_patty",
+        "name": "소고기 패티",
+        "removable": false
+      },
+      {
+        "ingredient_id": "ingredient_pickle_cucumber",
+        "name": "오이 피클",
+        "removable": true
+      },
+      {
+        "ingredient_id": "ingredient_tomato",
+        "name": "토마토",
+        "removable": true
+      },
+      {
+        "ingredient_id": "ingredient_onion",
+        "name": "양파",
+        "removable": true
+      }
+    ],
+    "options": [
+      {
+        "option_group_id": "drink_choice",
+        "name": "음료 선택",
+        "required": true,
+        "min_select": 1,
+        "max_select": 1,
+        "choices": [
+          {
+            "choice_id": "drink_cola",
+            "name": "콜라",
+            "price_delta": 0
+          },
+          {
+            "choice_id": "drink_zero_cola",
+            "name": "제로콜라",
+            "price_delta": 0
+          }
+        ]
+      },
+      {
+        "option_group_id": "side_choice",
+        "name": "사이드 선택",
+        "required": true,
+        "min_select": 1,
+        "max_select": 1,
+        "choices": [
+          {
+            "choice_id": "side_fries",
+            "name": "감자튀김",
+            "price_delta": 0
+          },
+          {
+            "choice_id": "side_cheese_sticks",
+            "name": "치즈스틱",
+            "price_delta": 800
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "menu_item_id": "menu_dajeong_teriyaki_set",
+    "brand_id": "brand_burger_a",
+    "store_id": "store_burger_a_demo",
+    "name": "다정 데리야키 버거 세트",
+    "category": "burger_set",
+    "price": 8500,
+    "description": "최근 주문 후보 비교용 A기업 세트",
+    "is_available": true,
+    "ingredients": [
+      {
+        "ingredient_id": "ingredient_bun",
+        "name": "번",
+        "removable": false
+      },
+      {
+        "ingredient_id": "ingredient_chicken_patty",
+        "name": "치킨 패티",
+        "removable": false
+      },
+      {
+        "ingredient_id": "ingredient_pickle_cucumber",
+        "name": "오이 피클",
+        "removable": true
+      },
+      {
+        "ingredient_id": "ingredient_lettuce",
+        "name": "양상추",
+        "removable": true
+      }
+    ],
+    "options": [
+      {
+        "option_group_id": "drink_choice",
+        "name": "음료 선택",
+        "required": true,
+        "min_select": 1,
+        "max_select": 1,
+        "choices": [
+          {
+            "choice_id": "drink_cola",
+            "name": "콜라",
+            "price_delta": 0
+          },
+          {
+            "choice_id": "drink_iced_tea",
+            "name": "아이스티",
+            "price_delta": 500
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "menu_item_id": "menu_dajeong_shrimp_single",
+    "brand_id": "brand_burger_a",
+    "store_id": "store_burger_a_demo",
+    "name": "다정 쉬림프 버거",
+    "category": "burger",
+    "price": 6200,
+    "description": "단품 주문 테스트용 A기업 메뉴",
+    "is_available": true,
+    "ingredients": [
+      {
+        "ingredient_id": "ingredient_bun",
+        "name": "번",
+        "removable": false
+      },
+      {
+        "ingredient_id": "ingredient_shrimp_patty",
+        "name": "새우 패티",
+        "removable": false
+      },
+      {
+        "ingredient_id": "ingredient_tartar_sauce",
+        "name": "타르타르 소스",
+        "removable": true
+      }
+    ],
+    "options": []
+  },
+  {
+    "menu_item_id": "menu_b_mock_vertical_set",
+    "brand_id": "brand_burger_b",
+    "store_id": "store_burger_b_mock",
+    "name": "B기업 세로형 Mock 세트",
+    "category": "mock_display",
+    "price": 8100,
+    "description": "실제 주문 생성 없이 UI 차이만 보여주는 메뉴",
+    "is_available": true,
+    "ingredients": [
+      {
+        "ingredient_id": "ingredient_mock_b",
+        "name": "Mock 재료",
+        "removable": false
+      }
+    ],
+    "options": []
+  },
+  {
+    "menu_item_id": "menu_c_mock_popup_set",
+    "brand_id": "brand_burger_c",
+    "store_id": "store_burger_c_mock",
+    "name": "C기업 팝업형 Mock 세트",
+    "category": "mock_display",
+    "price": 8300,
+    "description": "실제 주문 생성 없이 UI 차이만 보여주는 메뉴",
+    "is_available": true,
+    "ingredients": [
+      {
+        "ingredient_id": "ingredient_mock_c",
+        "name": "Mock 재료",
+        "removable": false
+      }
+    ],
+    "options": []
+  }
+]
