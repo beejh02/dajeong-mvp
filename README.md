@@ -1,1 +1,53 @@
-# dajeong-mvp
+# Dajeong MVP
+
+다정(Dajeong)은 기업마다 다른 키오스크, 결제, 예약 화면을 사용자가 매번 새로 학습하지 않아도 자연어 대화로 필요한 작업을 진행하게 돕는 접근성 중심 AI 플랫폼 MVP입니다.
+
+현재 저장소는 구현 전 Phase 0 문서화 단계입니다. 코드보다 먼저 발표에서 보여줄 핵심 흐름, 구현 범위, 제외 범위, Phase별 작업 순서를 고정합니다.
+
+## MVP 핵심 흐름
+
+```text
+사용자 자연어 입력
+-> Dajeong Text Chat
+-> Intent 분석 및 주문 후보 생성
+-> Burger MCP Adapter/Server 호출
+-> A기업 주문 API 또는 DB에 주문 생성
+-> 관리자 페이지에서 주문과 MCP 호출 로그 확인
+```
+
+MVP는 많은 기능보다 아래 세 가지를 안정적으로 보여주는 데 집중합니다.
+
+- 기업별 키오스크 UI/UX 차이가 사용자에게 혼란을 만든다는 문제
+- 다정이 하나의 대화형 UI로 기업별 차이를 흡수한다는 해결 방식
+- 관리자 페이지와 MCP 로그로 실제 시스템 구조와 처리 결과를 확인할 수 있다는 점
+
+## 현재 문서 구조
+
+- `docs/mvp_process.md`: 전체 실행 흐름과 Phase 기준
+- `docs/00_Project_Summary.md`: 프로젝트 한 줄 정의와 발표 메시지
+- `docs/01_MVP_Scope.md`: 필수, 선택, 제외 범위
+- `docs/02_Phase_Plan.md`: Phase별 작업 순서와 완료 기준
+- `docs/03_Demo_Flow.md`: 발표 시연 흐름
+- `docs/04_Architecture.md`: 서비스 경계와 데이터 흐름
+- `docs/05_API_Draft.md`: 초기 API 초안
+- `docs/06_Codex_Work_Rules.md`: Codex 작업 원칙
+- `todo.md`: 현재 진행 체크리스트
+
+## 구현 우선순위
+
+1. Phase 0: 문서와 범위 고정
+2. Phase 1: 프로젝트 골격과 더미 데이터
+3. Phase 2: FastAPI 기반 인증, 사용자, 메뉴 조회
+4. Phase 3: A기업 주문, 결제 Mock, 관리자 조회 API
+5. Phase 4: Burger MCP Adapter/Server와 MCP 로그
+6. Phase 5: 다정 Text Chat 주문 후보/승인 흐름
+7. Phase 6: A/B/C 키오스크와 관리자 화면
+8. Phase 7 이후: Toss 테스트 결제, Korail 시간표 조회, 실제 LLM Provider
+
+## 범위 원칙
+
+- A기업 햄버거 주문만 실제 주문 생성 대상으로 둡니다.
+- B/C기업 키오스크는 UI 차이 설명용 Mock으로 둡니다.
+- 결제는 Mock 또는 테스트 결제까지만 사용합니다.
+- 실제 카드번호, 실제 코레일 예약/발권, 비공식 예약 자동화는 구현하지 않습니다.
+- Voice, STT/TTS, Vector DB/RAG, 실제 LLM Provider는 MVP 필수 범위 밖입니다.

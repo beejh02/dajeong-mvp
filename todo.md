@@ -1,0 +1,76 @@
+# Dajeong MVP TODO
+
+## Phase 0. 문서와 범위 고정
+
+- [x] `README.md`에 MVP 정의와 우선순위 작성
+- [x] `docs/mvp_process.md`에 실행 흐름 정리
+- [x] `docs/00_Project_Summary.md` 작성
+- [x] `docs/01_MVP_Scope.md` 작성
+- [x] `docs/02_Phase_Plan.md` 작성
+- [x] `docs/03_Demo_Flow.md` 작성
+- [x] `docs/04_Architecture.md` 작성
+- [x] `docs/05_API_Draft.md` 작성
+- [x] `docs/06_Codex_Work_Rules.md` 작성
+
+## Phase 1. 프로젝트 골격과 더미 데이터
+
+- [ ] `frontend/kiosk` Vite React 앱 생성
+- [ ] `frontend/admin` Vite React 앱 생성
+- [ ] `backend/app` FastAPI 앱 생성
+- [ ] `mcp-server/app` FastAPI 또는 local adapter 앱 생성
+- [ ] `ai-agent/app` Streamlit placeholder 생성
+- [ ] `shared/dummy-data` seed JSON 작성
+- [ ] 최소 실행/health check 검증
+
+## Phase 2. Backend 인증, 사용자, 메뉴 기반
+
+- [ ] SQLite 연결
+- [ ] 사용자, 프로필, 선호/비선호, 메뉴 seed
+- [ ] `POST /auth/register`
+- [ ] `POST /auth/login`
+- [ ] `GET /auth/me`
+- [ ] `GET /menu`
+- [ ] `GET /menu/{menu_item_id}`
+
+## Phase 3. A기업 주문, 결제 Mock, 관리자 조회 API
+
+- [ ] 주문 생성 API
+- [ ] 서버 기준 금액 재계산
+- [ ] Mock 결제 승인
+- [ ] 포인트 적립 기록
+- [ ] 주문 영수증 조회
+- [ ] 관리자 주문 목록/상세 API
+- [ ] 관리자 주문 상태 변경 API
+
+## Phase 4. Burger MCP Adapter/Server와 호출 로그
+
+- [ ] Burger MCP Tool 경계 정의
+- [ ] Backend MCP Client service 작성
+- [ ] MCP 요청/응답 로그 저장
+- [ ] 관리자 MCP 로그 목록/상세 API
+
+## Phase 5. Dajeong Text Chat 주문 후보와 승인
+
+- [ ] 자연어 입력 API
+- [ ] 규칙 기반 Intent Analyzer
+- [ ] 최근 주문 조회 반영
+- [ ] 선호/비선호 재료 반영
+- [ ] 주문 후보 생성
+- [ ] 사용자 최종 승인
+- [ ] 승인 후 A기업 주문 생성 흐름 연결
+
+## Phase 6. A/B/C 키오스크와 관리자 화면
+
+- [ ] A기업 실제 주문 키오스크
+- [ ] B기업 vertical mock kiosk
+- [ ] C기업 popup 또는 horizontal mock kiosk
+- [ ] Dajeong Chat 화면
+- [ ] 관리자 주문 목록/상세 화면
+- [ ] 관리자 MCP 로그 화면
+
+## Phase 7 이후. 확장
+
+- [ ] Toss 테스트 결제 adapter 검토
+- [ ] Korail 시간표 조회 adapter 검토
+- [ ] 실제 LLM Provider 검토
+- [ ] Voice 선택 UI 검토
