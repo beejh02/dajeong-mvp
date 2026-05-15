@@ -44,10 +44,10 @@
 
 ## Phase 4. Burger MCP Adapter/Server와 호출 로그
 
-- [ ] Burger MCP Tool 경계 정의
-- [ ] Backend MCP Client service 작성
-- [ ] MCP 요청/응답 로그 저장
-- [ ] 관리자 MCP 로그 목록/상세 API
+- [x] Burger MCP Tool 경계 정의
+- [x] Backend MCP Client service 작성
+- [x] MCP 요청/응답 로그 저장
+- [x] 관리자 MCP 로그 목록/상세 API
 
 ## Phase 5. Dajeong Text Chat 주문 후보와 승인
 

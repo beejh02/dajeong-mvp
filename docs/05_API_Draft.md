@@ -49,6 +49,12 @@
 
 초기 MVP에서는 HTTP 또는 local adapter로 시작할 수 있습니다. 중요한 것은 backend와 tool 구현의 경계입니다.
 
+Backend에서 fake MCP 경계를 호출하고 로그를 남기는 endpoint:
+
+| Method | Endpoint | 설명 |
+| --- | --- | --- |
+| POST | `/mcp/burger/tools/{tool_name}` | Burger MCP tool 호출 및 요청/응답 로그 저장 |
+
 | Tool | 설명 |
 | --- | --- |
 | `get_menus` | 메뉴 목록 조회 |

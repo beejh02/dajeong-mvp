@@ -190,3 +190,15 @@ class Receipt(Base):
     issued_at: Mapped[str] = mapped_column(String(32), nullable=False)
 
     order: Mapped[Order] = relationship(back_populates="receipt")
+
+
+class McpCallLog(Base):
+    __tablename__ = "mcp_call_logs"
+
+    log_id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    tool_name: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
+    status: Mapped[str] = mapped_column(String(32), nullable=False, index=True)
+    request_payload_json: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
+    response_payload_json: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
+    error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[str] = mapped_column(String(32), nullable=False)

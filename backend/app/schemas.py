@@ -142,3 +142,23 @@ class ReceiptResponse(BaseModel):
 
 class AdminOrderStatusUpdateRequest(BaseModel):
     order_status: str
+
+
+class McpToolCallResponse(BaseModel):
+    log_id: str
+    tool_name: str
+    status: str
+    result: dict
+
+
+class McpCallLogSummaryResponse(BaseModel):
+    log_id: str
+    tool_name: str
+    status: str
+    created_at: str
+
+
+class McpCallLogDetailResponse(McpCallLogSummaryResponse):
+    request_payload: dict
+    response_payload: dict
+    error_message: str | None
