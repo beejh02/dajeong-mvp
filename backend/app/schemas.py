@@ -140,6 +140,48 @@ class ReceiptResponse(BaseModel):
     issued_at: str
 
 
+class DajeongChatRequest(BaseModel):
+    message: str = Field(min_length=1, max_length=500)
+
+
+class DajeongCandidateItemResponse(BaseModel):
+    menu_item_id: str
+    menu_name: str
+    quantity: int
+    unit_price: int
+    line_total: int
+    removed_ingredient_ids: list[str]
+    selected_options: list[SelectedOptionRequest]
+
+
+class DajeongOrderCandidateResponse(BaseModel):
+    candidate_id: str
+    intent: str
+    confidence: float
+    source: str
+    recent_order_id: str | None
+    total_price: int
+    applied_preferences: list[str]
+    items: list[DajeongCandidateItemResponse]
+    order_request_items: list[OrderItemCreateRequest]
+
+
+class DajeongChatResponse(BaseModel):
+    reply: str
+    candidate: DajeongOrderCandidateResponse
+
+
+class DajeongFinalApprovalRequest(BaseModel):
+    candidate_id: str = Field(min_length=1, max_length=120)
+    approved: bool
+    items: list[OrderItemCreateRequest] = Field(min_length=1)
+
+
+class DajeongFinalApprovalResponse(BaseModel):
+    approved: bool
+    order: OrderResponse
+
+
 class AdminOrderStatusUpdateRequest(BaseModel):
     order_status: str
 

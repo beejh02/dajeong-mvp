@@ -6,7 +6,7 @@ from collections.abc import AsyncIterator
 from fastapi import FastAPI
 
 from database import configure_database, get_session_factory, init_db
-from routers import admin, auth, mcp, menu, orders, payments, points
+from routers import admin, auth, dajeong, mcp, menu, orders, payments, points
 from seed import seed_database
 
 
@@ -28,6 +28,7 @@ def create_app(database_url: str | None = None) -> FastAPI:
     app.include_router(orders.router)
     app.include_router(payments.router)
     app.include_router(points.router)
+    app.include_router(dajeong.router)
     app.include_router(mcp.router)
     app.include_router(admin.router)
 
