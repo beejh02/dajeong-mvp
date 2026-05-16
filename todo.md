@@ -61,12 +61,12 @@
 
 ## Phase 6. A/B/C 키오스크와 관리자 화면
 
-- [ ] A기업 실제 주문 키오스크
-- [ ] B기업 vertical mock kiosk
-- [ ] C기업 popup 또는 horizontal mock kiosk
-- [ ] Dajeong Chat 화면
-- [ ] 관리자 주문 목록/상세 화면
-- [ ] 관리자 MCP 로그 화면
+- [x] A기업 실제 주문 키오스크
+- [x] B기업 vertical mock kiosk
+- [x] C기업 popup 또는 horizontal mock kiosk
+- [x] Dajeong Chat 화면
+- [x] 관리자 주문 목록/상세 화면
+- [x] 관리자 MCP 로그 화면
 
 ## Phase 7 이후. 확장
 
