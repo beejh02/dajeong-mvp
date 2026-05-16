@@ -24,49 +24,49 @@
 
 ## Phase 2. Backend 인증, 사용자, 메뉴 기반
 
-- [ ] SQLite 연결
-- [ ] 사용자, 프로필, 선호/비선호, 메뉴 seed
-- [ ] `POST /auth/register`
-- [ ] `POST /auth/login`
-- [ ] `GET /auth/me`
-- [ ] `GET /menu`
-- [ ] `GET /menu/{menu_item_id}`
+- [x] SQLite 연결
+- [x] 사용자, 프로필, 선호/비선호, 메뉴 seed
+- [x] `POST /auth/register`
+- [x] `POST /auth/login`
+- [x] `GET /auth/me`
+- [x] `GET /menu`
+- [x] `GET /menu/{menu_item_id}`
 
 ## Phase 3. A기업 주문, 결제 Mock, 관리자 조회 API
 
-- [ ] 주문 생성 API
-- [ ] 서버 기준 금액 재계산
-- [ ] Mock 결제 승인
-- [ ] 포인트 적립 기록
-- [ ] 주문 영수증 조회
-- [ ] 관리자 주문 목록/상세 API
-- [ ] 관리자 주문 상태 변경 API
+- [x] 주문 생성 API
+- [x] 서버 기준 금액 재계산
+- [x] Mock 결제 승인
+- [x] 포인트 적립 기록
+- [x] 주문 영수증 조회
+- [x] 관리자 주문 목록/상세 API
+- [x] 관리자 주문 상태 변경 API
 
 ## Phase 4. Burger MCP Adapter/Server와 호출 로그
 
-- [ ] Burger MCP Tool 경계 정의
-- [ ] Backend MCP Client service 작성
-- [ ] MCP 요청/응답 로그 저장
-- [ ] 관리자 MCP 로그 목록/상세 API
+- [x] Burger MCP Tool 경계 정의
+- [x] Backend MCP Client service 작성
+- [x] MCP 요청/응답 로그 저장
+- [x] 관리자 MCP 로그 목록/상세 API
 
 ## Phase 5. Dajeong Text Chat 주문 후보와 승인
 
-- [ ] 자연어 입력 API
-- [ ] 규칙 기반 Intent Analyzer
-- [ ] 최근 주문 조회 반영
-- [ ] 선호/비선호 재료 반영
-- [ ] 주문 후보 생성
-- [ ] 사용자 최종 승인
-- [ ] 승인 후 A기업 주문 생성 흐름 연결
+- [x] 자연어 입력 API
+- [x] 규칙 기반 Intent Analyzer
+- [x] 최근 주문 조회 반영
+- [x] 선호/비선호 재료 반영
+- [x] 주문 후보 생성
+- [x] 사용자 최종 승인
+- [x] 승인 후 A기업 주문 생성 흐름 연결
 
 ## Phase 6. A/B/C 키오스크와 관리자 화면
 
-- [ ] A기업 실제 주문 키오스크
-- [ ] B기업 vertical mock kiosk
-- [ ] C기업 popup 또는 horizontal mock kiosk
-- [ ] Dajeong Chat 화면
-- [ ] 관리자 주문 목록/상세 화면
-- [ ] 관리자 MCP 로그 화면
+- [x] A기업 실제 주문 키오스크
+- [x] B기업 vertical mock kiosk
+- [x] C기업 popup 또는 horizontal mock kiosk
+- [x] Dajeong Chat 화면
+- [x] 관리자 주문 목록/상세 화면
+- [x] 관리자 MCP 로그 화면
 
 ## Phase 7 이후. 확장
 
