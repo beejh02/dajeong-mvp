@@ -70,7 +70,7 @@
 
 ## Phase 7 이후. 확장
 
-- [ ] Toss 테스트 결제 adapter 검토
+- [x] Toss 테스트 결제 adapter 검토
 - [ ] Korail 시간표 조회 adapter 검토
 - [ ] 실제 LLM Provider 검토
 - [ ] Voice 선택 UI 검토

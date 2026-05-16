@@ -156,7 +156,7 @@ POST /dajeong/final-approval
 
 작업 후보:
 
-- Toss 테스트 결제
+- Toss 테스트 결제 adapter 검토
 - Korail 시간표 조회
 - 실제 LLM Provider
 - Voice 선택 UI
@@ -164,3 +164,4 @@ POST /dajeong/final-approval
 완료 기준:
 
 - 핵심 햄버거 주문 demo를 깨지 않고 독립적으로 추가됩니다.
+- Toss 테스트 결제는 `docs/07_Toss_Test_Payment_Adapter_Review.md`의 provider 경계와 보안 원칙을 먼저 만족한 뒤 구현합니다.

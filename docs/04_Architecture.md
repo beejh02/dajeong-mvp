@@ -17,6 +17,7 @@ backend/app
   -> 메뉴, 주문, 결제 Mock, 포인트
   -> Dajeong Chat orchestration
   -> MCP Client service
+  -> 향후 PaymentProvider 경계에서 Dummy/Toss test adapter 분리 후보
 
 mcp-server/app
   -> Burger MCP tool adapter
@@ -50,6 +51,7 @@ Dajeong Chat
 - 실제 LLM은 `LLMProvider` 인터페이스 뒤에 둡니다.
 - 주문 금액은 client payload를 신뢰하지 않고 backend에서 seed/menu 기준으로 재계산합니다.
 - 결제는 Mock 또는 테스트 결제만 다루고 실결제 정보는 저장하지 않습니다.
+- Toss 테스트 결제를 붙일 경우 secret key와 결제 confirm은 backend에만 두고 frontend는 client key와 redirect 처리만 담당합니다.
 
 ## 주요 상태
 

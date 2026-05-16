@@ -168,6 +168,8 @@ dajeong-mvp/
 - 실제 LLM Provider
 - Voice 선택 UI
 
+Toss 테스트 결제는 `docs/07_Toss_Test_Payment_Adapter_Review.md`의 검토 결과를 기준으로, 기존 Mock 결제 흐름을 깨지 않는 별도 provider로만 추가합니다.
+
 ## 6. Codex 작업 원칙
 
 - 한 번에 전체 프로젝트를 구현하지 않습니다.

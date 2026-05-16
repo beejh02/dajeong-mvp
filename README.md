@@ -31,6 +31,7 @@ MVP는 많은 기능보다 아래 세 가지를 안정적으로 보여주는 데
 - `docs/04_Architecture.md`: 서비스 경계와 데이터 흐름
 - `docs/05_API_Draft.md`: 초기 API 초안
 - `docs/06_Codex_Work_Rules.md`: Codex 작업 원칙
+- `docs/07_Toss_Test_Payment_Adapter_Review.md`: Toss 테스트 결제 adapter 검토
 - `todo.md`: 현재 진행 체크리스트
 
 ## 구현 우선순위
@@ -42,7 +43,7 @@ MVP는 많은 기능보다 아래 세 가지를 안정적으로 보여주는 데
 5. Phase 4: Burger MCP Adapter/Server와 MCP 로그
 6. Phase 5: 다정 Text Chat 주문 후보/승인 흐름
 7. Phase 6: A/B/C 키오스크와 관리자 화면
-8. Phase 7 이후: Toss 테스트 결제, Korail 시간표 조회, 실제 LLM Provider
+8. Phase 7 이후: Toss 테스트 결제 검토, Korail 시간표 조회, 실제 LLM Provider
 
 ## 범위 원칙
 

@@ -25,6 +25,8 @@
 | --- | --- | --- |
 | POST | `/orders` | 주문 생성 |
 | POST | `/payments/dummy/approve` | Mock 결제 승인 |
+| POST | `/payments/toss/test/ready` | Phase 7 후보: 주문 기준 Toss 테스트 결제 요청 정보 생성 |
+| POST | `/payments/toss/test/confirm` | Phase 7 후보: Toss 인증 결과 금액 검증 및 confirm |
 | GET | `/points/me` | 내 포인트 조회 |
 | GET | `/orders/{order_id}/receipt` | 주문 완료/영수증 조회 |
 
