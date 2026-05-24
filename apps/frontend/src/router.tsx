@@ -1,13 +1,22 @@
 import { createBrowserRouter } from "react-router-dom";
 import App from "./App";
+import BlankPage from "./BlankPage";
 
 export const router = createBrowserRouter([
   {
     path: "/",
     element: <App />,
-    children: [
-      {
-      },
-    ],
+  },
+  {
+    path: "/admin",
+    element: <BlankPage />,
+  },
+  {
+    path: "/kiosk-a",
+    element: <BlankPage />,
+  },
+  {
+    path: "/kiosk-b",
+    element: <BlankPage />,
   },
 ]);

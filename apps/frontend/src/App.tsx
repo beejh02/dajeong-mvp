@@ -1,7 +1,7 @@
 import "./App.css";
 
 export default function App() {
-  const movePage = (path) => {
+  const movePage = (path: string) => {
     window.location.href = path;
   };
 
