@@ -1,7 +1,8 @@
 import { createBrowserRouter } from "react-router-dom";
 import App from "./App";
-import BlankPage from "./pages/BlankPage";
+import AdminPage from "./pages/AdminPage";
 import KioskAMenu from "./pages/KioskAMenu";
+import KioskBPage from "./pages/KioskBPage";
 
 export const router = createBrowserRouter([
   {
@@ -10,7 +11,7 @@ export const router = createBrowserRouter([
   },
   {
     path: "/admin",
-    element: <BlankPage />,
+    element: <AdminPage />,
   },
   {
     path: "/kiosk-a",
@@ -18,6 +19,6 @@ export const router = createBrowserRouter([
   },
   {
     path: "/kiosk-b",
-    element: <BlankPage />,
+    element: <KioskBPage />,
   },
 ]);
