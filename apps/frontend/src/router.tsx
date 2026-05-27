@@ -1,7 +1,7 @@
 import { createBrowserRouter } from "react-router-dom";
 import App from "./App";
-import BlankPage from "./BlankPage";
-import KioskAMenu from "./KioskAMenu";
+import BlankPage from "./pages/BlankPage";
+import KioskAMenu from "./pages/KioskAMenu";
 
 export const router = createBrowserRouter([
   {
