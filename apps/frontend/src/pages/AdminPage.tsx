@@ -1,5 +1,5 @@
 import "./AdminPage.css";
 
 export default function AdminPage() {
-  return null;
+  return <h1>관리자 페이지</h1>;
 }
