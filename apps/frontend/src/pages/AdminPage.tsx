@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import "./AdminPage.css";
 
 type AdminTab = "overview" | "orders" | "detail";
@@ -139,6 +140,9 @@ export default function AdminPage() {
         </div>
 
         <div className="admin-nav-menu">
+          <Link className="admin-back-link" to="/">
+            뒤로가기
+          </Link>
           <button
             className={activeTab === "overview" ? "active" : ""}
             type="button"

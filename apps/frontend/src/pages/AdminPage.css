@@ -71,18 +71,31 @@ button {
   gap: 10px;
 }
 
-.admin-nav-menu button {
+.admin-nav-menu button,
+.admin-back-link {
   border: 0;
   background: transparent;
   color: #1e293b;
   padding: 10px 16px;
   border-radius: 8px;
   cursor: pointer;
+  font-size: 14px;
+  line-height: 1.2;
+  text-decoration: none;
 }
 
 .admin-nav-menu button.active {
   border: 1px solid #cbd5e1;
   background: #ffffff;
+}
+
+.admin-back-link {
+  border: 1px solid #cbd5e1;
+  font-weight: 700;
+}
+
+.admin-back-link:hover {
+  background: #f8fafc;
 }
 
 .admin-container {
