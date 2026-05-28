@@ -1,4 +1,7 @@
 import type { MenuCategory } from "./types";
+import firstHamburgerImage from "../../assets/firstHamburger.gif";
+import krabbyPattyImage from "../../assets/krabby_patty.jpg";
+import hambugiImage from "../../assets/hambugi.png";
 
 export const menuData: MenuCategory[] = [
   {
@@ -12,7 +15,7 @@ export const menuData: MenuCategory[] = [
         name: "춤추는 버거",
         description: "불향 패티와 달콤한 특제 소스",
         price: 7900,
-        img: "/src/assets/firstHamburger.gif",
+        img: firstHamburgerImage,
         badge: "BEST",
       },
       {
@@ -20,14 +23,14 @@ export const menuData: MenuCategory[] = [
         name: "집게버거",
         description: "두툼한 패티와 신선한 야채",
         price: 8500,
-        img: "/src/assets/krabby_patty.jpg",
+        img: krabbyPattyImage,
       },
       {
         id: "burger-hambugi",
         name: "햄부기햄북",
         description: "가볍게 먹기 좋은 기본 버거",
         price: 6900,
-        img: "/src/assets/hambugi.png",
+        img: hambugiImage,
       },
       {
         id: "burger-cheese",
