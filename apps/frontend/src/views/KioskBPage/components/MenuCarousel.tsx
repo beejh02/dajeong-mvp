@@ -1,14 +1,16 @@
 "use client";
 
 import { formatPrice } from "../constants";
-import type { MenuCategory } from "../types";
+import type { MenuCategory, MenuItem } from "../types";
 
 type MenuCarouselProps = {
   activeCategory: MenuCategory;
+  onAddToCart: (item: MenuItem) => void;
 };
 
 export default function MenuCarousel({
   activeCategory,
+  onAddToCart,
 }: MenuCarouselProps) {
   return (
     <section className="kiosk-b-menu-section">
@@ -24,6 +26,7 @@ export default function MenuCarousel({
               type="button"
               className="kiosk-b-menu-card-button"
               data-cart-item-id={item.id}
+              onClick={() => onAddToCart(item)}
             >
               <div className="kiosk-b-image-box">
                 {item.badge && <span className="kiosk-b-badge">{item.badge}</span>}

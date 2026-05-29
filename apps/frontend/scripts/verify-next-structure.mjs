@@ -105,9 +105,8 @@ const interactionChecks = [
     file: "src/views/KioskAPage/index.tsx",
     patterns: [
       "data-kiosk-page=\"a\"",
-      "addEventListener(\"click\"",
-      "[data-cart-item-id]",
-      "[data-category-id]",
+      "onSelect={scrollToCategory}",
+      "onAddToCart={addToCart}",
       "scrollIntoView",
     ],
   },
@@ -115,21 +114,23 @@ const interactionChecks = [
     file: "src/views/KioskBPage/index.tsx",
     patterns: [
       "data-kiosk-page=\"b\"",
-      "addEventListener(\"click\"",
-      "[data-cart-item-id]",
+      "onAddToCart={addToCart}",
     ],
   },
   {
     file: "src/views/KioskAPage/components/MenuSections.tsx",
-    patterns: ["data-cart-item-id={item.id}"],
+    patterns: ["data-cart-item-id={item.id}", "onClick={() => onAddToCart(item)}"],
   },
   {
     file: "src/views/KioskAPage/components/CategorySidebar.tsx",
-    patterns: ["data-category-id={category.id}"],
+    patterns: [
+      "data-category-id={category.id}",
+      "onClick={() => onSelect(category.id)}",
+    ],
   },
   {
     file: "src/views/KioskBPage/components/MenuCarousel.tsx",
-    patterns: ["data-cart-item-id={item.id}"],
+    patterns: ["data-cart-item-id={item.id}", "onClick={() => onAddToCart(item)}"],
   },
 ];
 

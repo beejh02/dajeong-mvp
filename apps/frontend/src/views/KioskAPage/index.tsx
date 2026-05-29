@@ -15,16 +15,7 @@ export default function KioskAPage() {
 
   const [activeCategory, setActiveCategory] = useState("category-burger");
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
-  const pageRef = useRef<HTMLDivElement | null>(null);
   const scrollRef = useRef<HTMLElement | null>(null);
-
-  const menuItemsById = useMemo(() => {
-    return new Map(
-      menuData.flatMap((category) =>
-        category.items.map((item) => [item.id, item] as const),
-      ),
-    );
-  }, []);
 
   const totalQuantity = useMemo(() => {
     return cartItems.reduce((sum, item) => sum + item.quantity, 0);
@@ -105,45 +96,6 @@ export default function KioskAPage() {
     setActiveCategory(id);
   }, []);
 
-  useEffect(() => {
-    const pageElement = pageRef.current;
-
-    if (!pageElement) return;
-
-    const handleClick = (event: MouseEvent) => {
-      const target = event.target;
-
-      if (!(target instanceof HTMLElement)) return;
-
-      const cartButton = target.closest<HTMLButtonElement>("[data-cart-item-id]");
-
-      if (cartButton && pageElement.contains(cartButton)) {
-        const itemId = cartButton.dataset.cartItemId;
-        const item = itemId ? menuItemsById.get(itemId) : undefined;
-
-        if (item) {
-          addToCart(item);
-        }
-
-        return;
-      }
-
-      const categoryButton = target.closest<HTMLButtonElement>("[data-category-id]");
-
-      if (categoryButton && pageElement.contains(categoryButton)) {
-        const categoryId = categoryButton.dataset.categoryId;
-
-        if (categoryId) {
-          scrollToCategory(categoryId);
-        }
-      }
-    };
-
-    pageElement.addEventListener("click", handleClick);
-
-    return () => pageElement.removeEventListener("click", handleClick);
-  }, [addToCart, menuItemsById, scrollToCategory]);
-
   const increaseQuantity = (id: string) => {
     setCartItems((prevItems) =>
       prevItems.map((item) =>
@@ -183,18 +135,20 @@ export default function KioskAPage() {
   };
 
   return (
-    <div ref={pageRef} className="menu-page-container" data-kiosk-page="a">
+    <div className="menu-page-container" data-kiosk-page="a">
       <KioskAHeader onBack={() => router.push("/")} />
 
       <main className="menu-main">
         <CategorySidebar
           categories={menuData}
           activeCategory={activeCategory}
+          onSelect={scrollToCategory}
         />
 
         <MenuSections
           categories={menuData}
           scrollRef={scrollRef}
+          onAddToCart={addToCart}
         />
 
         <CartPanel

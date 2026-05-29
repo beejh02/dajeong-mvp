@@ -2,16 +2,18 @@
 
 import type { RefObject } from "react";
 import { formatPrice } from "../constants";
-import type { MenuCategory } from "../types";
+import type { MenuCategory, MenuItem } from "../types";
 
 type MenuSectionsProps = {
   categories: MenuCategory[];
   scrollRef: RefObject<HTMLElement | null>;
+  onAddToCart: (item: MenuItem) => void;
 };
 
 export default function MenuSections({
   categories,
   scrollRef,
+  onAddToCart,
 }: MenuSectionsProps) {
   return (
     <section ref={scrollRef} className="scroll-content">
@@ -39,6 +41,7 @@ export default function MenuSections({
                   className="menu-card-button"
                   data-cart-item-id={item.id}
                   aria-label={`${item.name} 장바구니에 담기`}
+                  onClick={() => onAddToCart(item)}
                 >
                   <div className="image-box">
                     {item.badge && <span className="menu-badge">{item.badge}</span>}
