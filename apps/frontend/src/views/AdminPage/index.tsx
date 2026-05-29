@@ -1,11 +1,12 @@
+"use client";
+
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import Link from "next/link";
 import type { AdminTab, Order } from "./types";
 import { orders } from "./constants";
 import OverviewSection from "./components/OverviewSection";
 import OrdersSection from "./components/OrdersSection";
 import OrderDetailSection from "./components/OrderDetailSection";
-import "./AdminPage.css";
 
 export default function AdminPage() {
   const [activeTab, setActiveTab] = useState<AdminTab>("overview");
@@ -29,7 +30,7 @@ export default function AdminPage() {
         </div>
 
         <div className="admin-nav-menu">
-          <Link className="admin-back-link" to="/">
+          <Link className="admin-back-link" href="/">
             뒤로가기
           </Link>
           <button

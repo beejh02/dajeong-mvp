@@ -1,5 +1,7 @@
+"use client";
+
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useRouter } from "next/navigation";
 import { formatPrice, menuData } from "./constants";
 import CartFooter from "./components/CartFooter";
 import CartPanel from "./components/CartPanel";
@@ -7,10 +9,9 @@ import CategorySidebar from "./components/CategorySidebar";
 import KioskAHeader from "./components/KioskAHeader";
 import MenuSections from "./components/MenuSections";
 import type { CartItem, MenuItem } from "./types";
-import "./KioskAPage.css";
 
 export default function KioskAPage() {
-  const navigate = useNavigate();
+  const router = useRouter();
 
   const [activeCategory, setActiveCategory] = useState("category-burger");
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
@@ -121,7 +122,7 @@ export default function KioskAPage() {
 
   return (
     <div className="menu-page-container">
-      <KioskAHeader onBack={() => navigate("/")} />
+      <KioskAHeader onBack={() => router.push("/")} />
 
       <main className="menu-main">
         <CategorySidebar

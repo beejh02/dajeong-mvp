@@ -1,5 +1,7 @@
+"use client";
+
 import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useRouter } from "next/navigation";
 import { formatPrice, menuData } from "./constants";
 import CartSection from "./components/CartSection";
 import CategoryTabs from "./components/CategoryTabs";
@@ -8,10 +10,9 @@ import KioskBFooter from "./components/KioskBFooter";
 import KioskBHeader from "./components/KioskBHeader";
 import MenuCarousel from "./components/MenuCarousel";
 import type { CartItem, MenuItem } from "./types";
-import "./KioskBPage.css";
 
 export default function KioskBPage() {
-  const navigate = useNavigate();
+  const router = useRouter();
 
   const [activeCategoryId, setActiveCategoryId] = useState(menuData[0].id);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
@@ -84,7 +85,7 @@ export default function KioskBPage() {
 
   return (
     <div className="kiosk-b-page">
-      <KioskBHeader totalQuantity={totalQuantity} onBack={() => navigate("/")} />
+      <KioskBHeader totalQuantity={totalQuantity} onBack={() => router.push("/")} />
 
       <CategoryTabs
         categories={menuData}
