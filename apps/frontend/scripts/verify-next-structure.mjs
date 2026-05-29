@@ -31,6 +31,24 @@ const forbiddenFiles = [
 ];
 const failures = [];
 
+const interactiveClientFiles = [
+  "src/views/KioskAPage/components/CartFooter.tsx",
+  "src/views/KioskAPage/components/CartPanel.tsx",
+  "src/views/KioskAPage/components/CategorySidebar.tsx",
+  "src/views/KioskAPage/components/KioskAHeader.tsx",
+  "src/views/KioskAPage/components/MenuSections.tsx",
+  "src/views/KioskBPage/components/CartSection.tsx",
+  "src/views/KioskBPage/components/CategoryTabs.tsx",
+  "src/views/KioskBPage/components/KioskBFooter.tsx",
+  "src/views/KioskBPage/components/KioskBHeader.tsx",
+  "src/views/KioskBPage/components/MenuCarousel.tsx",
+];
+
+const hasUseClientDirective = (file) => {
+  const source = readFileSync(path.join(root, file), "utf8").trimStart();
+  return source.startsWith('"use client";') || source.startsWith("'use client';");
+};
+
 if (!dependencies.next) {
   failures.push("package.json must depend on next");
 }
@@ -64,6 +82,16 @@ for (const file of requiredFiles) {
 for (const file of forbiddenFiles) {
   if (existsSync(path.join(root, file))) {
     failures.push(`remove legacy entry/config path: ${file}`);
+  }
+}
+
+for (const file of interactiveClientFiles) {
+  const filePath = path.join(root, file);
+
+  if (!existsSync(filePath)) {
+    failures.push(`missing interactive client file: ${file}`);
+  } else if (!hasUseClientDirective(file)) {
+    failures.push(`interactive component must declare "use client": ${file}`);
   }
 }
 

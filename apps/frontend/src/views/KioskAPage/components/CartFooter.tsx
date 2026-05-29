@@ -1,3 +1,5 @@
+"use client";
+
 import { formatPrice } from "../constants";
 
 type CartFooterProps = {

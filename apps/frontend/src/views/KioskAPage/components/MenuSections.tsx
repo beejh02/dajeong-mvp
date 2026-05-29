@@ -1,3 +1,5 @@
+"use client";
+
 import type { RefObject } from "react";
 import { formatPrice } from "../constants";
 import type { MenuCategory, MenuItem } from "../types";

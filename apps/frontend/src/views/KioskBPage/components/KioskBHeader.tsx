@@ -1,3 +1,5 @@
+"use client";
+
 type KioskBHeaderProps = {
   totalQuantity: number;
   onBack: () => void;

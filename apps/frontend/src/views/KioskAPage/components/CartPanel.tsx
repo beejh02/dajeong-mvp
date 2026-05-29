@@ -1,3 +1,5 @@
+"use client";
+
 import { formatPrice } from "../constants";
 import type { CartItem } from "../types";
 

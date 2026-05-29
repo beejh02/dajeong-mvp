@@ -1,3 +1,5 @@
+"use client";
+
 import type { MenuCategory } from "../types";
 
 type CategorySidebarProps = {
