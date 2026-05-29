@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { formatPrice, menuData } from "./constants";
 import CartFooter from "./components/CartFooter";
@@ -15,7 +15,16 @@ export default function KioskAPage() {
 
   const [activeCategory, setActiveCategory] = useState("category-burger");
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const pageRef = useRef<HTMLDivElement | null>(null);
   const scrollRef = useRef<HTMLElement | null>(null);
+
+  const menuItemsById = useMemo(() => {
+    return new Map(
+      menuData.flatMap((category) =>
+        category.items.map((item) => [item.id, item] as const),
+      ),
+    );
+  }, []);
 
   const totalQuantity = useMemo(() => {
     return cartItems.reduce((sum, item) => sum + item.quantity, 0);
@@ -30,6 +39,10 @@ export default function KioskAPage() {
 
     if (!scrollElement) return;
 
+    const canObserveWithinMenu =
+      scrollElement.scrollHeight > scrollElement.clientHeight &&
+      getComputedStyle(scrollElement).overflowY !== "visible";
+
     const observer = new IntersectionObserver(
       (entries) => {
         const visibleEntries = entries
@@ -41,7 +54,8 @@ export default function KioskAPage() {
         }
       },
       {
-        root: scrollElement,
+        root: canObserveWithinMenu ? scrollElement : null,
+        rootMargin: canObserveWithinMenu ? "0px" : "-80px 0px -45% 0px",
         threshold: [0.25, 0.4, 0.6],
       },
     );
@@ -52,21 +66,7 @@ export default function KioskAPage() {
     return () => observer.disconnect();
   }, []);
 
-  const scrollToCategory = (id: string) => {
-    const scrollElement = scrollRef.current;
-    const targetElement = document.getElementById(id);
-
-    if (!scrollElement || !targetElement) return;
-
-    scrollElement.scrollTo({
-      top: targetElement.offsetTop - scrollElement.offsetTop - 18,
-      behavior: "smooth",
-    });
-
-    setActiveCategory(id);
-  };
-
-  const addToCart = (item: MenuItem) => {
+  const addToCart = useCallback((item: MenuItem) => {
     setCartItems((prevItems) => {
       const existingItem = prevItems.find((cartItem) => cartItem.id === item.id);
 
@@ -80,7 +80,69 @@ export default function KioskAPage() {
 
       return [...prevItems, { ...item, quantity: 1 }];
     });
-  };
+  }, []);
+
+  const scrollToCategory = useCallback((id: string) => {
+    const scrollElement = scrollRef.current;
+    const targetElement = document.getElementById(id);
+
+    if (!targetElement) return;
+
+    const canScrollWithinMenu =
+      scrollElement &&
+      scrollElement.scrollHeight > scrollElement.clientHeight &&
+      getComputedStyle(scrollElement).overflowY !== "visible";
+
+    if (canScrollWithinMenu) {
+      scrollElement.scrollTo({
+        top: targetElement.offsetTop - scrollElement.offsetTop - 18,
+        behavior: "smooth",
+      });
+    } else {
+      targetElement.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    setActiveCategory(id);
+  }, []);
+
+  useEffect(() => {
+    const pageElement = pageRef.current;
+
+    if (!pageElement) return;
+
+    const handleClick = (event: MouseEvent) => {
+      const target = event.target;
+
+      if (!(target instanceof HTMLElement)) return;
+
+      const cartButton = target.closest<HTMLButtonElement>("[data-cart-item-id]");
+
+      if (cartButton && pageElement.contains(cartButton)) {
+        const itemId = cartButton.dataset.cartItemId;
+        const item = itemId ? menuItemsById.get(itemId) : undefined;
+
+        if (item) {
+          addToCart(item);
+        }
+
+        return;
+      }
+
+      const categoryButton = target.closest<HTMLButtonElement>("[data-category-id]");
+
+      if (categoryButton && pageElement.contains(categoryButton)) {
+        const categoryId = categoryButton.dataset.categoryId;
+
+        if (categoryId) {
+          scrollToCategory(categoryId);
+        }
+      }
+    };
+
+    pageElement.addEventListener("click", handleClick);
+
+    return () => pageElement.removeEventListener("click", handleClick);
+  }, [addToCart, menuItemsById, scrollToCategory]);
 
   const increaseQuantity = (id: string) => {
     setCartItems((prevItems) =>
@@ -121,20 +183,18 @@ export default function KioskAPage() {
   };
 
   return (
-    <div className="menu-page-container">
+    <div ref={pageRef} className="menu-page-container" data-kiosk-page="a">
       <KioskAHeader onBack={() => router.push("/")} />
 
       <main className="menu-main">
         <CategorySidebar
           categories={menuData}
           activeCategory={activeCategory}
-          onSelect={scrollToCategory}
         />
 
         <MenuSections
           categories={menuData}
           scrollRef={scrollRef}
-          onAddToCart={addToCart}
         />
 
         <CartPanel

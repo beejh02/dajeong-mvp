@@ -5,13 +5,11 @@ import type { MenuCategory } from "../types";
 type CategorySidebarProps = {
   categories: MenuCategory[];
   activeCategory: string;
-  onSelect: (id: string) => void;
 };
 
 export default function CategorySidebar({
   categories,
   activeCategory,
-  onSelect,
 }: CategorySidebarProps) {
   return (
     <nav id="sidebar" aria-label="메뉴 카테고리">
@@ -19,7 +17,7 @@ export default function CategorySidebar({
         <button
           key={category.id}
           type="button"
-          onClick={() => onSelect(category.id)}
+          data-category-id={category.id}
           className={`nav-item ${activeCategory === category.id ? "active" : ""}`}
         >
           <span className="nav-icon">{category.icon}</span>

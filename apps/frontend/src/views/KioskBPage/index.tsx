@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { formatPrice, menuData } from "./constants";
 import CartSection from "./components/CartSection";
@@ -16,6 +16,15 @@ export default function KioskBPage() {
 
   const [activeCategoryId, setActiveCategoryId] = useState(menuData[0].id);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const pageRef = useRef<HTMLDivElement | null>(null);
+
+  const menuItemsById = useMemo(() => {
+    return new Map(
+      menuData.flatMap((category) =>
+        category.items.map((item) => [item.id, item] as const),
+      ),
+    );
+  }, []);
 
   const activeCategory = useMemo(() => {
     return menuData.find((category) => category.id === activeCategoryId) ?? menuData[0];
@@ -29,7 +38,7 @@ export default function KioskBPage() {
     return cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
   }, [cartItems]);
 
-  const addToCart = (item: MenuItem) => {
+  const addToCart = useCallback((item: MenuItem) => {
     setCartItems((prevItems) => {
       const existingItem = prevItems.find((cartItem) => cartItem.id === item.id);
 
@@ -43,7 +52,34 @@ export default function KioskBPage() {
 
       return [...prevItems, { ...item, quantity: 1 }];
     });
-  };
+  }, []);
+
+  useEffect(() => {
+    const pageElement = pageRef.current;
+
+    if (!pageElement) return;
+
+    const handleClick = (event: MouseEvent) => {
+      const target = event.target;
+
+      if (!(target instanceof HTMLElement)) return;
+
+      const cartButton = target.closest<HTMLButtonElement>("[data-cart-item-id]");
+
+      if (!cartButton || !pageElement.contains(cartButton)) return;
+
+      const itemId = cartButton.dataset.cartItemId;
+      const item = itemId ? menuItemsById.get(itemId) : undefined;
+
+      if (item) {
+        addToCart(item);
+      }
+    };
+
+    pageElement.addEventListener("click", handleClick);
+
+    return () => pageElement.removeEventListener("click", handleClick);
+  }, [addToCart, menuItemsById]);
 
   const increaseQuantity = (id: string) => {
     setCartItems((prevItems) =>
@@ -84,7 +120,7 @@ export default function KioskBPage() {
   };
 
   return (
-    <div className="kiosk-b-page">
+    <div ref={pageRef} className="kiosk-b-page" data-kiosk-page="b">
       <KioskBHeader totalQuantity={totalQuantity} onBack={() => router.push("/")} />
 
       <CategoryTabs
@@ -96,7 +132,7 @@ export default function KioskBPage() {
       <main className="kiosk-b-main">
         <HeroSection activeCategory={activeCategory} />
 
-        <MenuCarousel activeCategory={activeCategory} onAddToCart={addToCart} />
+        <MenuCarousel activeCategory={activeCategory} />
 
         <CartSection
           cartItems={cartItems}

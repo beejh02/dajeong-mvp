@@ -49,6 +49,11 @@ const hasUseClientDirective = (file) => {
   return source.startsWith('"use client";') || source.startsWith("'use client';");
 };
 
+const sourceIncludes = (file, pattern) => {
+  const source = readFileSync(path.join(root, file), "utf8");
+  return source.includes(pattern);
+};
+
 if (!dependencies.next) {
   failures.push("package.json must depend on next");
 }
@@ -92,6 +97,47 @@ for (const file of interactiveClientFiles) {
     failures.push(`missing interactive client file: ${file}`);
   } else if (!hasUseClientDirective(file)) {
     failures.push(`interactive component must declare "use client": ${file}`);
+  }
+}
+
+const interactionChecks = [
+  {
+    file: "src/views/KioskAPage/index.tsx",
+    patterns: [
+      "data-kiosk-page=\"a\"",
+      "addEventListener(\"click\"",
+      "[data-cart-item-id]",
+      "[data-category-id]",
+      "scrollIntoView",
+    ],
+  },
+  {
+    file: "src/views/KioskBPage/index.tsx",
+    patterns: [
+      "data-kiosk-page=\"b\"",
+      "addEventListener(\"click\"",
+      "[data-cart-item-id]",
+    ],
+  },
+  {
+    file: "src/views/KioskAPage/components/MenuSections.tsx",
+    patterns: ["data-cart-item-id={item.id}"],
+  },
+  {
+    file: "src/views/KioskAPage/components/CategorySidebar.tsx",
+    patterns: ["data-category-id={category.id}"],
+  },
+  {
+    file: "src/views/KioskBPage/components/MenuCarousel.tsx",
+    patterns: ["data-cart-item-id={item.id}"],
+  },
+];
+
+for (const check of interactionChecks) {
+  for (const pattern of check.patterns) {
+    if (!sourceIncludes(check.file, pattern)) {
+      failures.push(`missing interaction marker ${pattern}: ${check.file}`);
+    }
   }
 }
 
