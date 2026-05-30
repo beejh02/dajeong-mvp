@@ -9,12 +9,14 @@ from app.data import COMPANIES, MENUS, USERS
 
 
 app = FastAPI(title="Dajeong Backend")
+KST = timezone(timedelta(hours=9))
 
 
 class Company(BaseModel):
-    company_id: str
+    id: str
     name: str
-    ui_layout: str
+    displayName: str
+    uiType: str
     description: str
 
 
@@ -23,20 +25,20 @@ class CompanyListResponse(BaseModel):
 
 
 class MenuOption(BaseModel):
-    option_id: str
+    id: str
     name: str
-    price_delta: int
+    priceDelta: int
 
 
 class MenuItem(BaseModel):
-    menu_id: str
-    company_id: str
+    id: str
+    companyId: str
     name: str
     category: str
-    description: str
     price: int
-    image_key: str
-    is_available: bool
+    description: str
+    imageUrl: str
+    isAvailable: bool
     options: list[MenuOption]
 
 
@@ -46,54 +48,67 @@ class MenuListResponse(BaseModel):
 
 
 class User(BaseModel):
-    user_id: str
+    id: str
     name: str
     phone: str
-    preferred_language: str
+    pointBalance: int
+    defaultPaymentMethod: str
 
 
 class OrderItemRequest(BaseModel):
-    menu_id: str
+    menuId: str
     quantity: Annotated[int, Field(ge=1)]
-    option_ids: list[str] = Field(default_factory=list)
+    selectedOptionIds: list[str] = Field(default_factory=list)
 
 
 class OrderCreateRequest(BaseModel):
-    company_id: str
-    user_id: str
+    companyId: str
+    userId: str
     items: Annotated[list[OrderItemRequest], Field(min_length=1)]
 
 
 class OrderItemResponse(BaseModel):
-    menu_id: str
-    menu_name: str
+    id: str
+    orderId: str
+    menuId: str
+    menuName: str
     quantity: int
-    unit_price: int
-    selected_options: list[MenuOption]
-    line_total: int
+    selectedOptions: list[MenuOption]
+    unitPrice: int
+    itemPrice: int
 
 
 class OrderResponse(BaseModel):
-    order_id: str
-    company_id: str
-    company_name: str
-    user: User
-    items: list[OrderItemResponse]
-    total_price: int
+    id: str
+    orderNumber: str
+    waitingNumber: int
+    userId: str
+    companyId: str
     status: str
-    payment_status: str
-    created_at: str
+    totalPrice: int
+    pointEarned: int
+    items: list[OrderItemResponse]
+    createdAt: str
 
 
 class OrderListResponse(BaseModel):
     orders: list[OrderResponse]
 
 
-COMPANY_BY_ID = {company["company_id"]: Company(**company) for company in COMPANIES}
-USER_BY_ID = {user["user_id"]: User(**user) for user in USERS}
-MENU_BY_ID = {menu["menu_id"]: MenuItem(**menu) for menu in MENUS}
+class AdminSummaryResponse(BaseModel):
+    totalOrders: int
+    receivedOrders: int
+    completedOrders: int
+    totalRevenue: int
+    totalPointEarned: int
+
+
+COMPANY_BY_ID = {company["id"]: Company(**company) for company in COMPANIES}
+USER_BY_ID = {user["id"]: User(**user) for user in USERS}
+MENU_BY_ID = {menu["id"]: MenuItem(**menu) for menu in MENUS}
 ORDERS: dict[str, OrderResponse] = {}
 ORDER_SEQUENCE = count(1)
+WAITING_SEQUENCE = count(101)
 
 
 @app.get("/health")
@@ -106,34 +121,45 @@ def list_companies() -> CompanyListResponse:
     return CompanyListResponse(companies=list(COMPANY_BY_ID.values()))
 
 
-@app.get("/companies/{company_id}/menus", response_model=MenuListResponse)
-def list_company_menus(company_id: str) -> MenuListResponse:
-    company = _get_company(company_id)
-    menus = [menu for menu in MENU_BY_ID.values() if menu.company_id == company_id]
+@app.get("/companies/{companyId}", response_model=Company)
+def get_company(companyId: str) -> Company:
+    return _get_company(companyId)
+
+
+@app.get("/companies/{companyId}/menus", response_model=MenuListResponse)
+def list_company_menus(companyId: str) -> MenuListResponse:
+    company = _get_company(companyId)
+    menus = [menu for menu in MENU_BY_ID.values() if menu.companyId == companyId]
     return MenuListResponse(company=company, menus=menus)
 
 
 @app.post("/orders", response_model=OrderResponse, status_code=201)
 def create_order(order_request: OrderCreateRequest) -> OrderResponse:
-    company = _get_company(order_request.company_id)
-    user = _get_user(order_request.user_id)
+    _get_company(order_request.companyId)
+    _get_user(order_request.userId)
 
-    order_items = [_build_order_item(order_request.company_id, item) for item in order_request.items]
-    total_price = sum(item.line_total for item in order_items)
-    order_id = f"order-{next(ORDER_SEQUENCE):04d}"
+    order_index = next(ORDER_SEQUENCE)
+    order_id = f"order-{order_index:04d}"
+    order_items = [
+        _build_order_item(order_id, order_index, line_index, order_request.companyId, item)
+        for line_index, item in enumerate(order_request.items, start=1)
+    ]
+    total_price = sum(item.itemPrice for item in order_items)
+    point_earned = total_price // 100
 
     order = OrderResponse(
-        order_id=order_id,
-        company_id=company.company_id,
-        company_name=company.name,
-        user=user,
-        items=order_items,
-        total_price=total_price,
+        id=order_id,
+        orderNumber=f"ORD-{datetime.now(KST).strftime('%Y%m%d')}-{order_index:04d}",
+        waitingNumber=next(WAITING_SEQUENCE),
+        userId=order_request.userId,
+        companyId=order_request.companyId,
         status="received",
-        payment_status="not_requested",
-        created_at=datetime.now(timezone(timedelta(hours=9))).isoformat(),
+        totalPrice=total_price,
+        pointEarned=point_earned,
+        items=order_items,
+        createdAt=datetime.now(KST).isoformat(),
     )
-    ORDERS[order.order_id] = order
+    ORDERS[order.id] = order
     return order
 
 
@@ -142,11 +168,23 @@ def list_admin_orders() -> OrderListResponse:
     return OrderListResponse(orders=list(ORDERS.values()))
 
 
-@app.get("/admin/orders/{order_id}", response_model=OrderResponse)
-def get_admin_order(order_id: str) -> OrderResponse:
-    if order_id not in ORDERS:
+@app.get("/admin/orders/{orderId}", response_model=OrderResponse)
+def get_admin_order(orderId: str) -> OrderResponse:
+    if orderId not in ORDERS:
         raise HTTPException(status_code=404, detail="Order not found")
-    return ORDERS[order_id]
+    return ORDERS[orderId]
+
+
+@app.get("/admin/summary", response_model=AdminSummaryResponse)
+def get_admin_summary() -> AdminSummaryResponse:
+    orders = list(ORDERS.values())
+    return AdminSummaryResponse(
+        totalOrders=len(orders),
+        receivedOrders=sum(order.status == "received" for order in orders),
+        completedOrders=sum(order.status == "completed" for order in orders),
+        totalRevenue=sum(order.totalPrice for order in orders),
+        totalPointEarned=sum(order.pointEarned for order in orders),
+    )
 
 
 def _get_company(company_id: str) -> Company:
@@ -161,32 +199,41 @@ def _get_user(user_id: str) -> User:
     return USER_BY_ID[user_id]
 
 
-def _build_order_item(company_id: str, item_request: OrderItemRequest) -> OrderItemResponse:
-    if item_request.menu_id not in MENU_BY_ID:
+def _build_order_item(
+    order_id: str,
+    order_index: int,
+    line_index: int,
+    company_id: str,
+    item_request: OrderItemRequest,
+) -> OrderItemResponse:
+    if item_request.menuId not in MENU_BY_ID:
         raise HTTPException(status_code=404, detail="Menu not found")
 
-    menu = MENU_BY_ID[item_request.menu_id]
-    if menu.company_id != company_id:
+    menu = MENU_BY_ID[item_request.menuId]
+    if menu.companyId != company_id:
         raise HTTPException(status_code=400, detail="Menu does not belong to company")
-    if not menu.is_available:
+    if not menu.isAvailable:
         raise HTTPException(status_code=400, detail="Menu is not available")
 
-    selected_options = _resolve_options(menu, item_request.option_ids)
-    option_total = sum(option.price_delta for option in selected_options)
+    selected_options = _resolve_options(menu, item_request.selectedOptionIds)
+    option_total = sum(option.priceDelta for option in selected_options)
     unit_price = menu.price + option_total
+    item_price = unit_price * item_request.quantity
 
     return OrderItemResponse(
-        menu_id=menu.menu_id,
-        menu_name=menu.name,
+        id=f"order-item-{order_index:04d}-{line_index:02d}",
+        orderId=order_id,
+        menuId=menu.id,
+        menuName=menu.name,
         quantity=item_request.quantity,
-        unit_price=unit_price,
-        selected_options=selected_options,
-        line_total=unit_price * item_request.quantity,
+        selectedOptions=selected_options,
+        unitPrice=unit_price,
+        itemPrice=item_price,
     )
 
 
 def _resolve_options(menu: MenuItem, option_ids: list[str]) -> list[MenuOption]:
-    option_by_id = {option.option_id: option for option in menu.options}
+    option_by_id = {option.id: option for option in menu.options}
     selected_options: list[MenuOption] = []
 
     for option_id in option_ids:
