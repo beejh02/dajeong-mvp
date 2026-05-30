@@ -17,3 +17,21 @@
 ## 문서
 
 자세한 프로젝트 의도와 범위는 `project-spec.md`와 `docs/` 문서를 참고한다.
+
+## Backend 실행
+
+PowerShell에서 Backend API 서버를 실행한다.
+
+```powershell
+cd C:\Users\joon0\Desktop\dajeong-mvp\apps\backend
+python -m pip install -r requirements.txt
+python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
+```
+
+상태 확인:
+
+```powershell
+Invoke-RestMethod http://127.0.0.1:8000/health
+```
+
+API 문서는 서버 실행 후 `http://127.0.0.1:8000/docs`에서 확인할 수 있다.

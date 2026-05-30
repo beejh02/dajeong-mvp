@@ -1,10 +1,8 @@
-from itertools import count
-
 import pytest
 from fastapi.testclient import TestClient
 
-import app.main as backend_main
 from app.main import app
+from app.store import store
 
 
 client = TestClient(app)
@@ -12,16 +10,14 @@ client = TestClient(app)
 
 @pytest.fixture(autouse=True)
 def reset_orders():
-    backend_main.ORDERS.clear()
-    backend_main.ORDER_SEQUENCE = count(1)
-    backend_main.WAITING_SEQUENCE = count(101)
+    store.reset_orders()
 
 
 def test_health_returns_ok():
     response = client.get("/health")
 
     assert response.status_code == 200
-    assert response.json() == {"status": "ok", "service": "dajeong-backend"}
+    assert response.json() == {"status": "ok", "service": "dajeong-mvp-backend"}
 
 
 def test_companies_include_a_and_b_kiosk_layouts():
@@ -81,12 +77,12 @@ def test_company_menus_are_scoped_by_company():
 def test_create_order_and_read_admin_order_views():
     order_payload = {
         "companyId": "company-a",
-        "userId": "user-demo-001",
+        "userId": "user-demo-1",
         "items": [
             {
-                "menuId": "a-classic-burger",
-                "quantity": 2,
-                "selectedOptionIds": ["a-extra-cheese"],
+                "menuId": "menu-a-001",
+                "quantity": 1,
+                "selectedOptionIds": ["option-a-set"],
             }
         ],
     }
@@ -100,18 +96,18 @@ def test_create_order_and_read_admin_order_views():
     assert created_order["orderNumber"].endswith("-0001")
     assert created_order["waitingNumber"] == 101
     assert created_order["companyId"] == "company-a"
-    assert created_order["userId"] == "user-demo-001"
-    assert created_order["status"] == "received"
-    assert created_order["totalPrice"] == 15600
-    assert created_order["pointEarned"] == 156
+    assert created_order["userId"] == "user-demo-1"
+    assert created_order["status"] == "waiting"
+    assert created_order["totalPrice"] == 9900
+    assert created_order["pointEarned"] == 99
     assert created_order["items"][0]["id"] == "order-item-0001-01"
     assert created_order["items"][0]["orderId"] == "order-0001"
-    assert created_order["items"][0]["menuId"] == "a-classic-burger"
-    assert created_order["items"][0]["quantity"] == 2
-    assert created_order["items"][0]["unitPrice"] == 7800
-    assert created_order["items"][0]["itemPrice"] == 15600
+    assert created_order["items"][0]["menuId"] == "menu-a-001"
+    assert created_order["items"][0]["quantity"] == 1
+    assert created_order["items"][0]["unitPrice"] == 9900
+    assert created_order["items"][0]["itemPrice"] == 9900
     assert created_order["items"][0]["selectedOptions"] == [
-        {"id": "a-extra-cheese", "name": "치즈 추가", "priceDelta": 600}
+        {"id": "option-a-set", "name": "세트 변경", "priceDelta": 2700}
     ]
 
     list_response = client.get("/admin/orders")
@@ -131,16 +127,16 @@ def test_admin_summary_counts_orders_and_revenue():
         "/orders",
         json={
             "companyId": "company-a",
-            "userId": "user-demo-001",
-            "items": [{"menuId": "a-classic-burger", "quantity": 1, "selectedOptionIds": []}],
+            "userId": "user-demo-1",
+            "items": [{"menuId": "menu-a-001", "quantity": 1, "selectedOptionIds": []}],
         },
     )
     client.post(
         "/orders",
         json={
             "companyId": "company-b",
-            "userId": "user-demo-002",
-            "items": [{"menuId": "b-classic-wrap", "quantity": 1, "selectedOptionIds": ["b-extra-egg"]}],
+            "userId": "user-demo-2",
+            "items": [{"menuId": "menu-b-001", "quantity": 1, "selectedOptionIds": ["option-b-set"]}],
         },
     )
 
@@ -149,8 +145,8 @@ def test_admin_summary_counts_orders_and_revenue():
     assert response.status_code == 200
     assert response.json() == {
         "totalOrders": 2,
-        "receivedOrders": 2,
-        "completedOrders": 0,
-        "totalRevenue": 14700,
-        "totalPointEarned": 147,
+        "totalSales": 19600,
+        "waitingOrders": 2,
+        "companyCount": 2,
+        "menuCount": 6,
     }
