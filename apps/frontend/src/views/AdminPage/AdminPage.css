@@ -167,6 +167,47 @@ button {
   padding: 28px;
 }
 
+.admin-state {
+  display: grid;
+  place-items: center;
+  min-height: 280px;
+  padding: 32px;
+  background: #ffffff;
+  border: 1px solid #d7e0eb;
+  border-radius: 8px;
+  color: #334155;
+  text-align: center;
+}
+
+.admin-state strong {
+  color: #020617;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.admin-state p {
+  margin: 10px 0 0;
+  color: #64748b;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.admin-state button {
+  margin-top: 18px;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #0f172a;
+  padding: 11px 18px;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.admin-state.error {
+  border-color: #fecaca;
+  background: #fff7f7;
+}
+
 .admin-panel h2 {
   margin: 0 0 24px;
   font-size: 25px;
@@ -177,6 +218,13 @@ button {
   display: flex;
   flex-direction: column;
   gap: 18px;
+}
+
+.channel-empty,
+.orders-empty {
+  color: #64748b;
+  font-weight: 700;
+  text-align: center;
 }
 
 .channel-row {

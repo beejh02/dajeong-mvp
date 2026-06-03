@@ -18,6 +18,8 @@
 
 자세한 프로젝트 의도와 범위는 `project-spec.md`와 `docs/` 문서를 참고한다.
 
+현재 Frontend는 Backend API를 데이터 source of truth로 사용하도록 연결한다. Frontend API client와 adapter 구조, 향후 MCP tool 계획은 `docs/mcp-tool-plan.md`에 정리한다.
+
 ## Backend 실행
 
 PowerShell에서 Backend API 서버를 실행한다.

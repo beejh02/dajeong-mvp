@@ -226,6 +226,46 @@ button {
   backdrop-filter: blur(10px);
 }
 
+.kiosk-b-state {
+  display: grid;
+  place-items: center;
+  min-height: 280px;
+  margin-bottom: 28px;
+  padding: 28px;
+  border: 2px dashed rgba(80, 48, 18, 0.16);
+  border-radius: 30px;
+  background: rgba(255, 255, 255, 0.68);
+  color: #684a2d;
+  text-align: center;
+}
+
+.kiosk-b-state strong {
+  color: #2c170b;
+  font-size: 1.15rem;
+  font-weight: 950;
+}
+
+.kiosk-b-state p {
+  margin: 8px 0 0;
+  color: #7d5a37;
+  font-weight: 750;
+}
+
+.kiosk-b-state button {
+  margin-top: 18px;
+  padding: 11px 18px;
+  border: 0;
+  border-radius: 999px;
+  background: #2c170b;
+  color: #ffffff;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.kiosk-b-state.error {
+  border-color: rgba(201, 37, 29, 0.28);
+}
+
 .kiosk-b-section-title,
 .kiosk-b-cart-header {
   display: flex;
@@ -570,6 +610,32 @@ button {
   cursor: not-allowed;
   opacity: 0.42;
   box-shadow: none;
+}
+
+.kiosk-b-order-feedback {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 34px;
+  background: #fff7dd;
+  color: #2c170b;
+  border-top: 1px solid rgba(80, 48, 18, 0.12);
+  font-size: 0.95rem;
+}
+
+.kiosk-b-order-feedback strong {
+  font-weight: 950;
+}
+
+.kiosk-b-order-feedback span {
+  color: #7d5a37;
+  font-weight: 800;
+}
+
+.kiosk-b-order-feedback.error {
+  background: #fff0ed;
+  color: #9b1712;
 }
 
 @media (max-width: 760px) {

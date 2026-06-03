@@ -1,16 +1,78 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import type { AdminTab, Order } from "./types";
-import { orders } from "./constants";
+import {
+  adaptAdminSummary,
+  adaptOrderToAdminOrder,
+  adaptOrdersToChannelStats,
+} from "../../lib/adapters/adminAdapter";
+import { getAdminOrders, getAdminSummary } from "../../lib/api/admin";
+import type { AdminTab, ChannelStat, Order, SummaryCard } from "./types";
 import OverviewSection from "./components/OverviewSection";
 import OrdersSection from "./components/OrdersSection";
 import OrderDetailSection from "./components/OrderDetailSection";
 
 export default function AdminPage() {
   const [activeTab, setActiveTab] = useState<AdminTab>("overview");
-  const [selectedOrder, setSelectedOrder] = useState<Order>(orders[0]);
+  const [summaryCards, setSummaryCards] = useState<SummaryCard[]>([]);
+  const [channelStats, setChannelStats] = useState<ChannelStat[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [adminError, setAdminError] = useState<string | null>(null);
+
+  const loadAdminData = useCallback(async () => {
+    setIsLoading(true);
+    setAdminError(null);
+
+    try {
+      const [summary, orderList] = await Promise.all([
+        getAdminSummary(),
+        getAdminOrders(),
+      ]);
+      const adaptedOrders = orderList.orders.map(adaptOrderToAdminOrder);
+
+      setSummaryCards(adaptAdminSummary(summary));
+      setChannelStats(adaptOrdersToChannelStats(orderList.orders));
+      setOrders(adaptedOrders);
+      setSelectedOrder((currentOrder) => currentOrder ?? adaptedOrders[0] ?? null);
+    } catch {
+      setAdminError("관리자 데이터를 불러오지 못했습니다. Backend API 연결을 확인하세요.");
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    Promise.all([getAdminSummary(), getAdminOrders()])
+      .then(([summary, orderList]) => {
+        if (!isMounted) return;
+
+        const adaptedOrders = orderList.orders.map(adaptOrderToAdminOrder);
+
+        setSummaryCards(adaptAdminSummary(summary));
+        setChannelStats(adaptOrdersToChannelStats(orderList.orders));
+        setOrders(adaptedOrders);
+        setSelectedOrder(adaptedOrders[0] ?? null);
+      })
+      .catch(() => {
+        if (isMounted) {
+          setAdminError("관리자 데이터를 불러오지 못했습니다. Backend API 연결을 확인하세요.");
+        }
+      })
+      .finally(() => {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const handleMoveOrders = () => setActiveTab("orders");
   const handleViewDetail = (order: Order) => {
@@ -52,11 +114,30 @@ export default function AdminPage() {
       </nav>
 
       <section className="admin-container">
-        {activeTab === "overview" && <OverviewSection />}
-        {activeTab === "orders" && (
-          <OrdersSection onViewDetail={handleViewDetail} />
+        {isLoading && (
+          <section className="admin-state" role="status">
+            <strong>관리자 데이터를 불러오는 중입니다.</strong>
+            <p>Backend API에서 주문과 요약 데이터를 가져오고 있습니다.</p>
+          </section>
         )}
-        {activeTab === "detail" && (
+
+        {!isLoading && adminError && (
+          <section className="admin-state error" role="alert">
+            <strong>{adminError}</strong>
+            <button type="button" onClick={loadAdminData}>
+              다시 시도
+            </button>
+          </section>
+        )}
+
+        {!isLoading && !adminError && activeTab === "overview" && (
+          <OverviewSection summaryCards={summaryCards} channelStats={channelStats} />
+        )}
+
+        {!isLoading && !adminError && activeTab === "orders" && (
+          <OrdersSection orders={orders} onViewDetail={handleViewDetail} />
+        )}
+        {!isLoading && !adminError && activeTab === "detail" && selectedOrder && (
           <OrderDetailSection order={selectedOrder} onBack={handleMoveOrders} />
         )}
       </section>

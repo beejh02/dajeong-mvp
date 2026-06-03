@@ -20,6 +20,19 @@ def test_health_returns_ok():
     assert response.json() == {"status": "ok", "service": "dajeong-mvp-backend"}
 
 
+def test_local_frontend_cors_preflight_is_allowed():
+    response = client.options(
+        "/companies",
+        headers={
+            "Origin": "http://localhost:3000",
+            "Access-Control-Request-Method": "GET",
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.headers["access-control-allow-origin"] == "http://localhost:3000"
+
+
 def test_companies_include_a_and_b_kiosk_layouts():
     response = client.get("/companies")
 

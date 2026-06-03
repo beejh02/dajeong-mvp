@@ -454,6 +454,45 @@ button {
   font-weight: 700;
 }
 
+.menu-state {
+  display: grid;
+  place-items: center;
+  min-height: 340px;
+  padding: 28px;
+  border: 2px dashed rgba(116, 77, 36, 0.18);
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.76);
+  color: #6b4d32;
+  text-align: center;
+}
+
+.menu-state strong {
+  color: #2b1508;
+  font-size: 1.15rem;
+  font-weight: 950;
+}
+
+.menu-state p {
+  margin: 8px 0 0;
+  color: #7b5c3e;
+  font-weight: 750;
+}
+
+.menu-state button {
+  margin-top: 18px;
+  padding: 11px 18px;
+  border: 0;
+  border-radius: 999px;
+  background: #2b1508;
+  color: #ffffff;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.menu-state.error {
+  border-color: rgba(201, 37, 29, 0.28);
+}
+
 .cart-item {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -611,6 +650,32 @@ button {
   cursor: not-allowed;
   opacity: 0.42;
   box-shadow: none;
+}
+
+.kiosk-order-feedback {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 34px;
+  background: #fff7dd;
+  color: #2b1508;
+  border-top: 1px solid rgba(116, 77, 36, 0.12);
+  font-size: 0.95rem;
+}
+
+.kiosk-order-feedback strong {
+  font-weight: 950;
+}
+
+.kiosk-order-feedback span {
+  color: #795b3a;
+  font-weight: 800;
+}
+
+.kiosk-order-feedback.error {
+  background: #fff0ed;
+  color: #a91914;
 }
 
 @media (max-width: 1180px) {

@@ -1,11 +1,11 @@
 import type { Order } from "../types";
-import { orders } from "../constants";
 
 type OrdersSectionProps = {
+  orders: Order[];
   onViewDetail: (order: Order) => void;
 };
 
-export default function OrdersSection({ onViewDetail }: OrdersSectionProps) {
+export default function OrdersSection({ orders, onViewDetail }: OrdersSectionProps) {
   return (
     <section className="orders-panel">
       <div className="orders-panel-header">
@@ -37,6 +37,14 @@ export default function OrdersSection({ onViewDetail }: OrdersSectionProps) {
           </thead>
 
           <tbody>
+            {orders.length === 0 && (
+              <tr>
+                <td className="orders-empty" colSpan={10}>
+                  아직 접수된 주문이 없습니다.
+                </td>
+              </tr>
+            )}
+
             {orders.map((order) => (
               <tr key={order.id}>
                 <td>{order.id}</td>

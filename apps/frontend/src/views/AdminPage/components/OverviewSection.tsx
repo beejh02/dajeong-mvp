@@ -1,6 +1,17 @@
-import { channelStats, maxRevenue, summaryCards, formatCurrency } from "../constants";
+import { formatCurrency } from "../../../lib/adapters/adminAdapter";
+import type { ChannelStat, SummaryCard } from "../types";
 
-export default function OverviewSection() {
+type OverviewSectionProps = {
+  summaryCards: SummaryCard[];
+  channelStats: ChannelStat[];
+};
+
+export default function OverviewSection({
+  summaryCards,
+  channelStats,
+}: OverviewSectionProps) {
+  const maxRevenue = Math.max(...channelStats.map((item) => item.revenue), 1);
+
   return (
     <>
       <header className="admin-header">
@@ -22,6 +33,10 @@ export default function OverviewSection() {
         <h2>주문 출처별 현황</h2>
 
         <div className="channel-list">
+          {channelStats.length === 0 && (
+            <p className="channel-empty">아직 접수된 주문이 없습니다.</p>
+          )}
+
           {channelStats.map((item) => {
             const percent = (item.revenue / maxRevenue) * 100;
 

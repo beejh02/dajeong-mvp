@@ -1,25 +1,43 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { formatPrice, menuData } from "./constants";
+import { adaptMenusToCategories } from "../../lib/adapters/menuAdapter";
+import { getCompanyMenus } from "../../lib/api/menus";
+import { createOrder } from "../../lib/api/orders";
 import CartSection from "./components/CartSection";
 import CategoryTabs from "./components/CategoryTabs";
 import HeroSection from "./components/HeroSection";
 import KioskBFooter from "./components/KioskBFooter";
 import KioskBHeader from "./components/KioskBHeader";
 import MenuCarousel from "./components/MenuCarousel";
-import type { CartItem, MenuItem } from "./types";
+import type { CartItem, MenuCategory, MenuItem } from "./types";
+
+type OrderResult = {
+  orderNumber: string;
+  waitingNumber: number;
+  totalPrice: number;
+};
 
 export default function KioskBPage() {
   const router = useRouter();
 
-  const [activeCategoryId, setActiveCategoryId] = useState(menuData[0].id);
+  const [menuCategories, setMenuCategories] = useState<MenuCategory[]>([]);
+  const [activeCategoryId, setActiveCategoryId] = useState("");
+  const [isMenuLoading, setIsMenuLoading] = useState(true);
+  const [menuError, setMenuError] = useState<string | null>(null);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [isOrdering, setIsOrdering] = useState(false);
+  const [orderResult, setOrderResult] = useState<OrderResult | null>(null);
+  const [orderError, setOrderError] = useState<string | null>(null);
 
   const activeCategory = useMemo(() => {
-    return menuData.find((category) => category.id === activeCategoryId) ?? menuData[0];
-  }, [activeCategoryId]);
+    return (
+      menuCategories.find((category) => category.id === activeCategoryId) ??
+      menuCategories[0] ??
+      null
+    );
+  }, [activeCategoryId, menuCategories]);
 
   const totalQuantity = useMemo(() => {
     return cartItems.reduce((sum, item) => sum + item.quantity, 0);
@@ -28,6 +46,55 @@ export default function KioskBPage() {
   const totalPrice = useMemo(() => {
     return cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
   }, [cartItems]);
+
+  const loadMenus = useCallback(async () => {
+    setIsMenuLoading(true);
+    setMenuError(null);
+
+    try {
+      const response = await getCompanyMenus("company-b");
+      const categories = adaptMenusToCategories(response.menus);
+
+      setMenuCategories(categories);
+      setActiveCategoryId(categories[0]?.id ?? "");
+    } catch {
+      setMenuError("메뉴를 불러오지 못했습니다. Backend API 연결을 확인하세요.");
+      setMenuCategories([]);
+      setActiveCategoryId("");
+    } finally {
+      setIsMenuLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    getCompanyMenus("company-b")
+      .then((response) => {
+        if (!isMounted) return;
+
+        const categories = adaptMenusToCategories(response.menus);
+
+        setMenuCategories(categories);
+        setActiveCategoryId(categories[0]?.id ?? "");
+      })
+      .catch(() => {
+        if (!isMounted) return;
+
+        setMenuError("메뉴를 불러오지 못했습니다. Backend API 연결을 확인하세요.");
+        setMenuCategories([]);
+        setActiveCategoryId("");
+      })
+      .finally(() => {
+        if (isMounted) {
+          setIsMenuLoading(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const addToCart = useCallback((item: MenuItem) => {
     setCartItems((prevItems) => {
@@ -71,16 +138,72 @@ export default function KioskBPage() {
     setCartItems([]);
   };
 
-  const handleOrder = () => {
-    if (cartItems.length === 0) return;
+  const handleOrder = async () => {
+    if (cartItems.length === 0 || isOrdering) return;
 
-    alert(
-      `주문이 접수되었습니다.\n선택한 메뉴: ${totalQuantity}개\n총 결제금액: ₩ ${formatPrice(
-        totalPrice,
-      )}`,
+    setIsOrdering(true);
+    setOrderError(null);
+
+    try {
+      const order = await createOrder({
+        companyId: "company-b",
+        userId: "user-demo-1",
+        items: cartItems.map((item) => ({
+          menuId: item.id,
+          quantity: item.quantity,
+          selectedOptionIds: [],
+        })),
+      });
+
+      setOrderResult({
+        orderNumber: order.orderNumber,
+        waitingNumber: order.waitingNumber,
+        totalPrice: order.totalPrice,
+      });
+      clearCart();
+    } catch {
+      setOrderError("주문을 접수하지 못했습니다. 잠시 후 다시 시도하세요.");
+    } finally {
+      setIsOrdering(false);
+    }
+  };
+
+  const renderMenuContent = () => {
+    if (isMenuLoading) {
+      return (
+        <section className="kiosk-b-state" role="status">
+          <strong>메뉴를 불러오는 중입니다.</strong>
+          <p>Backend API에서 B기업 메뉴 데이터를 가져오고 있습니다.</p>
+        </section>
+      );
+    }
+
+    if (menuError) {
+      return (
+        <section className="kiosk-b-state error" role="alert">
+          <strong>{menuError}</strong>
+          <button type="button" onClick={loadMenus}>
+            다시 시도
+          </button>
+        </section>
+      );
+    }
+
+    if (!activeCategory) {
+      return (
+        <section className="kiosk-b-state" role="status">
+          <strong>표시할 메뉴가 없습니다.</strong>
+          <p>현재 판매 가능한 B기업 메뉴가 없습니다.</p>
+        </section>
+      );
+    }
+
+    return (
+      <>
+        <HeroSection activeCategory={activeCategory} />
+        <MenuCarousel activeCategory={activeCategory} onAddToCart={addToCart} />
+      </>
     );
-
-    clearCart();
   };
 
   return (
@@ -88,15 +211,13 @@ export default function KioskBPage() {
       <KioskBHeader totalQuantity={totalQuantity} onBack={() => router.push("/")} />
 
       <CategoryTabs
-        categories={menuData}
+        categories={menuCategories}
         activeCategoryId={activeCategoryId}
         onSelect={setActiveCategoryId}
       />
 
       <main className="kiosk-b-main">
-        <HeroSection activeCategory={activeCategory} />
-
-        <MenuCarousel activeCategory={activeCategory} onAddToCart={addToCart} />
+        {renderMenuContent()}
 
         <CartSection
           cartItems={cartItems}
@@ -107,9 +228,28 @@ export default function KioskBPage() {
         />
       </main>
 
+      {(orderResult || orderError) && (
+        <section
+          className={`kiosk-b-order-feedback ${orderError ? "error" : ""}`}
+          role={orderError ? "alert" : "status"}
+        >
+          {orderResult && (
+            <>
+              <strong>주문 {orderResult.orderNumber} 접수 완료</strong>
+              <span>
+                대기번호 {orderResult.waitingNumber} · 총 ₩{" "}
+                {orderResult.totalPrice.toLocaleString("ko-KR")}
+              </span>
+            </>
+          )}
+          {orderError && <strong>{orderError}</strong>}
+        </section>
+      )}
+
       <KioskBFooter
         cartItemCount={cartItems.length}
         totalPrice={totalPrice}
+        isOrdering={isOrdering}
         onOrder={handleOrder}
       />
     </div>

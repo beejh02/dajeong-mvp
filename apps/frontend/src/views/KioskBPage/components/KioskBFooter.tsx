@@ -5,12 +5,14 @@ import { formatPrice } from "../constants";
 type KioskBFooterProps = {
   cartItemCount: number;
   totalPrice: number;
+  isOrdering?: boolean;
   onOrder: () => void;
 };
 
 export default function KioskBFooter({
   cartItemCount,
   totalPrice,
+  isOrdering = false,
   onOrder,
 }: KioskBFooterProps) {
   return (
@@ -23,10 +25,10 @@ export default function KioskBFooter({
       <button
         type="button"
         className="kiosk-b-pay-btn"
-        disabled={cartItemCount === 0}
+        disabled={cartItemCount === 0 || isOrdering}
         onClick={onOrder}
       >
-        결제하기
+        {isOrdering ? "주문 중..." : "결제하기"}
       </button>
     </footer>
   );

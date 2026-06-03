@@ -8,7 +8,9 @@
     "build": "next build",
     "lint": "eslint .",
     "start": "next start",
-    "verify:next": "node scripts/verify-next-structure.mjs"
+    "verify:next": "node scripts/verify-next-structure.mjs",
+    "verify:api-adapters": "node scripts/verify-api-adapters.mjs",
+    "verify:api-integration": "node scripts/verify-api-integration.mjs"
   },
   "dependencies": {
     "next": "^16.2.6",
