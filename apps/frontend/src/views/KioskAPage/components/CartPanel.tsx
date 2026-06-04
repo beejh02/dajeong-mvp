@@ -46,18 +46,23 @@ export default function CartPanel({
           </div>
         ) : (
           cartItems.map((item) => (
-            <div key={item.id} className="cart-item">
+            <div key={item.cartId} className="cart-item">
               <div className="cart-item-info">
                 <p>{item.name}</p>
-                <span>₩ {formatPrice(item.price)}</span>
+                {item.selectedOptions.length > 0 && (
+                  <small className="cart-item-options">
+                    {item.selectedOptions.map((option) => option.name).join(", ")}
+                  </small>
+                )}
+                <span>₩ {formatPrice(item.unitPrice)}</span>
               </div>
 
               <div className="quantity-control">
-                <button type="button" onClick={() => onDecreaseQuantity(item.id)}>
+                <button type="button" onClick={() => onDecreaseQuantity(item.cartId)}>
                   -
                 </button>
                 <strong>{item.quantity}</strong>
-                <button type="button" onClick={() => onIncreaseQuantity(item.id)}>
+                <button type="button" onClick={() => onIncreaseQuantity(item.cartId)}>
                   +
                 </button>
               </div>
@@ -65,7 +70,7 @@ export default function CartPanel({
               <button
                 type="button"
                 className="remove-btn"
-                onClick={() => onRemoveCartItem(item.id)}
+                onClick={() => onRemoveCartItem(item.cartId)}
               >
                 삭제
               </button>

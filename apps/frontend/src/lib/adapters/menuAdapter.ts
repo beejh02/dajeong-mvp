@@ -1,4 +1,7 @@
-import type { MenuItem as BackendMenuItem } from "../api/types";
+import type {
+  MenuItem as BackendMenuItem,
+  MenuOption,
+} from "../api/types";
 
 export type KioskMenuItem = {
   id: string;
@@ -6,6 +9,7 @@ export type KioskMenuItem = {
   description: string;
   price: number;
   img: string;
+  options: MenuOption[];
   badge?: string;
 };
 
@@ -66,6 +70,7 @@ export function adaptMenusToCategories(
       description: menu.description,
       price: menu.price,
       img: menu.imageUrl,
+      options: menu.options,
       ...(menu.badge ? { badge: menu.badge } : {}),
     });
 

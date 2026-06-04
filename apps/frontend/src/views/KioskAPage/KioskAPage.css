@@ -529,6 +529,16 @@ button {
   font-weight: 900;
 }
 
+.cart-item-options {
+  display: block;
+  margin-top: 4px;
+  color: #795b3a;
+  font-size: 0.78rem;
+  font-weight: 800;
+  line-height: 1.35;
+  white-space: normal;
+}
+
 .quantity-control {
   display: flex;
   align-items: center;
@@ -649,6 +659,163 @@ button {
 .order-btn:disabled {
   cursor: not-allowed;
   opacity: 0.42;
+  box-shadow: none;
+}
+
+.kiosk-option-overlay,
+.kiosk-checkout-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(43, 21, 8, 0.34);
+}
+
+.kiosk-option-dialog,
+.kiosk-checkout-panel {
+  width: min(520px, 100%);
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+  padding: 24px;
+  border: 1px solid rgba(116, 77, 36, 0.16);
+  border-radius: 28px;
+  background: #fffaf1;
+  box-shadow: 0 26px 60px rgba(43, 21, 8, 0.28);
+}
+
+.kiosk-option-header,
+.kiosk-checkout-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  gap: 18px;
+}
+
+.kiosk-option-header h2,
+.kiosk-checkout-header h2 {
+  margin: 0;
+  color: #2b1508;
+  font-size: 1.55rem;
+  font-weight: 950;
+  letter-spacing: -0.04em;
+}
+
+.kiosk-option-header strong,
+.kiosk-checkout-header strong {
+  flex: 0 0 auto;
+  color: #c9251d;
+  font-size: 1.2rem;
+  font-weight: 950;
+}
+
+.kiosk-option-kicker {
+  margin: 0 0 7px;
+  color: #c9251d;
+  font-size: 0.75rem;
+  font-weight: 950;
+  letter-spacing: 0.14em;
+}
+
+.kiosk-option-description,
+.kiosk-checkout-copy {
+  margin: 14px 0 0;
+  color: #795b3a;
+  font-size: 0.95rem;
+  font-weight: 750;
+  line-height: 1.45;
+}
+
+.kiosk-option-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.kiosk-option-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 14px;
+  border: 1px solid rgba(116, 77, 36, 0.13);
+  border-radius: 18px;
+  background: #ffffff;
+  color: #2b1508;
+  font-size: 0.95rem;
+  font-weight: 900;
+}
+
+.kiosk-option-row input {
+  width: 18px;
+  height: 18px;
+  accent-color: #c9251d;
+}
+
+.kiosk-option-row span {
+  flex: 1;
+}
+
+.kiosk-option-row strong {
+  color: #c9251d;
+  font-size: 0.9rem;
+  font-weight: 950;
+}
+
+.kiosk-phone-field {
+  display: grid;
+  gap: 8px;
+  margin-top: 18px;
+  color: #2b1508;
+  font-size: 0.9rem;
+  font-weight: 900;
+}
+
+.kiosk-phone-field input {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid rgba(116, 77, 36, 0.18);
+  border-radius: 18px;
+  background: #ffffff;
+  color: #2b1508;
+  font: inherit;
+  font-weight: 850;
+}
+
+.kiosk-option-actions,
+.kiosk-checkout-actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.kiosk-primary-btn,
+.kiosk-secondary-btn {
+  border: 0;
+  border-radius: 999px;
+  padding: 12px 18px;
+  font-size: 0.95rem;
+  font-weight: 950;
+  cursor: pointer;
+}
+
+.kiosk-primary-btn {
+  background: linear-gradient(135deg, #d9251d 0%, #a91914 100%);
+  color: #ffffff;
+  box-shadow: 0 12px 22px rgba(201, 37, 29, 0.24);
+}
+
+.kiosk-secondary-btn {
+  background: #f2e4cf;
+  color: #5c3f22;
+}
+
+.kiosk-primary-btn:disabled,
+.kiosk-secondary-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
   box-shadow: none;
 }
 

@@ -41,18 +41,23 @@ export default function CartSection({
       ) : (
         <div className="kiosk-b-cart-list">
           {cartItems.map((item) => (
-            <div key={item.id} className="kiosk-b-cart-item">
+            <div key={item.cartId} className="kiosk-b-cart-item">
               <div className="kiosk-b-cart-name">
                 <strong>{item.name}</strong>
-                <span>₩ {formatPrice(item.price)}</span>
+                {item.selectedOptions.length > 0 && (
+                  <small className="kiosk-b-cart-options">
+                    {item.selectedOptions.map((option) => option.name).join(", ")}
+                  </small>
+                )}
+                <span>₩ {formatPrice(item.unitPrice)}</span>
               </div>
 
               <div className="kiosk-b-quantity-control">
-                <button type="button" onClick={() => onDecreaseQuantity(item.id)}>
+                <button type="button" onClick={() => onDecreaseQuantity(item.cartId)}>
                   -
                 </button>
                 <span>{item.quantity}</span>
-                <button type="button" onClick={() => onIncreaseQuantity(item.id)}>
+                <button type="button" onClick={() => onIncreaseQuantity(item.cartId)}>
                   +
                 </button>
               </div>
@@ -60,7 +65,7 @@ export default function CartSection({
               <button
                 type="button"
                 className="kiosk-b-remove-btn"
-                onClick={() => onRemoveCartItem(item.id)}
+                onClick={() => onRemoveCartItem(item.cartId)}
               >
                 삭제
               </button>

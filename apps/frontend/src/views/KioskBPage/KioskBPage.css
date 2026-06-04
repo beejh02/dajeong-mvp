@@ -512,6 +512,16 @@ button {
   font-weight: 900;
 }
 
+.kiosk-b-cart-options {
+  display: block;
+  margin-top: 4px;
+  color: #7d5a37;
+  font-size: 0.78rem;
+  font-weight: 800;
+  line-height: 1.35;
+  white-space: normal;
+}
+
 .kiosk-b-quantity-control {
   display: flex;
   align-items: center;
@@ -610,6 +620,49 @@ button {
   cursor: not-allowed;
   opacity: 0.42;
   box-shadow: none;
+}
+
+.kiosk-b-page .kiosk-option-dialog,
+.kiosk-b-page .kiosk-checkout-panel {
+  border-color: rgba(80, 48, 18, 0.14);
+  border-radius: 30px;
+  background: #fff8eb;
+  box-shadow: 0 26px 60px rgba(44, 23, 11, 0.26);
+}
+
+.kiosk-b-page .kiosk-option-header h2,
+.kiosk-b-page .kiosk-checkout-header h2,
+.kiosk-b-page .kiosk-option-row,
+.kiosk-b-page .kiosk-phone-field,
+.kiosk-b-page .kiosk-phone-field input {
+  color: #2c170b;
+}
+
+.kiosk-b-page .kiosk-option-kicker,
+.kiosk-b-page .kiosk-option-header strong,
+.kiosk-b-page .kiosk-checkout-header strong,
+.kiosk-b-page .kiosk-option-row strong {
+  color: #c9251d;
+}
+
+.kiosk-b-page .kiosk-option-description,
+.kiosk-b-page .kiosk-checkout-copy {
+  color: #7d5a37;
+}
+
+.kiosk-b-page .kiosk-option-row,
+.kiosk-b-page .kiosk-phone-field input {
+  border-color: rgba(80, 48, 18, 0.13);
+}
+
+.kiosk-b-page .kiosk-primary-btn {
+  background: linear-gradient(135deg, #d9271f 0%, #9b1712 100%);
+  box-shadow: 0 12px 22px rgba(201, 37, 29, 0.25);
+}
+
+.kiosk-b-page .kiosk-secondary-btn {
+  background: #f1dfc5;
+  color: #5b3a1e;
 }
 
 .kiosk-b-order-feedback {

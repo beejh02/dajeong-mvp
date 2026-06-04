@@ -106,7 +106,7 @@ const interactionChecks = [
     patterns: [
       "data-kiosk-page=\"a\"",
       "onSelect={scrollToCategory}",
-      "onAddToCart={addToCart}",
+      "onAddToCart={handleMenuSelect}",
       "scrollIntoView",
     ],
   },
@@ -114,7 +114,7 @@ const interactionChecks = [
     file: "src/views/KioskBPage/index.tsx",
     patterns: [
       "data-kiosk-page=\"b\"",
-      "onAddToCart={addToCart}",
+      "onAddToCart={handleMenuSelect}",
     ],
   },
   {

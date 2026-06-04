@@ -32,6 +32,9 @@ async function importTypeScriptModule(relativePath) {
 const { adaptMenusToCategories } = await importTypeScriptModule(
   "src/lib/adapters/menuAdapter.ts",
 );
+const { createCartItem, upsertCartItem } = await importTypeScriptModule(
+  "src/views/kioskCart.ts",
+);
 const {
   adaptAdminSummary,
   adaptOrderToAdminOrder,
@@ -49,7 +52,10 @@ const categories = adaptMenusToCategories([
     imageUrl: "/images/company-a/classic-burger.png",
     isAvailable: true,
     badge: "BEST",
-    options: [],
+    options: [
+      { id: "option-no-pickle", name: "피클 제거", priceDelta: 0 },
+      { id: "option-toast-bun", name: "번 토스팅", priceDelta: 500 },
+    ],
   },
   {
     id: "menu-a-002",
@@ -87,9 +93,44 @@ assert.deepEqual(categories[0].items[0], {
   price: 7200,
   img: "/images/company-a/classic-burger.png",
   badge: "BEST",
+  options: [
+    { id: "option-no-pickle", name: "피클 제거", priceDelta: 0 },
+    { id: "option-toast-bun", name: "번 토스팅", priceDelta: 500 },
+  ],
 });
 assert.equal(categories[1].id, "category-side");
 assert.equal(categories[1].items[0].img, "");
+assert.deepEqual(categories[1].items[0].options, []);
+
+const baseMenuItem = categories[0].items[0];
+const toastedNoPickleCartItem = createCartItem(baseMenuItem, [
+  "option-toast-bun",
+  "option-no-pickle",
+]);
+const sameOptionsCartItem = createCartItem(baseMenuItem, [
+  "option-no-pickle",
+  "option-toast-bun",
+]);
+const noPickleCartItem = createCartItem(baseMenuItem, ["option-no-pickle"]);
+
+assert.equal(
+  toastedNoPickleCartItem.cartId,
+  "menu-a-001__option-no-pickle__option-toast-bun",
+);
+assert.deepEqual(toastedNoPickleCartItem.selectedOptionIds, [
+  "option-no-pickle",
+  "option-toast-bun",
+]);
+assert.equal(toastedNoPickleCartItem.unitPrice, 7700);
+assert.notEqual(toastedNoPickleCartItem.cartId, noPickleCartItem.cartId);
+
+const mergedCartItems = upsertCartItem(
+  [toastedNoPickleCartItem],
+  sameOptionsCartItem,
+);
+
+assert.equal(mergedCartItems.length, 1);
+assert.equal(mergedCartItems[0].quantity, 2);
 
 const summaryCards = adaptAdminSummary({
   totalOrders: 2,
