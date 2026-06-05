@@ -10,10 +10,20 @@ export type CompanyListResponse = {
   companies: Company[];
 };
 
-export type MenuOption = {
+export type MenuOptionChoice = {
   id: string;
   name: string;
   priceDelta: number;
+};
+
+export type MenuOptionGroup = {
+  id: string;
+  title: string;
+  selectionMode: "single" | "multiple";
+  required: boolean;
+  minSelect: number;
+  maxSelect: number;
+  choices: MenuOptionChoice[];
 };
 
 export type MenuItem = {
@@ -25,7 +35,7 @@ export type MenuItem = {
   description: string;
   imageUrl: string;
   isAvailable: boolean;
-  options: MenuOption[];
+  optionGroups: MenuOptionGroup[];
   badge?: string;
 };
 
@@ -34,16 +44,39 @@ export type MenuListResponse = {
   menus: MenuItem[];
 };
 
+export type SelectedOptionGroup = {
+  groupId: string;
+  choiceIds: string[];
+};
+
+export type FulfillmentType = "dine_in" | "pickup";
+
+export type PaymentMethod = "credit_card" | "coupon" | "cash";
+
+export type PointAccrualRequest = {
+  enabled: boolean;
+  phone?: string | null;
+};
+
 export type OrderItemRequest = {
   menuId: string;
   quantity: number;
-  selectedOptionIds: string[];
+  selectedOptionGroups: SelectedOptionGroup[];
 };
 
 export type OrderCreateRequest = {
   companyId: string;
   userId: string;
   items: OrderItemRequest[];
+  fulfillmentType: FulfillmentType;
+  paymentMethod: PaymentMethod;
+  pointAccrual: PointAccrualRequest;
+};
+
+export type SelectedOptionGroupResponse = {
+  groupId: string;
+  groupTitle: string;
+  choices: MenuOptionChoice[];
 };
 
 export type OrderItemResponse = {
@@ -52,7 +85,7 @@ export type OrderItemResponse = {
   menuId: string;
   menuName: string;
   quantity: number;
-  selectedOptions: MenuOption[];
+  selectedOptionGroups: SelectedOptionGroupResponse[];
   unitPrice: number;
   itemPrice: number;
 };
@@ -66,6 +99,9 @@ export type OrderResponse = {
   status: string;
   totalPrice: number;
   pointEarned: number;
+  fulfillmentType: FulfillmentType;
+  paymentMethod: PaymentMethod;
+  pointAccrual: PointAccrualRequest;
   items: OrderItemResponse[];
   createdAt: string;
 };

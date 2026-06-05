@@ -48,12 +48,21 @@ if (failures.length === 0) {
   requireIncludes("src/lib/api/orders.ts", "createOrder");
   requireIncludes("src/lib/api/admin.ts", "getAdminSummary");
   requireIncludes("src/lib/api/admin.ts", "getAdminOrders");
+  requireIncludes("src/lib/api/types.ts", "optionGroups");
+  requireIncludes("src/lib/api/types.ts", "selectedOptionGroups");
+  requireIncludes("src/lib/api/types.ts", "fulfillmentType");
+  requireIncludes("src/lib/api/types.ts", "paymentMethod");
+  requireIncludes("src/lib/api/types.ts", "pointAccrual");
 
   requireIncludes("src/views/KioskAPage/index.tsx", "getCompanyMenus");
   requireIncludes("src/views/KioskAPage/index.tsx", "createOrder");
   requireIncludes("src/views/KioskAPage/index.tsx", "adaptMenusToCategories");
   requireIncludes("src/views/KioskAPage/index.tsx", "company-a");
   requireIncludes("src/views/KioskAPage/index.tsx", "orderResult");
+  requireIncludes("src/views/KioskAPage/index.tsx", "buildSelectedOptionGroups");
+  requireIncludes("src/views/KioskAPage/index.tsx", "fulfillmentType");
+  requireIncludes("src/views/KioskAPage/index.tsx", "paymentMethod");
+  requireIncludes("src/views/KioskAPage/index.tsx", "pointAccrual");
   requireExcludes("src/views/KioskAPage/index.tsx", "menuData");
 
   requireIncludes("src/views/KioskBPage/index.tsx", "getCompanyMenus");
@@ -61,6 +70,10 @@ if (failures.length === 0) {
   requireIncludes("src/views/KioskBPage/index.tsx", "adaptMenusToCategories");
   requireIncludes("src/views/KioskBPage/index.tsx", "company-b");
   requireIncludes("src/views/KioskBPage/index.tsx", "orderResult");
+  requireIncludes("src/views/KioskBPage/index.tsx", "buildSelectedOptionGroups");
+  requireIncludes("src/views/KioskBPage/index.tsx", "fulfillmentType");
+  requireIncludes("src/views/KioskBPage/index.tsx", "paymentMethod");
+  requireIncludes("src/views/KioskBPage/index.tsx", "pointAccrual");
   requireExcludes("src/views/KioskBPage/index.tsx", "menuData");
 
   requireIncludes("src/views/AdminPage/index.tsx", "getAdminSummary");
@@ -68,6 +81,7 @@ if (failures.length === 0) {
   requireIncludes("src/views/AdminPage/index.tsx", "adaptAdminSummary");
   requireIncludes("src/views/AdminPage/index.tsx", "adaptOrderToAdminOrder");
   requireExcludes("src/views/AdminPage/index.tsx", "from \"./constants\"");
+  requireIncludes("src/lib/adapters/adminAdapter.ts", "selectedOptionGroups");
 
   for (const toolName of [
     "get_companies",
@@ -81,6 +95,12 @@ if (failures.length === 0) {
   ]) {
     requireIncludes("../../docs/mcp-tool-plan.md", toolName);
   }
+
+  requireIncludes("../../docs/mcp-tool-plan.md", "optionGroups");
+  requireIncludes("../../docs/mcp-tool-plan.md", "selectedOptionGroups");
+  requireIncludes("../../docs/mcp-tool-plan.md", "fulfillmentType");
+  requireIncludes("../../docs/mcp-tool-plan.md", "paymentMethod");
+  requireIncludes("../../docs/mcp-tool-plan.md", "pointAccrual");
 }
 
 if (failures.length > 0) {

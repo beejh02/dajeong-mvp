@@ -7,7 +7,11 @@ import { getCompanyMenus } from "../../lib/api/menus";
 import { createOrder } from "../../lib/api/orders";
 import KioskCheckoutPanel from "../components/KioskCheckoutPanel";
 import KioskOptionDialog from "../components/KioskOptionDialog";
-import { createCartItem, upsertCartItem } from "../kioskCart";
+import {
+  buildSelectedOptionGroups,
+  createCartItem,
+  upsertCartItem,
+} from "../kioskCart";
 import { formatPrice } from "./constants";
 import CartFooter from "./components/CartFooter";
 import CartPanel from "./components/CartPanel";
@@ -256,8 +260,13 @@ export default function KioskAPage() {
         items: cartItems.map((item) => ({
           menuId: item.id,
           quantity: item.quantity,
-          selectedOptionIds: item.selectedOptionIds,
+          selectedOptionGroups: buildSelectedOptionGroups(item),
         })),
+        fulfillmentType: "dine_in",
+        paymentMethod: "credit_card",
+        pointAccrual: normalizedPhone
+          ? { enabled: true, phone: normalizedPhone }
+          : { enabled: false, phone: null },
       });
 
       setOrderResult({

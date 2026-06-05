@@ -4,9 +4,25 @@ export type KioskOption = {
   priceDelta: number;
 };
 
+export type KioskOptionGroup = {
+  id: string;
+  title: string;
+  selectionMode: "single" | "multiple";
+  required: boolean;
+  minSelect: number;
+  maxSelect: number;
+  choices: KioskOption[];
+};
+
+export type SelectedOptionGroup = {
+  groupId: string;
+  choiceIds: string[];
+};
+
 export type KioskMenuItemWithOptions = {
   id: string;
   price: number;
+  optionGroups: KioskOptionGroup[];
   options: KioskOption[];
 };
 
@@ -64,6 +80,32 @@ export function createCartItem<TMenuItem extends KioskMenuItemWithOptions>(
     selectedOptions,
     unitPrice: calculateUnitPrice(item.price, selectedOptions),
   };
+}
+
+export function buildSelectedOptionGroups(
+  item: KioskCartItem<KioskMenuItemWithOptions>,
+): SelectedOptionGroup[] {
+  const selectedOptionIdSet = new Set(item.selectedOptionIds);
+
+  return item.optionGroups.flatMap((group) => {
+    const selectedChoiceIds = group.choices
+      .filter((choice) => selectedOptionIdSet.has(choice.id))
+      .map((choice) => choice.id);
+
+    if (
+      selectedChoiceIds.length === 0 &&
+      group.required &&
+      group.choices.length > 0
+    ) {
+      return [{ groupId: group.id, choiceIds: [group.choices[0].id] }];
+    }
+
+    if (selectedChoiceIds.length === 0) {
+      return [];
+    }
+
+    return [{ groupId: group.id, choiceIds: selectedChoiceIds }];
+  });
 }
 
 export function upsertCartItem<TCartItem extends { cartId: string; quantity: number }>(

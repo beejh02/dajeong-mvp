@@ -1,6 +1,7 @@
 import type {
   MenuItem as BackendMenuItem,
-  MenuOption,
+  MenuOptionChoice,
+  MenuOptionGroup,
 } from "../api/types";
 
 export type KioskMenuItem = {
@@ -9,7 +10,12 @@ export type KioskMenuItem = {
   description: string;
   price: number;
   img: string;
-  options: MenuOption[];
+  optionGroups: MenuOptionGroup[];
+  /**
+   * Temporary legacy field for the current kiosk option dialog.
+   * TODO: Remove after KioskOptionDialog is migrated to optionGroups.
+   */
+  options: MenuOptionChoice[];
   badge?: string;
 };
 
@@ -70,7 +76,8 @@ export function adaptMenusToCategories(
       description: menu.description,
       price: menu.price,
       img: menu.imageUrl,
-      options: menu.options,
+      optionGroups: menu.optionGroups,
+      options: menu.optionGroups.flatMap((group) => group.choices),
       ...(menu.badge ? { badge: menu.badge } : {}),
     });
 

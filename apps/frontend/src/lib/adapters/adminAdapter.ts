@@ -12,8 +12,14 @@ const ORDER_STATUS_LABELS: Record<string, string> = {
   canceled: "취소",
 };
 
+const PAYMENT_METHOD_LABELS: Record<string, string> = {
+  credit_card: "신용카드",
+  coupon: "쿠폰",
+  cash: "현금",
+};
+
 export function formatCurrency(value: number) {
-  return `₩${value.toLocaleString("ko-KR")}`;
+  return `₩ ${value.toLocaleString("ko-KR")}`;
 }
 
 export function adaptAdminSummary(
@@ -21,7 +27,7 @@ export function adaptAdminSummary(
 ): SummaryCard[] {
   return [
     { label: "전체 주문", value: `${summary.totalOrders}건` },
-    { label: "전체 더미 매출", value: formatCurrency(summary.totalSales) },
+    { label: "전체 데모 매출", value: formatCurrency(summary.totalSales) },
     { label: "대기 주문", value: `${summary.waitingOrders}건` },
     { label: "연결 기업", value: `${summary.companyCount}개` },
     { label: "등록 메뉴", value: `${summary.menuCount}개` },
@@ -38,7 +44,9 @@ export function adaptOrderToAdminOrder(order: OrderResponse): Order {
     ? `${firstItem.menuName}${extraItemCount > 0 ? ` 외 ${extraItemCount}개` : ""}`
     : "주문 상품 없음";
   const productOptions = order.items.flatMap((item) =>
-    item.selectedOptions.map((option) => option.name),
+    item.selectedOptionGroups.flatMap((group) =>
+      group.choices.map((choice) => `${group.groupTitle}: ${choice.name}`),
+    ),
   );
 
   return {
@@ -48,7 +56,7 @@ export function adaptOrderToAdminOrder(order: OrderResponse): Order {
     email: `${order.userId}@dajeong.demo`,
     source: COMPANY_SOURCE_LABELS[order.companyId] ?? order.companyId,
     status: ORDER_STATUS_LABELS[order.status] ?? order.status,
-    payment: "데모 승인",
+    payment: PAYMENT_METHOD_LABELS[order.paymentMethod] ?? order.paymentMethod,
     point: `${order.pointEarned} P`,
     pointBalance: `${order.pointEarned} P`,
     receipt: "데모 발급",

@@ -1,7 +1,17 @@
-export type MenuOption = {
+export type MenuOptionChoice = {
   id: string;
   name: string;
   priceDelta: number;
+};
+
+export type MenuOptionGroup = {
+  id: string;
+  title: string;
+  selectionMode: "single" | "multiple";
+  required: boolean;
+  minSelect: number;
+  maxSelect: number;
+  choices: MenuOptionChoice[];
 };
 
 export type MenuItem = {
@@ -10,7 +20,8 @@ export type MenuItem = {
   description: string;
   price: number;
   img: string;
-  options: MenuOption[];
+  optionGroups: MenuOptionGroup[];
+  options: MenuOptionChoice[];
   badge?: string;
 };
 
@@ -26,6 +37,6 @@ export type CartItem = MenuItem & {
   cartId: string;
   quantity: number;
   selectedOptionIds: string[];
-  selectedOptions: MenuOption[];
+  selectedOptions: MenuOptionChoice[];
   unitPrice: number;
 };

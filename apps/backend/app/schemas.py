@@ -1,4 +1,4 @@
-from typing import Annotated
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, Field
 
@@ -15,10 +15,20 @@ class CompanyListResponse(BaseModel):
     companies: list[Company]
 
 
-class MenuOption(BaseModel):
+class MenuOptionChoice(BaseModel):
     id: str
     name: str
     priceDelta: int
+
+
+class MenuOptionGroup(BaseModel):
+    id: str
+    title: str
+    selectionMode: Literal["single", "multiple"]
+    required: bool
+    minSelect: int
+    maxSelect: int
+    choices: list[MenuOptionChoice]
 
 
 class MenuItem(BaseModel):
@@ -30,7 +40,7 @@ class MenuItem(BaseModel):
     description: str
     imageUrl: str
     isAvailable: bool
-    options: list[MenuOption]
+    optionGroups: list[MenuOptionGroup]
 
 
 class MenuListResponse(BaseModel):
@@ -46,16 +56,35 @@ class User(BaseModel):
     defaultPaymentMethod: str
 
 
+class SelectedOptionGroup(BaseModel):
+    groupId: str
+    choiceIds: list[str]
+
+
+class PointAccrualRequest(BaseModel):
+    enabled: bool
+    phone: str | None = None
+
+
 class OrderItemRequest(BaseModel):
     menuId: str
     quantity: Annotated[int, Field(ge=1)]
-    selectedOptionIds: list[str] = Field(default_factory=list)
+    selectedOptionGroups: list[SelectedOptionGroup] = Field(default_factory=list)
 
 
 class OrderCreateRequest(BaseModel):
     companyId: str
     userId: str
     items: Annotated[list[OrderItemRequest], Field(min_length=1)]
+    fulfillmentType: Literal["dine_in", "pickup"]
+    paymentMethod: Literal["credit_card", "coupon", "cash"]
+    pointAccrual: PointAccrualRequest
+
+
+class SelectedOptionGroupResponse(BaseModel):
+    groupId: str
+    groupTitle: str
+    choices: list[MenuOptionChoice]
 
 
 class OrderItemResponse(BaseModel):
@@ -64,7 +93,7 @@ class OrderItemResponse(BaseModel):
     menuId: str
     menuName: str
     quantity: int
-    selectedOptions: list[MenuOption]
+    selectedOptionGroups: list[SelectedOptionGroupResponse]
     unitPrice: int
     itemPrice: int
 
@@ -78,6 +107,9 @@ class OrderResponse(BaseModel):
     status: str
     totalPrice: int
     pointEarned: int
+    fulfillmentType: Literal["dine_in", "pickup"]
+    paymentMethod: Literal["credit_card", "coupon", "cash"]
+    pointAccrual: PointAccrualRequest
     items: list[OrderItemResponse]
     createdAt: str
 

@@ -32,14 +32,40 @@ async function importTypeScriptModule(relativePath) {
 const { adaptMenusToCategories } = await importTypeScriptModule(
   "src/lib/adapters/menuAdapter.ts",
 );
-const { createCartItem, upsertCartItem } = await importTypeScriptModule(
-  "src/views/kioskCart.ts",
-);
+const {
+  buildSelectedOptionGroups,
+  createCartItem,
+  upsertCartItem,
+} = await importTypeScriptModule("src/views/kioskCart.ts");
 const {
   adaptAdminSummary,
   adaptOrderToAdminOrder,
   adaptOrdersToChannelStats,
 } = await importTypeScriptModule("src/lib/adapters/adminAdapter.ts");
+
+const optionGroups = [
+  {
+    id: "bun",
+    title: "번 선택",
+    selectionMode: "single",
+    required: true,
+    minSelect: 1,
+    maxSelect: 1,
+    choices: [
+      { id: "bun-normal", name: "일반", priceDelta: 0 },
+      { id: "bun-toasted", name: "번 굽기", priceDelta: 500 },
+    ],
+  },
+  {
+    id: "side",
+    title: "사이드 메뉴",
+    selectionMode: "single",
+    required: false,
+    minSelect: 0,
+    maxSelect: 1,
+    choices: [{ id: "side-fries-l", name: "감자튀김(L)", priceDelta: 1000 }],
+  },
+];
 
 const categories = adaptMenusToCategories([
   {
@@ -52,21 +78,18 @@ const categories = adaptMenusToCategories([
     imageUrl: "/images/company-a/classic-burger.png",
     isAvailable: true,
     badge: "BEST",
-    options: [
-      { id: "option-no-pickle", name: "피클 제거", priceDelta: 0 },
-      { id: "option-toast-bun", name: "번 토스팅", priceDelta: 500 },
-    ],
+    optionGroups,
   },
   {
     id: "menu-a-002",
     companyId: "company-a",
-    name: "A 품절 버거",
+    name: "A 판매 중지 버거",
     category: "burger",
     price: 7600,
-    description: "품절 메뉴",
+    description: "판매 중지 메뉴",
     imageUrl: "/images/company-a/sold-out.png",
     isAvailable: false,
-    options: [],
+    optionGroups,
   },
   {
     id: "menu-a-003",
@@ -77,7 +100,7 @@ const categories = adaptMenusToCategories([
     description: "사이드 메뉴",
     imageUrl: "",
     isAvailable: true,
-    options: [],
+    optionGroups: [],
   },
 ]);
 
@@ -93,39 +116,49 @@ assert.deepEqual(categories[0].items[0], {
   price: 7200,
   img: "/images/company-a/classic-burger.png",
   badge: "BEST",
+  optionGroups,
   options: [
-    { id: "option-no-pickle", name: "피클 제거", priceDelta: 0 },
-    { id: "option-toast-bun", name: "번 토스팅", priceDelta: 500 },
+    { id: "bun-normal", name: "일반", priceDelta: 0 },
+    { id: "bun-toasted", name: "번 굽기", priceDelta: 500 },
+    { id: "side-fries-l", name: "감자튀김(L)", priceDelta: 1000 },
   ],
 });
 assert.equal(categories[1].id, "category-side");
 assert.equal(categories[1].items[0].img, "");
+assert.deepEqual(categories[1].items[0].optionGroups, []);
 assert.deepEqual(categories[1].items[0].options, []);
 
 const baseMenuItem = categories[0].items[0];
-const toastedNoPickleCartItem = createCartItem(baseMenuItem, [
-  "option-toast-bun",
-  "option-no-pickle",
+const toastedWithSideCartItem = createCartItem(baseMenuItem, [
+  "side-fries-l",
+  "bun-toasted",
 ]);
 const sameOptionsCartItem = createCartItem(baseMenuItem, [
-  "option-no-pickle",
-  "option-toast-bun",
+  "bun-toasted",
+  "side-fries-l",
 ]);
-const noPickleCartItem = createCartItem(baseMenuItem, ["option-no-pickle"]);
+const toastedOnlyCartItem = createCartItem(baseMenuItem, ["bun-toasted"]);
 
 assert.equal(
-  toastedNoPickleCartItem.cartId,
-  "menu-a-001__option-no-pickle__option-toast-bun",
+  toastedWithSideCartItem.cartId,
+  "menu-a-001__bun-toasted__side-fries-l",
 );
-assert.deepEqual(toastedNoPickleCartItem.selectedOptionIds, [
-  "option-no-pickle",
-  "option-toast-bun",
+assert.deepEqual(toastedWithSideCartItem.selectedOptionIds, [
+  "bun-toasted",
+  "side-fries-l",
 ]);
-assert.equal(toastedNoPickleCartItem.unitPrice, 7700);
-assert.notEqual(toastedNoPickleCartItem.cartId, noPickleCartItem.cartId);
+assert.equal(toastedWithSideCartItem.unitPrice, 8700);
+assert.notEqual(toastedWithSideCartItem.cartId, toastedOnlyCartItem.cartId);
+assert.deepEqual(buildSelectedOptionGroups(toastedWithSideCartItem), [
+  { groupId: "bun", choiceIds: ["bun-toasted"] },
+  { groupId: "side", choiceIds: ["side-fries-l"] },
+]);
+assert.deepEqual(buildSelectedOptionGroups(createCartItem(baseMenuItem, [])), [
+  { groupId: "bun", choiceIds: ["bun-normal"] },
+]);
 
 const mergedCartItems = upsertCartItem(
-  [toastedNoPickleCartItem],
+  [toastedWithSideCartItem],
   sameOptionsCartItem,
 );
 
@@ -142,7 +175,7 @@ const summaryCards = adaptAdminSummary({
 
 assert.deepEqual(summaryCards, [
   { label: "전체 주문", value: "2건" },
-  { label: "전체 더미 매출", value: "₩19,600" },
+  { label: "전체 데모 매출", value: "₩ 19,600" },
   { label: "대기 주문", value: "2건" },
   { label: "연결 기업", value: "2개" },
   { label: "등록 메뉴", value: "6개" },
@@ -158,8 +191,11 @@ const backendOrder = {
   userId: "user-demo-1",
   companyId: "company-a",
   status: "waiting",
-  totalPrice: 15600,
-  pointEarned: 156,
+  totalPrice: 16400,
+  pointEarned: 164,
+  fulfillmentType: "dine_in",
+  paymentMethod: "credit_card",
+  pointAccrual: { enabled: false, phone: null },
   createdAt: "2026-06-03T10:20:30+09:00",
   items: [
     {
@@ -168,9 +204,20 @@ const backendOrder = {
       menuId: "menu-a-001",
       menuName: "A 클래식 버거",
       quantity: 2,
-      selectedOptions: [{ id: "option-a-set", name: "세트 변경", priceDelta: 2700 }],
-      unitPrice: 7800,
-      itemPrice: 15600,
+      selectedOptionGroups: [
+        {
+          groupId: "bun",
+          groupTitle: "번 선택",
+          choices: [{ id: "bun-normal", name: "일반", priceDelta: 0 }],
+        },
+        {
+          groupId: "side",
+          groupTitle: "사이드 메뉴",
+          choices: [{ id: "side-fries-l", name: "감자튀김(L)", priceDelta: 1000 }],
+        },
+      ],
+      unitPrice: 8200,
+      itemPrice: 16400,
     },
   ],
 };
@@ -182,18 +229,21 @@ assert.equal(adminOrder.number, 101);
 assert.equal(adminOrder.customer, "다정 데모 사용자");
 assert.equal(adminOrder.source, "A기업 Kiosk");
 assert.equal(adminOrder.status, "대기");
-assert.equal(adminOrder.payment, "데모 승인");
+assert.equal(adminOrder.payment, "신용카드");
 assert.equal(adminOrder.receipt, "데모 발급");
 assert.equal(adminOrder.receiptNumber, "R-order-0001");
-assert.equal(adminOrder.amount, "₩15,600");
+assert.equal(adminOrder.amount, "₩ 16,400");
 assert.equal(adminOrder.approvedCode, "DUMMY-order-0001");
 assert.equal(adminOrder.productName, "A 클래식 버거");
-assert.deepEqual(adminOrder.productOptions, ["세트 변경"]);
+assert.deepEqual(adminOrder.productOptions, [
+  "번 선택: 일반",
+  "사이드 메뉴: 감자튀김(L)",
+]);
 
 const channelStats = adaptOrdersToChannelStats([backendOrder]);
 
 assert.deepEqual(channelStats, [
-  { name: "A기업 Kiosk", orders: 1, paidOrders: 1, revenue: 15600 },
+  { name: "A기업 Kiosk", orders: 1, paidOrders: 1, revenue: 16400 },
 ]);
 
 console.log("API adapter verification passed.");
