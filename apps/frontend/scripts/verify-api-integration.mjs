@@ -59,10 +59,14 @@ if (failures.length === 0) {
   requireIncludes("src/views/KioskAPage/index.tsx", "adaptMenusToCategories");
   requireIncludes("src/views/KioskAPage/index.tsx", "company-a");
   requireIncludes("src/views/KioskAPage/index.tsx", "orderResult");
-  requireIncludes("src/views/KioskAPage/index.tsx", "buildSelectedOptionGroups");
+  requireIncludes("src/views/KioskAPage/index.tsx", "selectedOptionGroups");
+  requireIncludes("src/views/KioskAPage/index.tsx", "toggleOptionChoice");
+  requireIncludes("src/views/KioskAPage/index.tsx", "KioskCheckoutPanel");
   requireIncludes("src/views/KioskAPage/index.tsx", "fulfillmentType");
   requireIncludes("src/views/KioskAPage/index.tsx", "paymentMethod");
   requireIncludes("src/views/KioskAPage/index.tsx", "pointAccrual");
+  requireExcludes("src/views/KioskAPage/index.tsx", "selectedOptionIds");
+  requireExcludes("src/views/KioskAPage/index.tsx", "buildSelectedOptionGroups");
   requireExcludes("src/views/KioskAPage/index.tsx", "menuData");
 
   requireIncludes("src/views/KioskBPage/index.tsx", "getCompanyMenus");
@@ -70,11 +74,25 @@ if (failures.length === 0) {
   requireIncludes("src/views/KioskBPage/index.tsx", "adaptMenusToCategories");
   requireIncludes("src/views/KioskBPage/index.tsx", "company-b");
   requireIncludes("src/views/KioskBPage/index.tsx", "orderResult");
-  requireIncludes("src/views/KioskBPage/index.tsx", "buildSelectedOptionGroups");
+  requireIncludes("src/views/KioskBPage/index.tsx", "selectedOptionGroups");
+  requireIncludes("src/views/KioskBPage/index.tsx", "toggleOptionChoice");
+  requireIncludes("src/views/KioskBPage/index.tsx", "KioskCheckoutPanel");
   requireIncludes("src/views/KioskBPage/index.tsx", "fulfillmentType");
   requireIncludes("src/views/KioskBPage/index.tsx", "paymentMethod");
   requireIncludes("src/views/KioskBPage/index.tsx", "pointAccrual");
+  requireExcludes("src/views/KioskBPage/index.tsx", "selectedOptionIds");
+  requireExcludes("src/views/KioskBPage/index.tsx", "buildSelectedOptionGroups");
   requireExcludes("src/views/KioskBPage/index.tsx", "menuData");
+  requireIncludes("src/views/components/KioskOptionDialog.tsx", "optionGroups");
+  requireIncludes("src/views/components/KioskOptionDialog.tsx", "selectedOptionGroups");
+  requireIncludes("src/views/components/KioskOptionDialog.tsx", "validationMessage");
+  requireIncludes("src/views/components/KioskCheckoutPanel.tsx", "onSubmit");
+  requireIncludes("src/views/components/KioskCheckoutPanel.tsx", "fulfillmentType");
+  requireIncludes("src/views/components/KioskCheckoutPanel.tsx", "paymentMethod");
+  requireIncludes("src/views/components/KioskCheckoutPanel.tsx", "pointAccrual");
+  requireExcludes("src/views/components/KioskOptionDialog.tsx", "selectedOptionIds");
+  requireExcludes("src/views/components/KioskCheckoutPanel.tsx", "onSubmitWithPoints");
+  requireExcludes("src/views/components/KioskCheckoutPanel.tsx", "onSubmitWithoutPoints");
 
   requireIncludes("src/views/AdminPage/index.tsx", "getAdminSummary");
   requireIncludes("src/views/AdminPage/index.tsx", "getAdminOrders");
@@ -101,6 +119,10 @@ if (failures.length === 0) {
   requireIncludes("../../docs/mcp-tool-plan.md", "fulfillmentType");
   requireIncludes("../../docs/mcp-tool-plan.md", "paymentMethod");
   requireIncludes("../../docs/mcp-tool-plan.md", "pointAccrual");
+
+  requireExcludes("src/lib/adapters/menuAdapter.ts", "options: menu.optionGroups.flatMap");
+  requireExcludes("src/views/kioskCart.ts", "selectedOptionIds");
+  requireExcludes("src/views/kioskCart.ts", "selectedOptions");
 }
 
 if (failures.length > 0) {

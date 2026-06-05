@@ -33,8 +33,9 @@ const { adaptMenusToCategories } = await importTypeScriptModule(
   "src/lib/adapters/menuAdapter.ts",
 );
 const {
-  buildSelectedOptionGroups,
+  buildCartId,
   createCartItem,
+  toggleOptionChoice,
   upsertCartItem,
 } = await importTypeScriptModule("src/views/kioskCart.ts");
 const {
@@ -117,45 +118,87 @@ assert.deepEqual(categories[0].items[0], {
   img: "/images/company-a/classic-burger.png",
   badge: "BEST",
   optionGroups,
-  options: [
-    { id: "bun-normal", name: "일반", priceDelta: 0 },
-    { id: "bun-toasted", name: "번 굽기", priceDelta: 500 },
-    { id: "side-fries-l", name: "감자튀김(L)", priceDelta: 1000 },
-  ],
 });
+assert.equal("options" in categories[0].items[0], false);
 assert.equal(categories[1].id, "category-side");
 assert.equal(categories[1].items[0].img, "");
 assert.deepEqual(categories[1].items[0].optionGroups, []);
-assert.deepEqual(categories[1].items[0].options, []);
+assert.equal("options" in categories[1].items[0], false);
 
 const baseMenuItem = categories[0].items[0];
 const toastedWithSideCartItem = createCartItem(baseMenuItem, [
-  "side-fries-l",
-  "bun-toasted",
+  { groupId: "side", choiceIds: ["side-fries-l"] },
+  { groupId: "bun", choiceIds: ["bun-toasted"] },
 ]);
 const sameOptionsCartItem = createCartItem(baseMenuItem, [
-  "bun-toasted",
-  "side-fries-l",
-]);
-const toastedOnlyCartItem = createCartItem(baseMenuItem, ["bun-toasted"]);
-
-assert.equal(
-  toastedWithSideCartItem.cartId,
-  "menu-a-001__bun-toasted__side-fries-l",
-);
-assert.deepEqual(toastedWithSideCartItem.selectedOptionIds, [
-  "bun-toasted",
-  "side-fries-l",
-]);
-assert.equal(toastedWithSideCartItem.unitPrice, 8700);
-assert.notEqual(toastedWithSideCartItem.cartId, toastedOnlyCartItem.cartId);
-assert.deepEqual(buildSelectedOptionGroups(toastedWithSideCartItem), [
   { groupId: "bun", choiceIds: ["bun-toasted"] },
   { groupId: "side", choiceIds: ["side-fries-l"] },
 ]);
-assert.deepEqual(buildSelectedOptionGroups(createCartItem(baseMenuItem, [])), [
-  { groupId: "bun", choiceIds: ["bun-normal"] },
+const toastedOnlyCartItem = createCartItem(baseMenuItem, [
+  { groupId: "bun", choiceIds: ["bun-toasted"] },
 ]);
+
+assert.equal(
+  toastedWithSideCartItem.cartId,
+  "menu-a-001__bun:bun-toasted__side:side-fries-l",
+);
+assert.deepEqual(toastedWithSideCartItem.selectedOptionGroups, [
+  { groupId: "bun", choiceIds: ["bun-toasted"] },
+  { groupId: "side", choiceIds: ["side-fries-l"] },
+]);
+assert.deepEqual(toastedWithSideCartItem.selectedOptionChoices, [
+  {
+    groupId: "bun",
+    groupTitle: "번 선택",
+    choiceId: "bun-toasted",
+    choiceName: "번 굽기",
+    priceDelta: 500,
+  },
+  {
+    groupId: "side",
+    groupTitle: "사이드 메뉴",
+    choiceId: "side-fries-l",
+    choiceName: "감자튀김(L)",
+    priceDelta: 1000,
+  },
+]);
+assert.equal(toastedWithSideCartItem.unitPrice, 8700);
+assert.notEqual(toastedWithSideCartItem.cartId, toastedOnlyCartItem.cartId);
+assert.deepEqual(createCartItem(baseMenuItem, []).selectedOptionGroups, []);
+assert.equal(
+  buildCartId("menu-a-001", [
+    { groupId: "extra", choiceIds: ["extra-icecream", "extra-sauce"] },
+    { groupId: "bun", choiceIds: ["bun-toasted"] },
+  ]),
+  "menu-a-001__bun:bun-toasted__extra:extra-icecream,extra-sauce",
+);
+
+const singleSelection = toggleOptionChoice(
+  [{ groupId: "bun", choiceIds: ["bun-normal"] }],
+  optionGroups,
+  "bun",
+  "bun-toasted",
+);
+assert.deepEqual(singleSelection, [
+  { groupId: "bun", choiceIds: ["bun-toasted"] },
+]);
+assert.deepEqual(
+  toggleOptionChoice(singleSelection, optionGroups, "bun", "bun-toasted"),
+  [{ groupId: "bun", choiceIds: ["bun-toasted"] }],
+);
+assert.deepEqual(
+  toggleOptionChoice([], optionGroups, "side", "side-fries-l"),
+  [{ groupId: "side", choiceIds: ["side-fries-l"] }],
+);
+assert.deepEqual(
+  toggleOptionChoice(
+    [{ groupId: "side", choiceIds: ["side-fries-l"] }],
+    optionGroups,
+    "side",
+    "side-fries-l",
+  ),
+  [],
+);
 
 const mergedCartItems = upsertCartItem(
   [toastedWithSideCartItem],

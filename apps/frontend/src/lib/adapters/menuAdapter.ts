@@ -1,6 +1,5 @@
 import type {
   MenuItem as BackendMenuItem,
-  MenuOptionChoice,
   MenuOptionGroup,
 } from "../api/types";
 
@@ -11,11 +10,6 @@ export type KioskMenuItem = {
   price: number;
   img: string;
   optionGroups: MenuOptionGroup[];
-  /**
-   * Temporary legacy field for the current kiosk option dialog.
-   * TODO: Remove after KioskOptionDialog is migrated to optionGroups.
-   */
-  options: MenuOptionChoice[];
   badge?: string;
 };
 
@@ -77,7 +71,6 @@ export function adaptMenusToCategories(
       price: menu.price,
       img: menu.imageUrl,
       optionGroups: menu.optionGroups,
-      options: menu.optionGroups.flatMap((group) => group.choices),
       ...(menu.badge ? { badge: menu.badge } : {}),
     });
 

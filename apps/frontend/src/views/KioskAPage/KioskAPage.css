@@ -729,27 +729,63 @@ button {
 
 .kiosk-option-list {
   display: grid;
-  gap: 10px;
+  gap: 14px;
   margin-top: 18px;
+}
+
+.kiosk-option-group {
+  display: grid;
+  gap: 9px;
+}
+
+.kiosk-option-group-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.kiosk-option-group-header h3 {
+  margin: 0;
+  color: #2b1508;
+  font-size: 0.98rem;
+  font-weight: 950;
+}
+
+.kiosk-option-required {
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: #ffe5df;
+  color: #c9251d;
+  font-size: 0.72rem;
+  font-weight: 950;
+}
+
+.kiosk-option-group-choices {
+  display: grid;
+  gap: 8px;
 }
 
 .kiosk-option-row {
   display: flex;
   align-items: center;
   gap: 12px;
+  width: 100%;
   padding: 13px 14px;
   border: 1px solid rgba(116, 77, 36, 0.13);
   border-radius: 18px;
   background: #ffffff;
   color: #2b1508;
+  cursor: pointer;
+  font: inherit;
   font-size: 0.95rem;
   font-weight: 900;
+  text-align: left;
 }
 
-.kiosk-option-row input {
-  width: 18px;
-  height: 18px;
-  accent-color: #c9251d;
+.kiosk-option-row.active {
+  border-color: rgba(201, 37, 29, 0.5);
+  background: #fff1e8;
+  box-shadow: inset 0 0 0 1px rgba(201, 37, 29, 0.16);
 }
 
 .kiosk-option-row span {
@@ -760,6 +796,73 @@ button {
   color: #c9251d;
   font-size: 0.9rem;
   font-weight: 950;
+}
+
+.kiosk-option-price-preview {
+  display: grid;
+  gap: 6px;
+  margin-top: 16px;
+  padding: 14px;
+  border-radius: 18px;
+  background: #fff4df;
+  color: #795b3a;
+  font-size: 0.9rem;
+  font-weight: 850;
+}
+
+.kiosk-option-price-preview strong {
+  color: #2b1508;
+  font-size: 0.98rem;
+  font-weight: 950;
+}
+
+.kiosk-option-validation {
+  margin: 14px 0 0;
+  color: #a91914;
+  font-size: 0.9rem;
+  font-weight: 900;
+}
+
+.kiosk-checkout-step {
+  display: grid;
+  gap: 9px;
+  margin-top: 18px;
+}
+
+.kiosk-checkout-step h3 {
+  margin: 0;
+  color: #2b1508;
+  font-size: 0.98rem;
+  font-weight: 950;
+}
+
+.kiosk-checkout-choice-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.kiosk-checkout-choice {
+  border: 1px solid rgba(116, 77, 36, 0.13);
+  border-radius: 999px;
+  padding: 10px 13px;
+  background: #ffffff;
+  color: #5c3f22;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 950;
+}
+
+.kiosk-checkout-choice.active {
+  border-color: rgba(201, 37, 29, 0.45);
+  background: #fff1e8;
+  color: #c9251d;
+}
+
+.kiosk-checkout-choice:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
 }
 
 .kiosk-phone-field {

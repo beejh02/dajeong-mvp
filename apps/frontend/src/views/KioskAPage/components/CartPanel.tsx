@@ -49,9 +49,11 @@ export default function CartPanel({
             <div key={item.cartId} className="cart-item">
               <div className="cart-item-info">
                 <p>{item.name}</p>
-                {item.selectedOptions.length > 0 && (
+                {item.selectedOptionChoices.length > 0 && (
                   <small className="cart-item-options">
-                    {item.selectedOptions.map((option) => option.name).join(", ")}
+                    {item.selectedOptionChoices
+                      .map((choice) => choice.choiceName)
+                      .join(", ")}
                   </small>
                 )}
                 <span>₩ {formatPrice(item.unitPrice)}</span>

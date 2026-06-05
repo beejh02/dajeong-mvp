@@ -632,7 +632,10 @@ button {
 
 .kiosk-b-page .kiosk-option-header h2,
 .kiosk-b-page .kiosk-checkout-header h2,
+.kiosk-b-page .kiosk-option-group-header h3,
+.kiosk-b-page .kiosk-checkout-step h3,
 .kiosk-b-page .kiosk-option-row,
+.kiosk-b-page .kiosk-checkout-choice,
 .kiosk-b-page .kiosk-phone-field,
 .kiosk-b-page .kiosk-phone-field input {
   color: #2c170b;
@@ -641,6 +644,7 @@ button {
 .kiosk-b-page .kiosk-option-kicker,
 .kiosk-b-page .kiosk-option-header strong,
 .kiosk-b-page .kiosk-checkout-header strong,
+.kiosk-b-page .kiosk-option-required,
 .kiosk-b-page .kiosk-option-row strong {
   color: #c9251d;
 }
@@ -651,8 +655,16 @@ button {
 }
 
 .kiosk-b-page .kiosk-option-row,
+.kiosk-b-page .kiosk-checkout-choice,
 .kiosk-b-page .kiosk-phone-field input {
   border-color: rgba(80, 48, 18, 0.13);
+}
+
+.kiosk-b-page .kiosk-option-row.active,
+.kiosk-b-page .kiosk-checkout-choice.active {
+  border-color: rgba(201, 37, 29, 0.45);
+  background: #fff0e4;
+  color: #c9251d;
 }
 
 .kiosk-b-page .kiosk-primary-btn {

@@ -8,10 +8,16 @@ import { createOrder } from "../../lib/api/orders";
 import KioskCheckoutPanel from "../components/KioskCheckoutPanel";
 import KioskOptionDialog from "../components/KioskOptionDialog";
 import {
-  buildSelectedOptionGroups,
   createCartItem,
+  toggleOptionChoice,
   upsertCartItem,
+  validateSelectedOptionGroups,
 } from "../kioskCart";
+import {
+  FULFILLMENT_TYPE_LABELS,
+  PAYMENT_METHOD_LABELS,
+  type KioskCheckoutState,
+} from "../kioskCheckout";
 import CartSection from "./components/CartSection";
 import CategoryTabs from "./components/CategoryTabs";
 import HeroSection from "./components/HeroSection";
@@ -19,13 +25,15 @@ import KioskBFooter from "./components/KioskBFooter";
 import KioskBHeader from "./components/KioskBHeader";
 import MenuCarousel from "./components/MenuCarousel";
 import { formatPrice } from "./constants";
-import type { CartItem, MenuCategory, MenuItem } from "./types";
+import type { CartItem, MenuCategory, MenuItem, SelectedOptionGroup } from "./types";
 
 type OrderResult = {
   orderNumber: string;
   waitingNumber: number;
   totalPrice: number;
-  pointPhone?: string;
+  fulfillmentType: KioskCheckoutState["fulfillmentType"];
+  paymentMethod: KioskCheckoutState["paymentMethod"];
+  pointAccrual: KioskCheckoutState["pointAccrual"];
 };
 
 export default function KioskBPage() {
@@ -37,9 +45,10 @@ export default function KioskBPage() {
   const [menuError, setMenuError] = useState<string | null>(null);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [optionTarget, setOptionTarget] = useState<MenuItem | null>(null);
-  const [selectedOptionIds, setSelectedOptionIds] = useState<string[]>([]);
+  const [selectedOptionGroups, setSelectedOptionGroups] = useState<
+    SelectedOptionGroup[]
+  >([]);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
-  const [checkoutPhone, setCheckoutPhone] = useState("");
   const [isOrdering, setIsOrdering] = useState(false);
   const [orderResult, setOrderResult] = useState<OrderResult | null>(null);
   const [orderError, setOrderError] = useState<string | null>(null);
@@ -66,8 +75,17 @@ export default function KioskBPage() {
   const optionPreviewItem = useMemo(() => {
     if (!optionTarget) return null;
 
-    return createCartItem(optionTarget, selectedOptionIds);
-  }, [optionTarget, selectedOptionIds]);
+    return createCartItem(optionTarget, selectedOptionGroups);
+  }, [optionTarget, selectedOptionGroups]);
+
+  const optionValidationMessage = useMemo(() => {
+    if (!optionTarget) return null;
+
+    return validateSelectedOptionGroups(
+      optionTarget.optionGroups,
+      selectedOptionGroups,
+    );
+  }, [optionTarget, selectedOptionGroups]);
 
   const loadMenus = useCallback(async () => {
     setIsMenuLoading(true);
@@ -118,44 +136,59 @@ export default function KioskBPage() {
     };
   }, []);
 
-  const addCartItem = useCallback((item: MenuItem, optionIds: string[] = []) => {
-    setCartItems((prevItems) => {
-      return upsertCartItem(prevItems, createCartItem(item, optionIds));
-    });
-  }, []);
+  const addCartItem = useCallback(
+    (item: MenuItem, optionGroups: SelectedOptionGroup[] = []) => {
+      setCartItems((prevItems) => {
+        return upsertCartItem(prevItems, createCartItem(item, optionGroups));
+      });
+    },
+    [],
+  );
 
   const closeOptionDialog = useCallback(() => {
     setOptionTarget(null);
-    setSelectedOptionIds([]);
+    setSelectedOptionGroups([]);
   }, []);
 
   const handleMenuSelect = useCallback(
     (item: MenuItem) => {
-      if (item.options.length === 0) {
+      if (item.optionGroups.length === 0) {
         addCartItem(item);
         return;
       }
 
       setOptionTarget(item);
-      setSelectedOptionIds([]);
+      setSelectedOptionGroups([]);
     },
     [addCartItem],
   );
 
-  const toggleOptionSelection = useCallback((optionId: string) => {
-    setSelectedOptionIds((prevOptionIds) =>
-      prevOptionIds.includes(optionId)
-        ? prevOptionIds.filter((selectedOptionId) => selectedOptionId !== optionId)
-        : [...prevOptionIds, optionId],
+  const toggleOptionSelection = useCallback((groupId: string, choiceId: string) => {
+    if (!optionTarget) return;
+
+    setSelectedOptionGroups((currentGroups) =>
+      toggleOptionChoice(
+        currentGroups,
+        optionTarget.optionGroups,
+        groupId,
+        choiceId,
+      ),
     );
-  }, []);
+  }, [optionTarget]);
 
   const confirmOptionSelection = useCallback(() => {
     if (!optionTarget) return;
+    if (optionValidationMessage) return;
 
-    addCartItem(optionTarget, selectedOptionIds);
+    addCartItem(optionTarget, selectedOptionGroups);
     closeOptionDialog();
-  }, [addCartItem, closeOptionDialog, optionTarget, selectedOptionIds]);
+  }, [
+    addCartItem,
+    closeOptionDialog,
+    optionTarget,
+    optionValidationMessage,
+    selectedOptionGroups,
+  ]);
 
   const increaseQuantity = (cartId: string) => {
     setCartItems((prevItems) =>
@@ -191,45 +224,41 @@ export default function KioskBPage() {
   const handleOrder = () => {
     if (cartItems.length === 0 || isOrdering) return;
 
-    setCheckoutPhone("");
     setIsCheckoutOpen(true);
     setOrderResult(null);
     setOrderError(null);
   };
 
-  const submitOrder = async (pointPhone?: string) => {
+  const submitOrder = async (checkout: KioskCheckoutState) => {
     if (cartItems.length === 0 || isOrdering) return;
 
     setIsOrdering(true);
     setOrderError(null);
 
     try {
-      const normalizedPhone = pointPhone?.trim() ?? "";
-
-      // TODO: Resolve phone to userId when the backend point membership API exists.
+      // TODO: Resolve phone-based point members to a real userId when the backend API exists.
       const order = await createOrder({
         companyId: "company-b",
         userId: "user-demo-1",
         items: cartItems.map((item) => ({
           menuId: item.id,
           quantity: item.quantity,
-          selectedOptionGroups: buildSelectedOptionGroups(item),
+          selectedOptionGroups: item.selectedOptionGroups,
         })),
-        fulfillmentType: "dine_in",
-        paymentMethod: "credit_card",
-        pointAccrual: normalizedPhone
-          ? { enabled: true, phone: normalizedPhone }
-          : { enabled: false, phone: null },
+        fulfillmentType: checkout.fulfillmentType,
+        paymentMethod: checkout.paymentMethod,
+        pointAccrual: checkout.pointAccrual,
       });
 
       setOrderResult({
         orderNumber: order.orderNumber,
         waitingNumber: order.waitingNumber,
         totalPrice: order.totalPrice,
-        ...(normalizedPhone ? { pointPhone: normalizedPhone } : {}),
+        fulfillmentType: checkout.fulfillmentType,
+        paymentMethod: checkout.paymentMethod,
+        pointAccrual: checkout.pointAccrual,
       });
       clearCart();
-      setCheckoutPhone("");
     } catch {
       setOrderError("주문을 접수하지 못했습니다. 잠시 후 다시 시도하세요.");
     } finally {
@@ -303,28 +332,24 @@ export default function KioskBPage() {
       {optionTarget && optionPreviewItem && (
         <KioskOptionDialog
           item={optionTarget}
-          selectedOptionIds={selectedOptionIds}
+          selectedOptionGroups={selectedOptionGroups}
           unitPrice={optionPreviewItem.unitPrice}
+          validationMessage={optionValidationMessage}
           formatPrice={formatPrice}
           onCancel={closeOptionDialog}
           onConfirm={confirmOptionSelection}
-          onToggleOption={toggleOptionSelection}
+          onToggleChoice={toggleOptionSelection}
         />
       )}
 
       {isCheckoutOpen && (
         <KioskCheckoutPanel
-          phone={checkoutPhone}
           totalPrice={totalPrice}
           isOrdering={isOrdering}
           formatPrice={formatPrice}
           onCancel={() => setIsCheckoutOpen(false)}
-          onPhoneChange={setCheckoutPhone}
-          onSubmitWithPoints={() => {
-            void submitOrder(checkoutPhone);
-          }}
-          onSubmitWithoutPoints={() => {
-            void submitOrder();
+          onSubmit={(checkout) => {
+            void submitOrder(checkout);
           }}
         />
       )}
@@ -341,9 +366,20 @@ export default function KioskBPage() {
                 대기번호 {orderResult.waitingNumber} · 총 ₩{" "}
                 {formatPrice(orderResult.totalPrice)}
               </span>
-              {orderResult.pointPhone && (
+              <span>
+                이용 방식: {FULFILLMENT_TYPE_LABELS[orderResult.fulfillmentType]}
+              </span>
+              <span>
+                결제 방식: {PAYMENT_METHOD_LABELS[orderResult.paymentMethod]}
+              </span>
+              <span>
+                포인트 적립:{" "}
+                {orderResult.pointAccrual.enabled ? "적립함" : "적립 안 함"}
+              </span>
+              {orderResult.pointAccrual.enabled &&
+                orderResult.pointAccrual.phone && (
                 <span>
-                  입력한 전화번호 {orderResult.pointPhone}로 포인트 적립 예정
+                  입력한 전화번호 {orderResult.pointAccrual.phone}로 포인트 적립 예정
                 </span>
               )}
             </>

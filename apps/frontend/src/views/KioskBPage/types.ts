@@ -1,18 +1,14 @@
-export type MenuOptionChoice = {
-  id: string;
-  name: string;
-  priceDelta: number;
-};
+import type { MenuOptionGroup } from "../../lib/api/types";
+import type { KioskCartItem } from "../kioskCart";
 
-export type MenuOptionGroup = {
-  id: string;
-  title: string;
-  selectionMode: "single" | "multiple";
-  required: boolean;
-  minSelect: number;
-  maxSelect: number;
-  choices: MenuOptionChoice[];
-};
+export type {
+  FulfillmentType,
+  MenuOptionChoice,
+  MenuOptionGroup,
+  PaymentMethod,
+  PointAccrualRequest,
+  SelectedOptionGroup,
+} from "../../lib/api/types";
 
 export type MenuItem = {
   id: string;
@@ -21,7 +17,6 @@ export type MenuItem = {
   price: number;
   img: string;
   optionGroups: MenuOptionGroup[];
-  options: MenuOptionChoice[];
   badge?: string;
 };
 
@@ -33,10 +28,4 @@ export type MenuCategory = {
   items: MenuItem[];
 };
 
-export type CartItem = MenuItem & {
-  cartId: string;
-  quantity: number;
-  selectedOptionIds: string[];
-  selectedOptions: MenuOptionChoice[];
-  unitPrice: number;
-};
+export type CartItem = KioskCartItem<MenuItem>;

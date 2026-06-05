@@ -44,9 +44,11 @@ export default function CartSection({
             <div key={item.cartId} className="kiosk-b-cart-item">
               <div className="kiosk-b-cart-name">
                 <strong>{item.name}</strong>
-                {item.selectedOptions.length > 0 && (
+                {item.selectedOptionChoices.length > 0 && (
                   <small className="kiosk-b-cart-options">
-                    {item.selectedOptions.map((option) => option.name).join(", ")}
+                    {item.selectedOptionChoices
+                      .map((choice) => choice.choiceName)
+                      .join(", ")}
                   </small>
                 )}
                 <span>₩ {formatPrice(item.unitPrice)}</span>
