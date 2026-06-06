@@ -43,6 +43,7 @@ const {
   adaptOrderToAdminOrder,
   adaptOrdersToChannelStats,
 } = await importTypeScriptModule("src/lib/adapters/adminAdapter.ts");
+const { maskPhoneNumber } = await importTypeScriptModule("src/lib/privacy.ts");
 
 const optionGroups = [
   {
@@ -288,5 +289,10 @@ const channelStats = adaptOrdersToChannelStats([backendOrder]);
 assert.deepEqual(channelStats, [
   { name: "A기업 Kiosk", orders: 1, paidOrders: 1, revenue: 16400 },
 ]);
+
+assert.equal(maskPhoneNumber("010-1234-5678"), "010-****-5678");
+assert.equal(maskPhoneNumber("01012345678"), "010-****-5678");
+assert.equal(maskPhoneNumber("1234567"), "****-4567");
+assert.equal(maskPhoneNumber(null), "");
 
 console.log("API adapter verification passed.");

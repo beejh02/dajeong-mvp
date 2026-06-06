@@ -13,6 +13,9 @@ const requiredFiles = [
   "src/lib/api/admin.ts",
   "src/lib/adapters/menuAdapter.ts",
   "src/lib/adapters/adminAdapter.ts",
+  "src/lib/privacy.ts",
+  "src/views/hooks/useKioskMenu.ts",
+  "src/views/hooks/useKioskOrderFlow.ts",
   "../../docs/mcp-tool-plan.md",
 ];
 
@@ -48,38 +51,54 @@ if (failures.length === 0) {
   requireIncludes("src/lib/api/orders.ts", "createOrder");
   requireIncludes("src/lib/api/admin.ts", "getAdminSummary");
   requireIncludes("src/lib/api/admin.ts", "getAdminOrders");
+  requireIncludes("src/lib/api/admin.ts", "NEXT_PUBLIC_DAJEONG_ADMIN_TOKEN");
+  requireIncludes("src/lib/api/admin.ts", "X-Dajeong-Admin-Token");
+  requireIncludes("src/lib/privacy.ts", "maskPhoneNumber");
   requireIncludes("src/lib/api/types.ts", "optionGroups");
   requireIncludes("src/lib/api/types.ts", "selectedOptionGroups");
   requireIncludes("src/lib/api/types.ts", "fulfillmentType");
   requireIncludes("src/lib/api/types.ts", "paymentMethod");
   requireIncludes("src/lib/api/types.ts", "pointAccrual");
+  requireIncludes("src/views/hooks/useKioskMenu.ts", "getCompanyMenus");
+  requireIncludes("src/views/hooks/useKioskMenu.ts", "adaptMenusToCategories");
+  requireIncludes("src/views/hooks/useKioskMenu.ts", "isMountedRef");
+  requireIncludes("src/views/hooks/useKioskOrderFlow.ts", "createOrder");
+  requireIncludes("src/views/hooks/useKioskOrderFlow.ts", "toggleOptionChoice");
+  requireIncludes("src/views/hooks/useKioskOrderFlow.ts", "user-demo-1");
+  requireIncludes("src/views/hooks/useKioskOrderFlow.ts", "selectedOptionGroups");
 
-  requireIncludes("src/views/KioskAPage/index.tsx", "getCompanyMenus");
-  requireIncludes("src/views/KioskAPage/index.tsx", "createOrder");
-  requireIncludes("src/views/KioskAPage/index.tsx", "adaptMenusToCategories");
+  requireIncludes("src/views/KioskAPage/index.tsx", "useKioskMenu");
+  requireIncludes("src/views/KioskAPage/index.tsx", "useKioskOrderFlow");
   requireIncludes("src/views/KioskAPage/index.tsx", "company-a");
   requireIncludes("src/views/KioskAPage/index.tsx", "orderResult");
   requireIncludes("src/views/KioskAPage/index.tsx", "selectedOptionGroups");
-  requireIncludes("src/views/KioskAPage/index.tsx", "toggleOptionChoice");
+  requireIncludes("src/views/KioskAPage/index.tsx", "toggleOptionSelection");
   requireIncludes("src/views/KioskAPage/index.tsx", "KioskCheckoutPanel");
   requireIncludes("src/views/KioskAPage/index.tsx", "fulfillmentType");
   requireIncludes("src/views/KioskAPage/index.tsx", "paymentMethod");
   requireIncludes("src/views/KioskAPage/index.tsx", "pointAccrual");
+  requireIncludes("src/views/KioskAPage/index.tsx", "maskPhoneNumber");
+  requireExcludes("src/views/KioskAPage/index.tsx", "getCompanyMenus");
+  requireExcludes("src/views/KioskAPage/index.tsx", "createOrder");
+  requireExcludes("src/views/KioskAPage/index.tsx", "adaptMenusToCategories");
   requireExcludes("src/views/KioskAPage/index.tsx", "selectedOptionIds");
   requireExcludes("src/views/KioskAPage/index.tsx", "buildSelectedOptionGroups");
   requireExcludes("src/views/KioskAPage/index.tsx", "menuData");
 
-  requireIncludes("src/views/KioskBPage/index.tsx", "getCompanyMenus");
-  requireIncludes("src/views/KioskBPage/index.tsx", "createOrder");
-  requireIncludes("src/views/KioskBPage/index.tsx", "adaptMenusToCategories");
+  requireIncludes("src/views/KioskBPage/index.tsx", "useKioskMenu");
+  requireIncludes("src/views/KioskBPage/index.tsx", "useKioskOrderFlow");
   requireIncludes("src/views/KioskBPage/index.tsx", "company-b");
   requireIncludes("src/views/KioskBPage/index.tsx", "orderResult");
   requireIncludes("src/views/KioskBPage/index.tsx", "selectedOptionGroups");
-  requireIncludes("src/views/KioskBPage/index.tsx", "toggleOptionChoice");
+  requireIncludes("src/views/KioskBPage/index.tsx", "toggleOptionSelection");
   requireIncludes("src/views/KioskBPage/index.tsx", "KioskCheckoutPanel");
   requireIncludes("src/views/KioskBPage/index.tsx", "fulfillmentType");
   requireIncludes("src/views/KioskBPage/index.tsx", "paymentMethod");
   requireIncludes("src/views/KioskBPage/index.tsx", "pointAccrual");
+  requireIncludes("src/views/KioskBPage/index.tsx", "maskPhoneNumber");
+  requireExcludes("src/views/KioskBPage/index.tsx", "getCompanyMenus");
+  requireExcludes("src/views/KioskBPage/index.tsx", "createOrder");
+  requireExcludes("src/views/KioskBPage/index.tsx", "adaptMenusToCategories");
   requireExcludes("src/views/KioskBPage/index.tsx", "selectedOptionIds");
   requireExcludes("src/views/KioskBPage/index.tsx", "buildSelectedOptionGroups");
   requireExcludes("src/views/KioskBPage/index.tsx", "menuData");
@@ -98,6 +117,7 @@ if (failures.length === 0) {
   requireIncludes("src/views/AdminPage/index.tsx", "getAdminOrders");
   requireIncludes("src/views/AdminPage/index.tsx", "adaptAdminSummary");
   requireIncludes("src/views/AdminPage/index.tsx", "adaptOrderToAdminOrder");
+  requireIncludes("src/views/AdminPage/index.tsx", "void loadAdminData()");
   requireExcludes("src/views/AdminPage/index.tsx", "from \"./constants\"");
   requireIncludes("src/lib/adapters/adminAdapter.ts", "selectedOptionGroups");
 

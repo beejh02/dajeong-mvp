@@ -25,7 +25,7 @@
 PowerShell에서 Backend API 서버를 실행한다.
 
 ```powershell
-cd C:\Users\joon0\Desktop\dajeong-mvp\apps\backend
+cd apps/backend
 python -m pip install -r requirements.txt
 python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 ```
@@ -37,3 +37,25 @@ Invoke-RestMethod http://127.0.0.1:8000/health
 ```
 
 API 문서는 서버 실행 후 `http://127.0.0.1:8000/docs`에서 확인할 수 있다.
+
+관리자 API를 데모 수준으로 보호하려면 Backend 실행 전에 선택적으로
+`DAJEONG_ADMIN_TOKEN`을 설정한다.
+
+```powershell
+$env:DAJEONG_ADMIN_TOKEN="demo-admin-token"
+```
+
+Frontend 관리자 화면에서 같은 token을 전달하려면 Frontend 실행 전에 선택적으로
+`NEXT_PUBLIC_DAJEONG_ADMIN_TOKEN`을 설정한다.
+
+```powershell
+cd apps/frontend
+$env:NEXT_PUBLIC_DAJEONG_ADMIN_TOKEN="demo-admin-token"
+pnpm.cmd dev
+```
+
+이 token 방식은 MVP 데모 편의를 위한 단순 보호 장치이다. 브라우저에 노출되는
+`NEXT_PUBLIC_` 값이므로 실제 서비스 인증, 권한 관리, 감사 로그를 대체하지 않는다.
+
+MCP Server runtime 구현은 아직 future work이며, 현재 계획은 `docs/mcp-tool-plan.md`를
+기준으로 유지한다.

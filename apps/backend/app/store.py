@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta, timezone
 from itertools import count
+import re
 
 from fastapi import HTTPException
 
@@ -22,6 +23,7 @@ from app.schemas import (
 
 
 KST = timezone(timedelta(hours=9))
+PHONE_ALLOWED_PATTERN = re.compile(r"^[\d\s-]+$")
 
 
 class InMemoryStore:
@@ -144,8 +146,21 @@ class InMemoryStore:
     def _validate_point_accrual(self, order_request: OrderCreateRequest) -> None:
         phone = order_request.pointAccrual.phone
 
-        if order_request.pointAccrual.enabled and not (phone and phone.strip()):
+        if not order_request.pointAccrual.enabled:
+            return
+
+        normalized_phone = phone.strip() if phone else ""
+
+        if not normalized_phone:
             raise HTTPException(status_code=400, detail="Point phone is required")
+        if not PHONE_ALLOWED_PATTERN.fullmatch(normalized_phone):
+            raise HTTPException(status_code=400, detail="Point phone format is invalid")
+
+        digit_count = len(re.sub(r"\D", "", normalized_phone))
+        if digit_count < 8 or digit_count > 15:
+            raise HTTPException(status_code=400, detail="Point phone format is invalid")
+
+        order_request.pointAccrual.phone = normalized_phone
 
     def _resolve_option_groups(
         self,

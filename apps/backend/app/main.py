@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.schemas import (
@@ -10,6 +10,7 @@ from app.schemas import (
     OrderListResponse,
     OrderResponse,
 )
+from app.security import require_admin_access
 from app.store import store
 
 
@@ -47,16 +48,28 @@ def create_order(order_request: OrderCreateRequest) -> OrderResponse:
     return store.create_order(order_request)
 
 
-@app.get("/admin/orders", response_model=OrderListResponse)
+@app.get(
+    "/admin/orders",
+    response_model=OrderListResponse,
+    dependencies=[Depends(require_admin_access)],
+)
 def list_admin_orders() -> OrderListResponse:
     return store.list_orders()
 
 
-@app.get("/admin/orders/{orderId}", response_model=OrderResponse)
+@app.get(
+    "/admin/orders/{orderId}",
+    response_model=OrderResponse,
+    dependencies=[Depends(require_admin_access)],
+)
 def get_admin_order(orderId: str) -> OrderResponse:
     return store.get_order(orderId)
 
 
-@app.get("/admin/summary", response_model=AdminSummaryResponse)
+@app.get(
+    "/admin/summary",
+    response_model=AdminSummaryResponse,
+    dependencies=[Depends(require_admin_access)],
+)
 def get_admin_summary() -> AdminSummaryResponse:
     return store.get_summary()

@@ -192,3 +192,48 @@ def test_admin_summary_counts_orders_and_revenue():
         "companyCount": 2,
         "menuCount": 6,
     }
+
+
+def test_admin_endpoints_require_token_when_configured(monkeypatch):
+    monkeypatch.setenv("DAJEONG_ADMIN_TOKEN", "demo-admin-token")
+
+    blocked_response = client.get("/admin/summary")
+
+    assert blocked_response.status_code == 401
+    assert blocked_response.json()["detail"] == "Admin token is required"
+
+    wrong_token_response = client.get(
+        "/admin/orders",
+        headers={"X-Dajeong-Admin-Token": "wrong-token"},
+    )
+
+    assert wrong_token_response.status_code == 401
+    assert wrong_token_response.json()["detail"] == "Admin token is required"
+
+    allowed_response = client.get(
+        "/admin/summary",
+        headers={"X-Dajeong-Admin-Token": "demo-admin-token"},
+    )
+
+    assert allowed_response.status_code == 200
+
+
+def test_point_phone_is_trimmed_in_order_response():
+    payload = order_payload(point_phone=" 010-1234-5678 ")
+
+    response = client.post("/orders", json=payload)
+
+    assert response.status_code == 201
+    assert response.json()["pointAccrual"] == {
+        "enabled": True,
+        "phone": "010-1234-5678",
+    }
+
+
+def test_point_phone_rejects_non_demo_phone_format():
+    payload = order_payload(point_phone="not-a-phone")
+
+    response = client.post("/orders", json=payload)
+
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Point phone format is invalid"

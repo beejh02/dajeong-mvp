@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
   adaptAdminSummary,
@@ -21,6 +21,7 @@ export default function AdminPage() {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [adminError, setAdminError] = useState<string | null>(null);
+  const isMountedRef = useRef(false);
 
   const loadAdminData = useCallback(async () => {
     setIsLoading(true);
@@ -33,46 +34,34 @@ export default function AdminPage() {
       ]);
       const adaptedOrders = orderList.orders.map(adaptOrderToAdminOrder);
 
+      if (!isMountedRef.current) return;
+
       setSummaryCards(adaptAdminSummary(summary));
       setChannelStats(adaptOrdersToChannelStats(orderList.orders));
       setOrders(adaptedOrders);
       setSelectedOrder((currentOrder) => currentOrder ?? adaptedOrders[0] ?? null);
     } catch {
+      if (!isMountedRef.current) return;
+
       setAdminError("관리자 데이터를 불러오지 못했습니다. Backend API 연결을 확인하세요.");
     } finally {
-      setIsLoading(false);
+      if (isMountedRef.current) {
+        setIsLoading(false);
+      }
     }
   }, []);
 
   useEffect(() => {
-    let isMounted = true;
-
-    Promise.all([getAdminSummary(), getAdminOrders()])
-      .then(([summary, orderList]) => {
-        if (!isMounted) return;
-
-        const adaptedOrders = orderList.orders.map(adaptOrderToAdminOrder);
-
-        setSummaryCards(adaptAdminSummary(summary));
-        setChannelStats(adaptOrdersToChannelStats(orderList.orders));
-        setOrders(adaptedOrders);
-        setSelectedOrder(adaptedOrders[0] ?? null);
-      })
-      .catch(() => {
-        if (isMounted) {
-          setAdminError("관리자 데이터를 불러오지 못했습니다. Backend API 연결을 확인하세요.");
-        }
-      })
-      .finally(() => {
-        if (isMounted) {
-          setIsLoading(false);
-        }
-      });
+    isMountedRef.current = true;
+    const loadTimer = window.setTimeout(() => {
+      void loadAdminData();
+    }, 0);
 
     return () => {
-      isMounted = false;
+      window.clearTimeout(loadTimer);
+      isMountedRef.current = false;
     };
-  }, []);
+  }, [loadAdminData]);
 
   const handleMoveOrders = () => setActiveTab("orders");
   const handleViewDetail = (order: Order) => {
