@@ -14,6 +14,11 @@ const requiredFiles = [
   "src/lib/adapters/menuAdapter.ts",
   "src/lib/adapters/adminAdapter.ts",
   "src/lib/privacy.ts",
+  "src/app/chat/page.tsx",
+  "src/views/ChatPage/index.tsx",
+  "src/views/ChatPage/lib/parseOrderText.ts",
+  "src/views/ChatPage/lib/buildOrderDraft.ts",
+  "src/views/ChatPage/lib/validateOrderDraft.ts",
   "src/views/hooks/useKioskMenu.ts",
   "src/views/hooks/useKioskOrderFlow.ts",
   "../../docs/mcp-tool-plan.md",
@@ -54,6 +59,16 @@ if (failures.length === 0) {
   requireIncludes("src/lib/api/admin.ts", "NEXT_PUBLIC_DAJEONG_ADMIN_TOKEN");
   requireIncludes("src/lib/api/admin.ts", "X-Dajeong-Admin-Token");
   requireIncludes("src/lib/privacy.ts", "maskPhoneNumber");
+  requireIncludes("src/app/chat/page.tsx", "ChatPage");
+  requireIncludes("src/views/ChatPage/index.tsx", "getCompanyMenus");
+  requireIncludes("src/views/ChatPage/index.tsx", "createOrder");
+  requireIncludes("src/views/ChatPage/index.tsx", "buildOrderCreateRequest");
+  requireIncludes("src/views/ChatPage/index.tsx", "user-demo-1");
+  requireIncludes("src/views/ChatPage/lib/parseOrderText.ts", "company-a");
+  requireIncludes("src/views/ChatPage/lib/parseOrderText.ts", "company-b");
+  requireIncludes("src/views/ChatPage/lib/buildOrderDraft.ts", "choice.id === aliasedChoiceId");
+  requireIncludes("src/views/ChatPage/lib/buildOrderDraft.ts", "missing_required_options");
+  requireIncludes("src/views/ChatPage/lib/validateOrderDraft.ts", "selectedOptionGroups");
   requireIncludes("src/lib/api/types.ts", "optionGroups");
   requireIncludes("src/lib/api/types.ts", "selectedOptionGroups");
   requireIncludes("src/lib/api/types.ts", "fulfillmentType");

@@ -10,7 +10,8 @@
     "start": "next start",
     "verify:next": "node scripts/verify-next-structure.mjs",
     "verify:api-adapters": "node scripts/verify-api-adapters.mjs",
-    "verify:api-integration": "node scripts/verify-api-integration.mjs"
+    "verify:api-integration": "node scripts/verify-api-integration.mjs",
+    "verify:chat-order-flow": "node scripts/verify-chat-order-flow.mjs"
   },
   "dependencies": {
     "next": "^16.2.6",

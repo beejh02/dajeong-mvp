@@ -12,9 +12,11 @@ const requiredFiles = [
   "src/app/layout.tsx",
   "src/app/page.tsx",
   "src/app/admin/page.tsx",
+  "src/app/chat/page.tsx",
   "src/app/kiosk-a/page.tsx",
   "src/app/kiosk-b/page.tsx",
   "src/views/AdminPage/index.tsx",
+  "src/views/ChatPage/index.tsx",
   "src/views/KioskAPage/index.tsx",
   "src/views/KioskBPage/index.tsx",
   "next.config.ts",
@@ -32,6 +34,9 @@ const forbiddenFiles = [
 const failures = [];
 
 const interactiveClientFiles = [
+  "src/views/ChatPage/index.tsx",
+  "src/views/ChatPage/components/ChatInput.tsx",
+  "src/views/ChatPage/components/OrderDraftCard.tsx",
   "src/views/KioskAPage/components/CartFooter.tsx",
   "src/views/KioskAPage/components/CartPanel.tsx",
   "src/views/KioskAPage/components/CategorySidebar.tsx",
@@ -131,6 +136,20 @@ const interactionChecks = [
   {
     file: "src/views/KioskBPage/components/MenuCarousel.tsx",
     patterns: ["data-cart-item-id={item.id}", "onClick={() => onAddToCart(item)}"],
+  },
+  {
+    file: "src/app/chat/page.tsx",
+    patterns: ["<ChatPage />"],
+  },
+  {
+    file: "src/views/ChatPage/index.tsx",
+    patterns: [
+      "parseOrderText",
+      "buildOrderDraft",
+      "createOrder",
+      "buildOrderCreateRequest",
+      "user-demo-1",
+    ],
   },
 ];
 

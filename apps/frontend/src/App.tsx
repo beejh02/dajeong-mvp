@@ -51,6 +51,16 @@ export default function App() {
             <p>다른 UI 구조를 가진 비교용 키오스크 화면입니다.</p>
             <span className="card-link">B기업 키오스크로 이동 →</span>
           </Link>
+
+          <Link
+            className="page-card ai-card"
+            href="/chat"
+          >
+            <span className="card-label">DAJEONG AI</span>
+            <h2>다정 AI 주문</h2>
+            <p>키오스크를 누르지 않고 말로 주문합니다.</p>
+            <span className="card-link">AI로 주문하기 →</span>
+          </Link>
         </section>
       </main>
     </div>

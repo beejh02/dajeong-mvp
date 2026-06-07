@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import "../index.css";
 import "../App.css";
 import "../views/AdminPage/AdminPage.css";
+import "../views/ChatPage/ChatPage.css";
 import "../views/KioskAPage/KioskAPage.css";
 import "../views/KioskBPage/KioskBPage.css";
 
