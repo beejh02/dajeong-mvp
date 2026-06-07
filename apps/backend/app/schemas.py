@@ -78,7 +78,7 @@ class OrderItemRequest(BaseModel):
 class OrderCreateRequest(BaseModel):
     companyId: str
     userId: str
-    sourceChannel: SourceChannel = "kiosk_a"
+    sourceChannel: SourceChannel | None = None
     items: Annotated[list[OrderItemRequest], Field(min_length=1)]
     fulfillmentType: Literal["dine_in", "pickup"]
     paymentMethod: Literal["credit_card", "coupon", "cash"]

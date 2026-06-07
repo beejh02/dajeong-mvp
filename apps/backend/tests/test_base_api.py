@@ -187,6 +187,41 @@ def test_create_order_preserves_dajeong_ai_source_channel():
     assert created_order["sourceChannel"] == "dajeong_ai"
 
 
+def test_create_order_resolves_missing_source_channel_from_company_id():
+    company_a_response = client.post("/orders", json=order_payload())
+    company_b_response = client.post(
+        "/orders",
+        json=order_payload(
+            company_id="company-b",
+            user_id="user-demo-2",
+            menu_id="menu-b-001",
+        ),
+    )
+
+    assert company_a_response.status_code == 201
+    assert company_b_response.status_code == 201
+    assert company_a_response.json()["companyId"] == "company-a"
+    assert company_a_response.json()["sourceChannel"] == "kiosk_a"
+    assert company_b_response.json()["companyId"] == "company-b"
+    assert company_b_response.json()["sourceChannel"] == "kiosk_b"
+
+
+def test_create_order_preserves_dajeong_ai_source_channel_for_company_b():
+    payload = order_payload(
+        company_id="company-b",
+        user_id="user-demo-2",
+        menu_id="menu-b-001",
+        source_channel="dajeong_ai",
+    )
+
+    response = client.post("/orders", json=payload)
+
+    assert response.status_code == 201
+    created_order = response.json()
+    assert created_order["companyId"] == "company-b"
+    assert created_order["sourceChannel"] == "dajeong_ai"
+
+
 def test_admin_summary_counts_orders_and_revenue():
     client.post("/orders", json=order_payload())
     client.post(

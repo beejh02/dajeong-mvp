@@ -18,12 +18,17 @@ from app.schemas import (
     OrderResponse,
     SelectedOptionGroup,
     SelectedOptionGroupResponse,
+    SourceChannel,
     User,
 )
 
 
 KST = timezone(timedelta(hours=9))
 PHONE_ALLOWED_PATTERN = re.compile(r"^[\d\s-]+$")
+DEFAULT_SOURCE_CHANNELS: dict[str, SourceChannel] = {
+    "company-a": "kiosk_a",
+    "company-b": "kiosk_b",
+}
 
 
 class InMemoryStore:
@@ -55,6 +60,7 @@ class InMemoryStore:
         self.get_company(order_request.companyId)
         self._get_user(order_request.userId)
         self._validate_point_accrual(order_request)
+        source_channel = self._resolve_source_channel(order_request)
 
         order_index = next(self.order_sequence)
         order_id = f"order-{order_index:04d}"
@@ -70,7 +76,7 @@ class InMemoryStore:
             waitingNumber=next(self.waiting_sequence),
             userId=order_request.userId,
             companyId=order_request.companyId,
-            sourceChannel=order_request.sourceChannel,
+            sourceChannel=source_channel,
             status="waiting",
             totalPrice=total_price,
             pointEarned=total_price // 100,
@@ -105,6 +111,17 @@ class InMemoryStore:
         if user_id not in self.users:
             raise HTTPException(status_code=404, detail="User not found")
         return self.users[user_id]
+
+    def _resolve_source_channel(self, order_request: OrderCreateRequest) -> SourceChannel:
+        if order_request.sourceChannel:
+            return order_request.sourceChannel
+
+        source_channel = DEFAULT_SOURCE_CHANNELS.get(order_request.companyId)
+
+        if not source_channel:
+            raise HTTPException(status_code=400, detail="Source channel is required")
+
+        return source_channel
 
     def _build_order_item(
         self,
