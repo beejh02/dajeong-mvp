@@ -1,4 +1,4 @@
-import type { OrderCreateRequest } from "../../../lib/api/types";
+import type { OrderCreateRequest, SourceChannel } from "../../../lib/api/types";
 import type { OrderDraft } from "../types";
 
 export function validateOrderDraft(draft: OrderDraft) {
@@ -16,10 +16,12 @@ export function validateOrderDraft(draft: OrderDraft) {
 export function buildOrderCreateRequest(
   draft: OrderDraft,
   userId: string,
+  sourceChannel: SourceChannel,
 ): OrderCreateRequest {
   return {
     companyId: draft.companyId,
     userId,
+    sourceChannel,
     items: [
       {
         menuId: draft.menuId,

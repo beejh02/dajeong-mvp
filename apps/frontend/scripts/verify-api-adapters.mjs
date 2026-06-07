@@ -234,6 +234,7 @@ const backendOrder = {
   waitingNumber: 101,
   userId: "user-demo-1",
   companyId: "company-a",
+  sourceChannel: "dajeong_ai",
   status: "waiting",
   totalPrice: 16400,
   pointEarned: 164,
@@ -271,7 +272,8 @@ const adminOrder = adaptOrderToAdminOrder(backendOrder);
 assert.equal(adminOrder.id, "ORD-20260603-0001");
 assert.equal(adminOrder.number, 101);
 assert.equal(adminOrder.customer, "다정 데모 사용자");
-assert.equal(adminOrder.source, "A기업 Kiosk");
+assert.equal(adminOrder.source, "Dajeong AI");
+assert.equal(adminOrder.targetCompany, "A기업");
 assert.equal(adminOrder.status, "대기");
 assert.equal(adminOrder.payment, "신용카드");
 assert.equal(adminOrder.receipt, "데모 발급");
@@ -284,9 +286,18 @@ assert.deepEqual(adminOrder.productOptions, [
   "사이드 메뉴: 감자튀김(L)",
 ]);
 
-const channelStats = adaptOrdersToChannelStats([backendOrder]);
+const kioskOrder = {
+  ...backendOrder,
+  id: "order-0002",
+  orderNumber: "ORD-20260603-0002",
+  waitingNumber: 102,
+  sourceChannel: "kiosk_a",
+};
+
+const channelStats = adaptOrdersToChannelStats([backendOrder, kioskOrder]);
 
 assert.deepEqual(channelStats, [
+  { name: "Dajeong AI", orders: 1, paidOrders: 1, revenue: 16400 },
   { name: "A기업 Kiosk", orders: 1, paidOrders: 1, revenue: 16400 },
 ]);
 

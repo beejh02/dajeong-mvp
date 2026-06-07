@@ -25,6 +25,7 @@ export default function OrderDetailSection({ order, onBack }: OrderDetailSection
           <DetailItem label="고객" value={order.customer} />
           <DetailItem label="이메일" value={order.email} />
           <DetailItem label="출처" value={order.source} />
+          <DetailItem label="대상 기업" value={order.targetCompany} />
           <DetailItem
             label="주문 상태"
             value={<span className="status-badge">{order.status}</span>}

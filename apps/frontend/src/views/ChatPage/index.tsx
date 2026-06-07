@@ -137,7 +137,7 @@ export default function ChatPage() {
 
     try {
       const order = await createOrder(
-        buildOrderCreateRequest(draftOrder, DEMO_USER_ID),
+        buildOrderCreateRequest(draftOrder, DEMO_USER_ID, "dajeong_ai"),
       );
 
       appendMessage(

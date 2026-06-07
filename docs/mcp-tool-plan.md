@@ -8,6 +8,7 @@
 - Frontend는 `apps/frontend/src/lib/api/`의 공통 API client로 FastAPI를 호출한다.
 - Frontend 화면은 backend 응답을 직접 소비하지 않고 `apps/frontend/src/lib/adapters/`에서 현재 UI view model로 변환한다.
 - 향후 MCP tool도 frontend와 같은 backend endpoint를 호출해야 하며, frontend UI 컴포넌트에 직접 연결하지 않는다.
+- 주문의 `companyId`는 실제 주문 대상 기업이며, `sourceChannel`은 주문 유입 채널이다. Dajeong AI 주문은 `companyId`를 실제 기업 id로 유지하고 `sourceChannel`을 `dajeong_ai`로 보낸다.
 
 ## Planned Tools
 
@@ -147,6 +148,7 @@
 {
   "companyId": "company-a",
   "userId": "user-demo-1",
+  "sourceChannel": "dajeong_ai",
   "items": [
     {
       "menuId": "menu-a-001",
@@ -176,6 +178,8 @@
   "id": "order-0001",
   "orderNumber": "ORD-20260603-0001",
   "waitingNumber": 101,
+  "companyId": "company-a",
+  "sourceChannel": "dajeong_ai",
   "status": "waiting",
   "totalPrice": 7200,
   "pointEarned": 72,

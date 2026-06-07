@@ -71,6 +71,8 @@ if (failures.length === 0) {
   requireIncludes("src/views/ChatPage/lib/validateOrderDraft.ts", "selectedOptionGroups");
   requireIncludes("src/lib/api/types.ts", "optionGroups");
   requireIncludes("src/lib/api/types.ts", "selectedOptionGroups");
+  requireIncludes("src/lib/api/types.ts", "SourceChannel");
+  requireIncludes("src/lib/api/types.ts", "sourceChannel");
   requireIncludes("src/lib/api/types.ts", "fulfillmentType");
   requireIncludes("src/lib/api/types.ts", "paymentMethod");
   requireIncludes("src/lib/api/types.ts", "pointAccrual");
@@ -78,6 +80,7 @@ if (failures.length === 0) {
   requireIncludes("src/views/hooks/useKioskMenu.ts", "adaptMenusToCategories");
   requireIncludes("src/views/hooks/useKioskMenu.ts", "isMountedRef");
   requireIncludes("src/views/hooks/useKioskOrderFlow.ts", "createOrder");
+  requireIncludes("src/views/hooks/useKioskOrderFlow.ts", "sourceChannel");
   requireIncludes("src/views/hooks/useKioskOrderFlow.ts", "toggleOptionChoice");
   requireIncludes("src/views/hooks/useKioskOrderFlow.ts", "user-demo-1");
   requireIncludes("src/views/hooks/useKioskOrderFlow.ts", "selectedOptionGroups");
@@ -85,6 +88,7 @@ if (failures.length === 0) {
   requireIncludes("src/views/KioskAPage/index.tsx", "useKioskMenu");
   requireIncludes("src/views/KioskAPage/index.tsx", "useKioskOrderFlow");
   requireIncludes("src/views/KioskAPage/index.tsx", "company-a");
+  requireIncludes("src/views/KioskAPage/index.tsx", "kiosk_a");
   requireIncludes("src/views/KioskAPage/index.tsx", "orderResult");
   requireIncludes("src/views/KioskAPage/index.tsx", "selectedOptionGroups");
   requireIncludes("src/views/KioskAPage/index.tsx", "toggleOptionSelection");
@@ -103,6 +107,7 @@ if (failures.length === 0) {
   requireIncludes("src/views/KioskBPage/index.tsx", "useKioskMenu");
   requireIncludes("src/views/KioskBPage/index.tsx", "useKioskOrderFlow");
   requireIncludes("src/views/KioskBPage/index.tsx", "company-b");
+  requireIncludes("src/views/KioskBPage/index.tsx", "kiosk_b");
   requireIncludes("src/views/KioskBPage/index.tsx", "orderResult");
   requireIncludes("src/views/KioskBPage/index.tsx", "selectedOptionGroups");
   requireIncludes("src/views/KioskBPage/index.tsx", "toggleOptionSelection");
@@ -135,6 +140,8 @@ if (failures.length === 0) {
   requireIncludes("src/views/AdminPage/index.tsx", "void loadAdminData()");
   requireExcludes("src/views/AdminPage/index.tsx", "from \"./constants\"");
   requireIncludes("src/lib/adapters/adminAdapter.ts", "selectedOptionGroups");
+  requireIncludes("src/lib/adapters/adminAdapter.ts", "SOURCE_CHANNEL_LABELS");
+  requireIncludes("src/lib/adapters/adminAdapter.ts", "targetCompany");
 
   for (const toolName of [
     "get_companies",

@@ -38,3 +38,5 @@
 - A기업: Vertical UI
 - B기업: Horizontal UI
 - AI 응답: 카드 UI 포함
+- 주문 계약: `companyId`는 실제 주문 대상 기업, `sourceChannel`은 주문 유입 채널로 분리
+- Dajeong AI 주문은 `sourceChannel`을 `dajeong_ai`로 보내고, `companyId`는 A기업/B기업 실제 id를 유지

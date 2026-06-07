@@ -20,6 +20,10 @@
 
 현재 Frontend는 Backend API를 데이터 source of truth로 사용하도록 연결한다. Frontend API client와 adapter 구조, 향후 MCP tool 계획은 `docs/mcp-tool-plan.md`에 정리한다.
 
+## 주문 채널 계약
+
+주문 API에서 `companyId`는 실제 메뉴와 주문 대상 기업을 의미한다. `sourceChannel`은 주문이 유입된 채널을 의미하며 `kiosk_a`, `kiosk_b`, `dajeong_ai` 중 하나다. 예를 들어 다정 AI가 A기업 메뉴를 대신 주문할 때는 `companyId`를 `company-a`로 유지하고 `sourceChannel`을 `dajeong_ai`로 보낸다.
+
 ## Backend 실행
 
 PowerShell에서 Backend API 서버를 실행한다.

@@ -53,6 +53,8 @@ export type FulfillmentType = "dine_in" | "pickup";
 
 export type PaymentMethod = "credit_card" | "coupon" | "cash";
 
+export type SourceChannel = "kiosk_a" | "kiosk_b" | "dajeong_ai";
+
 export type PointAccrualRequest = {
   enabled: boolean;
   phone?: string | null;
@@ -67,6 +69,7 @@ export type OrderItemRequest = {
 export type OrderCreateRequest = {
   companyId: string;
   userId: string;
+  sourceChannel: SourceChannel;
   items: OrderItemRequest[];
   fulfillmentType: FulfillmentType;
   paymentMethod: PaymentMethod;
@@ -96,6 +99,7 @@ export type OrderResponse = {
   waitingNumber: number;
   userId: string;
   companyId: string;
+  sourceChannel: SourceChannel;
   status: string;
   totalPrice: number;
   pointEarned: number;

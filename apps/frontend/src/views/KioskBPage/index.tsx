@@ -53,7 +53,10 @@ export default function KioskBPage() {
     clearCart,
     handleOrder,
     submitOrder,
-  } = useKioskOrderFlow<MenuItem>({ companyId: "company-b" });
+  } = useKioskOrderFlow<MenuItem>({
+    companyId: "company-b",
+    sourceChannel: "kiosk_b",
+  });
 
   const activeCategory = useMemo(() => {
     return (

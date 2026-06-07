@@ -11,6 +11,7 @@ import {
   type KioskMenuItemWithOptions,
   type SelectedOptionGroup,
 } from "../kioskCart";
+import type { SourceChannel } from "../../lib/api/types";
 import type { KioskCheckoutState } from "../kioskCheckout";
 
 export type KioskOrderResult = {
@@ -24,11 +25,13 @@ export type KioskOrderResult = {
 
 type UseKioskOrderFlowOptions = {
   companyId: string;
+  sourceChannel?: SourceChannel;
   userId?: string;
 };
 
 export function useKioskOrderFlow<TMenuItem extends KioskMenuItemWithOptions>({
   companyId,
+  sourceChannel = "kiosk_a",
   userId = "user-demo-1",
 }: UseKioskOrderFlowOptions) {
   const [cartItems, setCartItems] = useState<KioskCartItem<TMenuItem>[]>([]);
@@ -175,6 +178,7 @@ export function useKioskOrderFlow<TMenuItem extends KioskMenuItemWithOptions>({
         const order = await createOrder({
           companyId,
           userId,
+          sourceChannel,
           items: cartItems.map((item) => ({
             menuId: item.id,
             quantity: item.quantity,
@@ -200,7 +204,7 @@ export function useKioskOrderFlow<TMenuItem extends KioskMenuItemWithOptions>({
         setIsOrdering(false);
       }
     },
-    [cartItems, clearCart, companyId, isOrdering, userId],
+    [cartItems, clearCart, companyId, isOrdering, sourceChannel, userId],
   );
 
   return {

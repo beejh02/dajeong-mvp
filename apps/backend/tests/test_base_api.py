@@ -19,8 +19,9 @@ def order_payload(
     menu_id: str = "menu-a-001",
     fulfillment_type: str = "dine_in",
     point_phone: str | None = None,
+    source_channel: str | None = None,
 ):
-    return {
+    payload = {
         "companyId": company_id,
         "userId": user_id,
         "items": [
@@ -39,6 +40,11 @@ def order_payload(
             "phone": point_phone,
         },
     }
+
+    if source_channel is not None:
+        payload["sourceChannel"] = source_channel
+
+    return payload
 
 
 def test_health_returns_ok():
@@ -131,6 +137,7 @@ def test_create_order_and_read_admin_order_views():
     assert created_order["orderNumber"].endswith("-0001")
     assert created_order["waitingNumber"] == 101
     assert created_order["companyId"] == "company-a"
+    assert created_order["sourceChannel"] == "kiosk_a"
     assert created_order["userId"] == "user-demo-1"
     assert created_order["status"] == "waiting"
     assert created_order["totalPrice"] == 8200
@@ -167,6 +174,17 @@ def test_create_order_and_read_admin_order_views():
 
     assert detail_response.status_code == 200
     assert detail_response.json() == created_order
+
+
+def test_create_order_preserves_dajeong_ai_source_channel():
+    payload = order_payload(source_channel="dajeong_ai")
+
+    response = client.post("/orders", json=payload)
+
+    assert response.status_code == 201
+    created_order = response.json()
+    assert created_order["companyId"] == "company-a"
+    assert created_order["sourceChannel"] == "dajeong_ai"
 
 
 def test_admin_summary_counts_orders_and_revenue():

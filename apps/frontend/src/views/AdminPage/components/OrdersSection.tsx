@@ -26,6 +26,7 @@ export default function OrdersSection({ orders, onViewDetail }: OrdersSectionPro
               <th>주문</th>
               <th>고객</th>
               <th>출처</th>
+              <th>대상 기업</th>
               <th>주문 상태</th>
               <th>결제</th>
               <th>포인트</th>
@@ -39,7 +40,7 @@ export default function OrdersSection({ orders, onViewDetail }: OrdersSectionPro
           <tbody>
             {orders.length === 0 && (
               <tr>
-                <td className="orders-empty" colSpan={10}>
+                <td className="orders-empty" colSpan={11}>
                   아직 접수된 주문이 없습니다.
                 </td>
               </tr>
@@ -53,6 +54,7 @@ export default function OrdersSection({ orders, onViewDetail }: OrdersSectionPro
                   <span className="customer-email">{order.email}</span>
                 </td>
                 <td>{order.source}</td>
+                <td>{order.targetCompany}</td>
                 <td>
                   <span className="status-badge">{order.status}</span>
                 </td>

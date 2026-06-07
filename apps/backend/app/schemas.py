@@ -56,6 +56,9 @@ class User(BaseModel):
     defaultPaymentMethod: str
 
 
+SourceChannel = Literal["kiosk_a", "kiosk_b", "dajeong_ai"]
+
+
 class SelectedOptionGroup(BaseModel):
     groupId: str
     choiceIds: list[str]
@@ -75,6 +78,7 @@ class OrderItemRequest(BaseModel):
 class OrderCreateRequest(BaseModel):
     companyId: str
     userId: str
+    sourceChannel: SourceChannel = "kiosk_a"
     items: Annotated[list[OrderItemRequest], Field(min_length=1)]
     fulfillmentType: Literal["dine_in", "pickup"]
     paymentMethod: Literal["credit_card", "coupon", "cash"]
@@ -104,6 +108,7 @@ class OrderResponse(BaseModel):
     waitingNumber: int
     userId: str
     companyId: str
+    sourceChannel: SourceChannel
     status: str
     totalPrice: int
     pointEarned: int

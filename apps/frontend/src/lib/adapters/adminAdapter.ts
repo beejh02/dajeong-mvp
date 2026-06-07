@@ -1,9 +1,24 @@
-import type { AdminSummaryResponse, OrderResponse } from "../api/types";
+import type {
+  AdminSummaryResponse,
+  OrderResponse,
+  SourceChannel,
+} from "../api/types";
 import type { ChannelStat, Order, SummaryCard } from "../../views/AdminPage/types";
 
-const COMPANY_SOURCE_LABELS: Record<string, string> = {
-  "company-a": "A기업 Kiosk",
-  "company-b": "B기업 Kiosk",
+const SOURCE_CHANNEL_LABELS: Record<SourceChannel, string> = {
+  kiosk_a: "A기업 Kiosk",
+  kiosk_b: "B기업 Kiosk",
+  dajeong_ai: "Dajeong AI",
+};
+
+const COMPANY_DEFAULT_SOURCE_CHANNELS: Record<string, SourceChannel> = {
+  "company-a": "kiosk_a",
+  "company-b": "kiosk_b",
+};
+
+const COMPANY_LABELS: Record<string, string> = {
+  "company-a": "A기업",
+  "company-b": "B기업",
 };
 
 const ORDER_STATUS_LABELS: Record<string, string> = {
@@ -49,12 +64,18 @@ export function adaptOrderToAdminOrder(order: OrderResponse): Order {
     ),
   );
 
+  const sourceChannel =
+    order.sourceChannel ?? COMPANY_DEFAULT_SOURCE_CHANNELS[order.companyId];
+
   return {
     id: order.orderNumber,
     number: order.waitingNumber,
     customer: "다정 데모 사용자",
     email: `${order.userId}@dajeong.demo`,
-    source: COMPANY_SOURCE_LABELS[order.companyId] ?? order.companyId,
+    source: sourceChannel
+      ? SOURCE_CHANNEL_LABELS[sourceChannel]
+      : order.companyId,
+    targetCompany: COMPANY_LABELS[order.companyId] ?? order.companyId,
     status: ORDER_STATUS_LABELS[order.status] ?? order.status,
     payment: PAYMENT_METHOD_LABELS[order.paymentMethod] ?? order.paymentMethod,
     point: `${order.pointEarned} P`,
@@ -73,7 +94,11 @@ export function adaptOrdersToChannelStats(orders: OrderResponse[]): ChannelStat[
   const stats = new Map<string, ChannelStat>();
 
   for (const order of orders) {
-    const name = COMPANY_SOURCE_LABELS[order.companyId] ?? order.companyId;
+    const sourceChannel =
+      order.sourceChannel ?? COMPANY_DEFAULT_SOURCE_CHANNELS[order.companyId];
+    const name = sourceChannel
+      ? SOURCE_CHANNEL_LABELS[sourceChannel]
+      : order.companyId;
     const stat = stats.get(name) ?? {
       name,
       orders: 0,

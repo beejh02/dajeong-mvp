@@ -20,6 +20,7 @@ export type Order = {
   customer: string;
   email: string;
   source: string;
+  targetCompany: string;
   status: string;
   payment: string;
   point: string;

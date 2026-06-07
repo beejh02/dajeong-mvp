@@ -53,7 +53,10 @@ export default function KioskAPage() {
     clearCart,
     handleOrder,
     submitOrder,
-  } = useKioskOrderFlow<MenuItem>({ companyId: "company-a" });
+  } = useKioskOrderFlow<MenuItem>({
+    companyId: "company-a",
+    sourceChannel: "kiosk_a",
+  });
 
   useEffect(() => {
     const scrollElement = scrollRef.current;

@@ -70,6 +70,7 @@ class InMemoryStore:
             waitingNumber=next(self.waiting_sequence),
             userId=order_request.userId,
             companyId=order_request.companyId,
+            sourceChannel=order_request.sourceChannel,
             status="waiting",
             totalPrice=total_price,
             pointEarned=total_price // 100,

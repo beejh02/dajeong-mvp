@@ -126,9 +126,10 @@ assert.deepEqual(readyDraft.draft.selectedOptionGroups, [
   },
 ]);
 
-assert.deepEqual(buildOrderCreateRequest(readyDraft.draft, "user-demo-1"), {
+assert.deepEqual(buildOrderCreateRequest(readyDraft.draft, "user-demo-1", "dajeong_ai"), {
   companyId: "company-a",
   userId: "user-demo-1",
+  sourceChannel: "dajeong_ai",
   items: [
     {
       menuId: "menu-a-002",
