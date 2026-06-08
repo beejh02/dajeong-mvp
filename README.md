@@ -1,28 +1,50 @@
 # Dajeong MVP
 
-다정은 사용자의 자연어 요청을 이해하고 여러 기업 서비스와 연결해주는 MCP 기반 AI 플랫폼 MVP이다.
+다정은 사용자의 자연어 요청을 기반으로 여러 기업 서비스의 주문 흐름을 통합하는 AI 서비스 연결 플랫폼 MVP이다. 현재 MVP는 A/B 기업 키오스크, 다정 AI 주문 화면, 관리자 페이지, Backend API를 구현하며, MCP Server runtime은 향후 확장 항목으로 계획한다.
 
-이번 MVP에서는 키오스크 주문 상황을 데모 유스케이스로 사용한다.
+다정은 MCP tool 확장을 고려한 AI 서비스 연결 플랫폼 MVP로 설계되었지만, 현재 레포지토리는 MCP Server runtime이 이미 완성된 서비스가 아니다.
 
-## 핵심 데모
+## 현재 구현 범위
 
 - A기업 Vertical UI 키오스크
 - B기업 Horizontal UI 키오스크
-- 다정 AI 채팅
-- 카드형 AI 응답
+- 다정 AI 주문 화면
 - 관리자 페이지
 - Backend API
-- MCP Server
+
+현재 다정 AI 주문 화면은 rule-based intent parser 기반으로 주문 의도를 해석한다. Gemini Flash 기반 intent extraction은 향후 확장 예정이며, 이번 1차 정리 작업에서는 Gemini 호출 코드나 SDK 의존성을 구현하지 않는다.
+
+MCP Server runtime과 MCP tool 구현도 아직 포함하지 않는다. 현재 MCP 관련 내용은 future work이며, 계획 문서는 `docs/mcp-tool-plan.md`를 기준으로 참고한다.
 
 ## 문서
 
-자세한 프로젝트 의도와 범위는 `project-spec.md`와 `docs/` 문서를 참고한다.
+프로젝트 의도와 범위는 `project-spec.md`와 `docs/` 문서를 참고한다.
 
-현재 Frontend는 Backend API를 데이터 source of truth로 사용하도록 연결한다. Frontend API client와 adapter 구조, 향후 MCP tool 계획은 `docs/mcp-tool-plan.md`에 정리한다.
+현재 Frontend는 Backend API를 데이터 source of truth로 사용하도록 연결되어 있다. Frontend API client와 adapter 구조, 향후 MCP tool 계획은 `docs/mcp-tool-plan.md`에 정리되어 있다.
 
 ## 주문 채널 계약
 
-주문 API에서 `companyId`는 실제 메뉴와 주문 대상 기업을 의미한다. `sourceChannel`은 주문이 유입된 채널을 의미하며 `kiosk_a`, `kiosk_b`, `dajeong_ai` 중 하나다. 예를 들어 다정 AI가 A기업 메뉴를 대신 주문할 때는 `companyId`를 `company-a`로 유지하고 `sourceChannel`을 `dajeong_ai`로 보낸다.
+주문 API에서 `companyId`는 실제 메뉴와 주문 대상 기업을 의미한다. `sourceChannel`은 주문이 유입된 채널을 의미하며 `kiosk_a`, `kiosk_b`, `dajeong_ai` 중 하나가 될 수 있다.
+
+예를 들어 다정 AI가 A기업 메뉴를 대신 주문하면 `companyId`는 `company-a`, `sourceChannel`은 `dajeong_ai`로 보낸다.
+
+## 환경 변수
+
+Backend 예시는 `apps/backend/.env.example`, Frontend 예시는 `apps/frontend/.env.example`을 참고한다.
+
+관리자 데모 토큰은 MVP 데모용 보호 장치이며 실제 인증, 권한 관리, 감사 로그를 대체하지 않는다. `NEXT_PUBLIC_DAJEONG_ADMIN_TOKEN`은 브라우저에 노출되는 값이므로 데모용으로만 사용한다.
+
+관리자 데모 토큰 설정 예시:
+
+```powershell
+# Backend
+$env:DAJEONG_ADMIN_TOKEN="demo-admin-token"
+
+# Frontend
+$env:NEXT_PUBLIC_DAJEONG_ADMIN_TOKEN="demo-admin-token"
+```
+
+Gemini 관련 환경변수는 향후 Gemini Flash intent extraction 구현을 위한 예시만 제공한다. `GEMINI_API_KEY`는 서버 사이드 API route에서만 사용할 값이며, 절대 `NEXT_PUBLIC_` prefix를 붙이지 않는다. 브라우저 React 코드에서 `GEMINI_API_KEY`를 직접 참조하면 안 된다. API key가 필요한 실제 구현은 다음 단계에서 진행한다.
 
 ## Backend 실행
 
@@ -34,7 +56,7 @@ python -m pip install -r requirements.txt
 python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 ```
 
-상태 확인:
+Backend 상태 확인:
 
 ```powershell
 Invoke-RestMethod http://127.0.0.1:8000/health
@@ -42,24 +64,14 @@ Invoke-RestMethod http://127.0.0.1:8000/health
 
 API 문서는 서버 실행 후 `http://127.0.0.1:8000/docs`에서 확인할 수 있다.
 
-관리자 API를 데모 수준으로 보호하려면 Backend 실행 전에 선택적으로
-`DAJEONG_ADMIN_TOKEN`을 설정한다.
+## Frontend 실행
 
-```powershell
-$env:DAJEONG_ADMIN_TOKEN="demo-admin-token"
-```
-
-Frontend 관리자 화면에서 같은 token을 전달하려면 Frontend 실행 전에 선택적으로
-`NEXT_PUBLIC_DAJEONG_ADMIN_TOKEN`을 설정한다.
+PowerShell에서 Frontend 개발 서버를 실행한다.
 
 ```powershell
 cd apps/frontend
-$env:NEXT_PUBLIC_DAJEONG_ADMIN_TOKEN="demo-admin-token"
-pnpm.cmd dev
+pnpm install
+pnpm dev
 ```
 
-이 token 방식은 MVP 데모 편의를 위한 단순 보호 장치이다. 브라우저에 노출되는
-`NEXT_PUBLIC_` 값이므로 실제 서비스 인증, 권한 관리, 감사 로그를 대체하지 않는다.
-
-MCP Server runtime 구현은 아직 future work이며, 현재 계획은 `docs/mcp-tool-plan.md`를
-기준으로 유지한다.
+Frontend는 기본적으로 `NEXT_PUBLIC_BACKEND_API_URL` 환경변수를 통해 Backend API 주소를 참조한다. 로컬 개발 기본값은 `http://127.0.0.1:8000`이다.
