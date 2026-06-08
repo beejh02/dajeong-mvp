@@ -9,7 +9,8 @@ import { ChatInput } from "./components/ChatInput";
 import { ChatMessageList } from "./components/ChatMessageList";
 import { OrderDraftCard } from "./components/OrderDraftCard";
 import { buildOrderDraft } from "./lib/buildOrderDraft";
-import { mergeParsedOrderIntent, parseOrderText } from "./lib/parseOrderText";
+import { extractOrderIntent } from "./lib/extractOrderIntent";
+import { mergeParsedOrderIntent } from "./lib/parseOrderText";
 import {
   buildOrderCreateRequest,
   validateOrderDraft,
@@ -84,10 +85,8 @@ export default function ChatPage() {
     setErrorMessage(null);
     appendMessage("user", trimmedInput);
 
-    const nextIntent = mergeParsedOrderIntent(
-      pendingIntent,
-      parseOrderText(trimmedInput),
-    );
+    const parsedIntent = await extractOrderIntent(trimmedInput);
+    const nextIntent = mergeParsedOrderIntent(pendingIntent, parsedIntent);
     setPendingIntent(nextIntent);
 
     if (!nextIntent.companyId) {

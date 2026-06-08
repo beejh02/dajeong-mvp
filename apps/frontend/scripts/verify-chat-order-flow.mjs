@@ -71,6 +71,9 @@ function resolveTypeScriptDependency(relativePath, importPath) {
 const { mergeParsedOrderIntent, parseOrderText } = await importTypeScriptModule(
   "src/views/ChatPage/lib/parseOrderText.ts",
 );
+const { extractOrderIntent } = await importTypeScriptModule(
+  "src/views/ChatPage/lib/extractOrderIntent.ts",
+);
 const { buildOrderDraft } = await importTypeScriptModule(
   "src/views/ChatPage/lib/buildOrderDraft.ts",
 );
@@ -134,6 +137,67 @@ assert.deepEqual(firstIntent.optionKeywords, ["제로콜라"]);
 assert.equal(firstIntent.quantity, 1);
 assert.equal(firstIntent.fulfillmentType, "dine_in");
 assert.equal(firstIntent.paymentMethod, "credit_card");
+
+const remoteIntent = {
+  companyId: "company-b",
+  menuKeyword: "새우",
+  optionKeywords: ["콜라"],
+  quantity: 2,
+  quantityMentioned: true,
+  fulfillmentType: "pickup",
+  fulfillmentTypeMentioned: true,
+  paymentMethod: "cash",
+  paymentMethodMentioned: true,
+  pointAccrual: { enabled: false, phone: null },
+};
+
+const originalFetch = globalThis.fetch;
+
+try {
+  globalThis.fetch = async () => ({
+    ok: true,
+    status: 200,
+    json: async () => remoteIntent,
+  });
+
+  assert.deepEqual(
+    await extractOrderIntent("B기업 새우버거 두개 포장 현금"),
+    remoteIntent,
+  );
+
+  globalThis.fetch = async () => {
+    throw new Error("network unavailable");
+  };
+
+  assert.deepEqual(
+    await extractOrderIntent("A기업 불고기버거 하나 제로콜라로 주문해줘"),
+    firstIntent,
+  );
+
+  globalThis.fetch = async () => ({
+    ok: false,
+    status: 503,
+    json: async () => ({ error: "Gemini intent extraction is not configured yet" }),
+  });
+
+  assert.deepEqual(
+    await extractOrderIntent("A기업 불고기버거 하나 제로콜라로 주문해줘"),
+    firstIntent,
+  );
+
+  globalThis.fetch = async () => ({
+    ok: true,
+    status: 200,
+    json: async () => ({ menuKeyword: "불고기" }),
+  });
+
+  assert.deepEqual(
+    await extractOrderIntent("A기업 불고기버거 하나 제로콜라로 주문해줘"),
+    firstIntent,
+  );
+} finally {
+  globalThis.fetch = originalFetch;
+}
 
 const missingBun = buildOrderDraft(firstIntent, companyAResponse);
 

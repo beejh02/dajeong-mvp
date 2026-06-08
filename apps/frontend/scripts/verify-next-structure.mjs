@@ -144,7 +144,7 @@ const interactionChecks = [
   {
     file: "src/views/ChatPage/index.tsx",
     patterns: [
-      "parseOrderText",
+      "extractOrderIntent",
       "buildOrderDraft",
       "createOrder",
       "buildOrderCreateRequest",

@@ -15,7 +15,9 @@ const requiredFiles = [
   "src/lib/adapters/adminAdapter.ts",
   "src/lib/privacy.ts",
   "src/app/chat/page.tsx",
+  "src/app/api/order-intent/route.ts",
   "src/views/ChatPage/index.tsx",
+  "src/views/ChatPage/lib/extractOrderIntent.ts",
   "src/views/ChatPage/lib/parseOrderText.ts",
   "src/views/ChatPage/lib/buildOrderDraft.ts",
   "src/views/ChatPage/lib/validateOrderDraft.ts",
@@ -62,8 +64,20 @@ if (failures.length === 0) {
   requireIncludes("src/app/chat/page.tsx", "ChatPage");
   requireIncludes("src/views/ChatPage/index.tsx", "getCompanyMenus");
   requireIncludes("src/views/ChatPage/index.tsx", "createOrder");
+  requireIncludes("src/views/ChatPage/index.tsx", "extractOrderIntent");
   requireIncludes("src/views/ChatPage/index.tsx", "buildOrderCreateRequest");
   requireIncludes("src/views/ChatPage/index.tsx", "user-demo-1");
+  requireExcludes("src/views/ChatPage/index.tsx", "parseOrderText(trimmedInput)");
+  requireIncludes("src/views/ChatPage/lib/extractOrderIntent.ts", "/api/order-intent");
+  requireIncludes("src/views/ChatPage/lib/extractOrderIntent.ts", "parseOrderText(text)");
+  requireIncludes("src/views/ChatPage/lib/extractOrderIntent.ts", "isParsedOrderIntent");
+  requireIncludes("src/app/api/order-intent/route.ts", "request.json()");
+  requireIncludes(
+    "src/app/api/order-intent/route.ts",
+    "Gemini intent extraction is not configured yet",
+  );
+  requireIncludes("src/app/api/order-intent/route.ts", "status: 503");
+  requireExcludes("src/app/api/order-intent/route.ts", "GEMINI_API_KEY");
   requireIncludes("src/views/ChatPage/lib/parseOrderText.ts", "company-a");
   requireIncludes("src/views/ChatPage/lib/parseOrderText.ts", "company-b");
   requireIncludes("src/views/ChatPage/lib/buildOrderDraft.ts", "choice.id === aliasedChoiceId");
