@@ -18,10 +18,46 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
 
+function isStringOrNull(value: unknown): value is string | null {
+  return typeof value === "string" || value === null;
+}
+
+function isStringArray(value: unknown): value is string[] {
+  return Array.isArray(value) && value.every((item) => typeof item === "string");
+}
+
+function isFulfillmentType(value: unknown) {
+  return value === "dine_in" || value === "pickup";
+}
+
+function isPaymentMethod(value: unknown) {
+  return value === "credit_card" || value === "coupon" || value === "cash";
+}
+
+function isPointAccrual(value: unknown) {
+  return (
+    isRecord(value) &&
+    typeof value.enabled === "boolean" &&
+    isStringOrNull(value.phone)
+  );
+}
+
 function isParsedOrderIntent(value: unknown): value is ParsedOrderIntent {
   if (!isRecord(value)) return false;
 
-  return REQUIRED_INTENT_FIELDS.every((field) => field in value);
+  return (
+    REQUIRED_INTENT_FIELDS.every((field) => field in value) &&
+    isStringOrNull(value.companyId) &&
+    isStringOrNull(value.menuKeyword) &&
+    isStringArray(value.optionKeywords) &&
+    typeof value.quantity === "number" &&
+    typeof value.quantityMentioned === "boolean" &&
+    isFulfillmentType(value.fulfillmentType) &&
+    typeof value.fulfillmentTypeMentioned === "boolean" &&
+    isPaymentMethod(value.paymentMethod) &&
+    typeof value.paymentMethodMentioned === "boolean" &&
+    isPointAccrual(value.pointAccrual)
+  );
 }
 
 export async function extractOrderIntent(

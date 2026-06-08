@@ -12,7 +12,7 @@
 - 관리자 페이지
 - Backend API
 
-현재 다정 AI 주문 화면은 rule-based intent parser 기반으로 주문 의도를 해석한다. Gemini Flash 기반 intent extraction은 향후 확장 예정이며, 이번 1차 정리 작업에서는 Gemini 호출 코드나 SDK 의존성을 구현하지 않는다.
+현재 다정 AI 주문 화면은 `/api/order-intent` server-side API route를 통해 Gemini Flash 기반 intent extraction을 먼저 시도하고, 실패하면 기존 rule-based intent parser로 fallback한다.
 
 MCP Server runtime과 MCP tool 구현도 아직 포함하지 않는다. 현재 MCP 관련 내용은 future work이며, 계획 문서는 `docs/mcp-tool-plan.md`를 기준으로 참고한다.
 
@@ -44,7 +44,7 @@ $env:DAJEONG_ADMIN_TOKEN="demo-admin-token"
 $env:NEXT_PUBLIC_DAJEONG_ADMIN_TOKEN="demo-admin-token"
 ```
 
-Gemini 관련 환경변수는 향후 Gemini Flash intent extraction 구현을 위한 예시만 제공한다. `GEMINI_API_KEY`는 서버 사이드 API route에서만 사용할 값이며, 절대 `NEXT_PUBLIC_` prefix를 붙이지 않는다. 브라우저 React 코드에서 `GEMINI_API_KEY`를 직접 참조하면 안 된다. API key가 필요한 실제 구현은 다음 단계에서 진행한다.
+Gemini Flash intent extraction을 사용하려면 `apps/frontend/.env.local`에 `GEMINI_API_KEY`를 설정한다. `GEMINI_API_KEY`는 서버 사이드 API route에서만 사용할 값이며, 절대 `NEXT_PUBLIC_` prefix를 붙이지 않는다. 브라우저 React 코드에서 `GEMINI_API_KEY`를 직접 참조하면 안 된다. `GEMINI_API_KEY`가 없거나 Gemini extraction이 실패해도 기존 rule-based parser fallback으로 다정 AI 주문 데모는 동작한다.
 
 ## Backend 실행
 

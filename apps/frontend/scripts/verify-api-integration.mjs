@@ -3,6 +3,8 @@ import path from "node:path";
 
 const root = process.cwd();
 const failures = [];
+const packageJson = JSON.parse(readFileSync(path.join(root, "package.json"), "utf8"));
+const dependencies = packageJson.dependencies ?? {};
 
 const requiredFiles = [
   "src/lib/api/client.ts",
@@ -53,6 +55,12 @@ for (const file of requiredFiles) {
 }
 
 if (failures.length === 0) {
+  for (const dependencyName of ["ai", "@ai-sdk/google", "zod"]) {
+    if (!dependencies[dependencyName]) {
+      failures.push(`missing frontend dependency: ${dependencyName}`);
+    }
+  }
+
   requireIncludes("src/lib/api/client.ts", "NEXT_PUBLIC_BACKEND_API_URL");
   requireIncludes("src/lib/api/menus.ts", "getCompanyMenus");
   requireIncludes("src/lib/api/orders.ts", "createOrder");
@@ -72,12 +80,20 @@ if (failures.length === 0) {
   requireIncludes("src/views/ChatPage/lib/extractOrderIntent.ts", "parseOrderText(text)");
   requireIncludes("src/views/ChatPage/lib/extractOrderIntent.ts", "isParsedOrderIntent");
   requireIncludes("src/app/api/order-intent/route.ts", "request.json()");
+  requireIncludes("src/app/api/order-intent/route.ts", "process.env.GEMINI_API_KEY");
+  requireIncludes("src/app/api/order-intent/route.ts", "generateObject");
+  requireIncludes("src/app/api/order-intent/route.ts", "createGoogleGenerativeAI");
+  requireIncludes("src/app/api/order-intent/route.ts", "z.object");
+  requireIncludes("src/app/api/order-intent/route.ts", "orderIntentSchema");
+  requireIncludes("src/app/api/order-intent/route.ts", "gemini-2.5-flash");
   requireIncludes(
     "src/app/api/order-intent/route.ts",
     "Gemini intent extraction is not configured yet",
   );
   requireIncludes("src/app/api/order-intent/route.ts", "status: 503");
-  requireExcludes("src/app/api/order-intent/route.ts", "GEMINI_API_KEY");
+  requireExcludes("src/app/api/order-intent/route.ts", "NEXT_PUBLIC_GEMINI_API_KEY");
+  requireExcludes("src/views/ChatPage/index.tsx", "GEMINI_API_KEY");
+  requireExcludes("src/views/ChatPage/lib/extractOrderIntent.ts", "GEMINI_API_KEY");
   requireIncludes("src/views/ChatPage/lib/parseOrderText.ts", "company-a");
   requireIncludes("src/views/ChatPage/lib/parseOrderText.ts", "company-b");
   requireIncludes("src/views/ChatPage/lib/buildOrderDraft.ts", "choice.id === aliasedChoiceId");

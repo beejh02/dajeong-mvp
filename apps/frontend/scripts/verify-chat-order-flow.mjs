@@ -1,11 +1,24 @@
 import assert from "node:assert/strict";
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  symlinkSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 
 const root = process.cwd();
 const tempDir = mkdtempSync(path.join(tmpdir(), "dajeong-chat-tests-"));
+const rootNodeModulesPath = path.join(root, "node_modules");
+const tempNodeModulesPath = path.join(tempDir, "node_modules");
+
+if (existsSync(rootNodeModulesPath) && !existsSync(tempNodeModulesPath)) {
+  symlinkSync(rootNodeModulesPath, tempNodeModulesPath, "junction");
+}
 
 async function importTypeScriptModule(relativePath) {
   const outputPath = copyTypeScriptModule(relativePath);
@@ -73,6 +86,9 @@ const { mergeParsedOrderIntent, parseOrderText } = await importTypeScriptModule(
 );
 const { extractOrderIntent } = await importTypeScriptModule(
   "src/views/ChatPage/lib/extractOrderIntent.ts",
+);
+const { POST } = await importTypeScriptModule(
+  "src/app/api/order-intent/route.ts",
 );
 const { buildOrderDraft } = await importTypeScriptModule(
   "src/views/ChatPage/lib/buildOrderDraft.ts",
@@ -152,6 +168,37 @@ const remoteIntent = {
 };
 
 const originalFetch = globalThis.fetch;
+const originalGeminiApiKey = process.env.GEMINI_API_KEY;
+
+try {
+  delete process.env.GEMINI_API_KEY;
+
+  const invalidRouteResponse = await POST(
+    new Request("http://localhost/api/order-intent", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: "" }),
+    }),
+  );
+
+  assert.equal(invalidRouteResponse.status, 400);
+
+  const noKeyRouteResponse = await POST(
+    new Request("http://localhost/api/order-intent", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: "A기업 불고기버거 하나" }),
+    }),
+  );
+
+  assert.equal(noKeyRouteResponse.status, 503);
+} finally {
+  if (originalGeminiApiKey === undefined) {
+    delete process.env.GEMINI_API_KEY;
+  } else {
+    process.env.GEMINI_API_KEY = originalGeminiApiKey;
+  }
+}
 
 try {
   globalThis.fetch = async () => ({
