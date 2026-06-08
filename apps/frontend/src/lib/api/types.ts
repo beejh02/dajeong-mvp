@@ -117,6 +117,7 @@ export type OrderListResponse = {
 export type AdminSummaryResponse = {
   totalOrders: number;
   totalSales: number;
+  totalPointEarned: number;
   waitingOrders: number;
   companyCount: number;
   menuCount: number;

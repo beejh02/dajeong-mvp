@@ -3,6 +3,7 @@ import type {
   OrderResponse,
   SourceChannel,
 } from "../api/types";
+import { maskPhoneNumber } from "../privacy";
 import type { ChannelStat, Order, SummaryCard } from "../../views/AdminPage/types";
 
 const SOURCE_CHANNEL_LABELS: Record<SourceChannel, string> = {
@@ -33,6 +34,11 @@ const PAYMENT_METHOD_LABELS: Record<string, string> = {
   cash: "현금",
 };
 
+const FULFILLMENT_TYPE_LABELS: Record<string, string> = {
+  dine_in: "매장식사",
+  pickup: "포장",
+};
+
 export function formatCurrency(value: number) {
   return `₩ ${value.toLocaleString("ko-KR")}`;
 }
@@ -48,7 +54,7 @@ export function adaptAdminSummary(
     { label: "등록 메뉴", value: `${summary.menuCount}개` },
     { label: "결제 방식", value: "데모 승인" },
     { label: "영수증", value: "데모 발급" },
-    { label: "포인트 적립", value: `${Math.floor(summary.totalSales / 100)} P` },
+    { label: "포인트 적립", value: `${summary.totalPointEarned} P` },
   ];
 }
 
@@ -76,10 +82,16 @@ export function adaptOrderToAdminOrder(order: OrderResponse): Order {
       ? SOURCE_CHANNEL_LABELS[sourceChannel]
       : order.companyId,
     targetCompany: COMPANY_LABELS[order.companyId] ?? order.companyId,
+    fulfillment:
+      FULFILLMENT_TYPE_LABELS[order.fulfillmentType] ?? order.fulfillmentType,
     status: ORDER_STATUS_LABELS[order.status] ?? order.status,
     payment: PAYMENT_METHOD_LABELS[order.paymentMethod] ?? order.paymentMethod,
     point: `${order.pointEarned} P`,
     pointBalance: `${order.pointEarned} P`,
+    pointAccrualStatus: order.pointAccrual.enabled ? "적립함" : "적립 안 함",
+    pointPhone: order.pointAccrual.phone
+      ? maskPhoneNumber(order.pointAccrual.phone)
+      : "-",
     receipt: "데모 발급",
     receiptNumber: `R-${order.id}`,
     amount: formatCurrency(order.totalPrice),

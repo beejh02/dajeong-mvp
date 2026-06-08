@@ -126,6 +126,7 @@ class OrderListResponse(BaseModel):
 class AdminSummaryResponse(BaseModel):
     totalOrders: int
     totalSales: int
+    totalPointEarned: int
     waitingOrders: int
     companyCount: int
     menuCount: int

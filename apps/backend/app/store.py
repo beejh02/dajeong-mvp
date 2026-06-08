@@ -69,6 +69,7 @@ class InMemoryStore:
             for line_index, item in enumerate(order_request.items, start=1)
         ]
         total_price = sum(item.itemPrice for item in order_items)
+        point_earned = total_price // 100 if order_request.pointAccrual.enabled else 0
 
         order = OrderResponse(
             id=order_id,
@@ -79,7 +80,7 @@ class InMemoryStore:
             sourceChannel=source_channel,
             status="waiting",
             totalPrice=total_price,
-            pointEarned=total_price // 100,
+            pointEarned=point_earned,
             fulfillmentType=order_request.fulfillmentType,
             paymentMethod=order_request.paymentMethod,
             pointAccrual=order_request.pointAccrual,
@@ -102,6 +103,7 @@ class InMemoryStore:
         return AdminSummaryResponse(
             totalOrders=len(orders),
             totalSales=sum(order.totalPrice for order in orders),
+            totalPointEarned=sum(order.pointEarned for order in orders),
             waitingOrders=sum(order.status == "waiting" for order in orders),
             companyCount=len(self.companies),
             menuCount=len(self.menus),

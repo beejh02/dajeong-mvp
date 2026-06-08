@@ -21,10 +21,13 @@ export type Order = {
   email: string;
   source: string;
   targetCompany: string;
+  fulfillment: string;
   status: string;
   payment: string;
   point: string;
   pointBalance: string;
+  pointAccrualStatus: string;
+  pointPhone: string;
   receipt: string;
   receiptNumber: string;
   amount: string;

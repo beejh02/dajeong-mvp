@@ -141,7 +141,7 @@ def test_create_order_and_read_admin_order_views():
     assert created_order["userId"] == "user-demo-1"
     assert created_order["status"] == "waiting"
     assert created_order["totalPrice"] == 8200
-    assert created_order["pointEarned"] == 82
+    assert created_order["pointEarned"] == 0
     assert created_order["fulfillmentType"] == "dine_in"
     assert created_order["paymentMethod"] == "credit_card"
     assert created_order["pointAccrual"] == {"enabled": False, "phone": None}
@@ -241,6 +241,7 @@ def test_admin_summary_counts_orders_and_revenue():
     assert response.json() == {
         "totalOrders": 2,
         "totalSales": 16900,
+        "totalPointEarned": 97,
         "waitingOrders": 2,
         "companyCount": 2,
         "menuCount": 6,
@@ -277,10 +278,21 @@ def test_point_phone_is_trimmed_in_order_response():
     response = client.post("/orders", json=payload)
 
     assert response.status_code == 201
+    assert response.json()["pointEarned"] == 72
     assert response.json()["pointAccrual"] == {
         "enabled": True,
         "phone": "010-1234-5678",
     }
+
+
+def test_point_accrual_disabled_does_not_earn_points():
+    payload = order_payload(point_phone=None)
+
+    response = client.post("/orders", json=payload)
+
+    assert response.status_code == 201
+    assert response.json()["pointEarned"] == 0
+    assert response.json()["pointAccrual"] == {"enabled": False, "phone": None}
 
 
 def test_point_phone_rejects_non_demo_phone_format():

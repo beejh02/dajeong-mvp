@@ -26,6 +26,7 @@ export default function OrderDetailSection({ order, onBack }: OrderDetailSection
           <DetailItem label="이메일" value={order.email} />
           <DetailItem label="출처" value={order.source} />
           <DetailItem label="대상 기업" value={order.targetCompany} />
+          <DetailItem label="이용 방식" value={order.fulfillment} />
           <DetailItem
             label="주문 상태"
             value={<span className="status-badge">{order.status}</span>}
@@ -90,14 +91,16 @@ export default function OrderDetailSection({ order, onBack }: OrderDetailSection
                 <th>구분</th>
                 <th>금액</th>
                 <th>잔액</th>
+                <th>전화번호</th>
                 <th>처리 시각</th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <td>적립</td>
+                <td>{order.pointAccrualStatus}</td>
                 <td>{order.point}</td>
                 <td>{order.pointBalance}</td>
+                <td>{order.pointPhone}</td>
                 <td>{order.createdAt}</td>
               </tr>
             </tbody>

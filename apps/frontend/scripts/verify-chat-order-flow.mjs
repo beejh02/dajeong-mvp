@@ -1,32 +1,71 @@
 import assert from "node:assert/strict";
-import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
-import ts from "typescript";
 
 const root = process.cwd();
 const tempDir = mkdtempSync(path.join(tmpdir(), "dajeong-chat-tests-"));
 
 async function importTypeScriptModule(relativePath) {
-  const sourcePath = path.join(root, relativePath);
-  const source = readFileSync(sourcePath, "utf8");
-  const output = ts.transpileModule(source, {
-    compilerOptions: {
-      jsx: ts.JsxEmit.ReactJSX,
-      module: ts.ModuleKind.ES2022,
-      target: ts.ScriptTarget.ES2022,
-      verbatimModuleSyntax: false,
+  const outputPath = copyTypeScriptModule(relativePath);
+  return import(pathToFileURL(outputPath));
+}
+
+function copyTypeScriptModule(relativePath) {
+  const normalizedRelativePath = relativePath.replaceAll("\\", "/");
+  const outputPath = path.join(tempDir, normalizedRelativePath);
+
+  if (existsSync(outputPath)) {
+    return outputPath;
+  }
+
+  const sourcePath = path.join(root, normalizedRelativePath);
+  let output = readFileSync(sourcePath, "utf8");
+
+  output = output.replace(
+    /(from\s+["'])(\.{1,2}\/[^"']+)(["'])/g,
+    (match, prefix, importPath, suffix) => {
+      const dependencyRelativePath = resolveTypeScriptDependency(
+        normalizedRelativePath,
+        importPath,
+      );
+
+      if (!dependencyRelativePath) {
+        return match;
+      }
+
+      const dependencyOutputPath = copyTypeScriptModule(dependencyRelativePath);
+      let rewrittenImportPath = path
+        .relative(path.dirname(outputPath), dependencyOutputPath)
+        .replaceAll("\\", "/");
+
+      if (!rewrittenImportPath.startsWith(".")) {
+        rewrittenImportPath = `./${rewrittenImportPath}`;
+      }
+
+      return `${prefix}${rewrittenImportPath}${suffix}`;
     },
-    fileName: sourcePath,
-  }).outputText;
-  const outputPath = path.join(
-    tempDir,
-    relativePath.replaceAll(/[\\/]/g, "__").replace(/\.ts$/, ".mjs"),
   );
 
+  mkdirSync(path.dirname(outputPath), { recursive: true });
   writeFileSync(outputPath, output, "utf8");
-  return import(pathToFileURL(outputPath));
+  return outputPath;
+}
+
+function resolveTypeScriptDependency(relativePath, importPath) {
+  const dependencyBasePath = path
+    .join(path.dirname(relativePath), importPath)
+    .replaceAll("\\", "/");
+  const candidates = [
+    dependencyBasePath,
+    `${dependencyBasePath}.ts`,
+    `${dependencyBasePath}.tsx`,
+    path.join(dependencyBasePath, "index.ts").replaceAll("\\", "/"),
+    path.join(dependencyBasePath, "index.tsx").replaceAll("\\", "/"),
+  ];
+
+  return candidates.find((candidate) => existsSync(path.join(root, candidate)));
 }
 
 const { mergeParsedOrderIntent, parseOrderText } = await importTypeScriptModule(

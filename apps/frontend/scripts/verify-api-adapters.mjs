@@ -1,32 +1,71 @@
 import assert from "node:assert/strict";
-import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
-import ts from "typescript";
 
 const root = process.cwd();
 const tempDir = mkdtempSync(path.join(tmpdir(), "dajeong-adapter-tests-"));
 
 async function importTypeScriptModule(relativePath) {
-  const sourcePath = path.join(root, relativePath);
-  const source = readFileSync(sourcePath, "utf8");
-  const output = ts.transpileModule(source, {
-    compilerOptions: {
-      jsx: ts.JsxEmit.ReactJSX,
-      module: ts.ModuleKind.ES2022,
-      target: ts.ScriptTarget.ES2022,
-      verbatimModuleSyntax: false,
+  const outputPath = copyTypeScriptModule(relativePath);
+  return import(pathToFileURL(outputPath));
+}
+
+function copyTypeScriptModule(relativePath) {
+  const normalizedRelativePath = relativePath.replaceAll("\\", "/");
+  const outputPath = path.join(tempDir, normalizedRelativePath);
+
+  if (existsSync(outputPath)) {
+    return outputPath;
+  }
+
+  const sourcePath = path.join(root, normalizedRelativePath);
+  let output = readFileSync(sourcePath, "utf8");
+
+  output = output.replace(
+    /(from\s+["'])(\.{1,2}\/[^"']+)(["'])/g,
+    (match, prefix, importPath, suffix) => {
+      const dependencyRelativePath = resolveTypeScriptDependency(
+        normalizedRelativePath,
+        importPath,
+      );
+
+      if (!dependencyRelativePath) {
+        return match;
+      }
+
+      const dependencyOutputPath = copyTypeScriptModule(dependencyRelativePath);
+      let rewrittenImportPath = path
+        .relative(path.dirname(outputPath), dependencyOutputPath)
+        .replaceAll("\\", "/");
+
+      if (!rewrittenImportPath.startsWith(".")) {
+        rewrittenImportPath = `./${rewrittenImportPath}`;
+      }
+
+      return `${prefix}${rewrittenImportPath}${suffix}`;
     },
-    fileName: sourcePath,
-  }).outputText;
-  const outputPath = path.join(
-    tempDir,
-    relativePath.replaceAll(/[\\/]/g, "__").replace(/\.ts$/, ".mjs"),
   );
 
+  mkdirSync(path.dirname(outputPath), { recursive: true });
   writeFileSync(outputPath, output, "utf8");
-  return import(pathToFileURL(outputPath));
+  return outputPath;
+}
+
+function resolveTypeScriptDependency(relativePath, importPath) {
+  const dependencyBasePath = path
+    .join(path.dirname(relativePath), importPath)
+    .replaceAll("\\", "/");
+  const candidates = [
+    dependencyBasePath,
+    `${dependencyBasePath}.ts`,
+    `${dependencyBasePath}.tsx`,
+    path.join(dependencyBasePath, "index.ts").replaceAll("\\", "/"),
+    path.join(dependencyBasePath, "index.tsx").replaceAll("\\", "/"),
+  ];
+
+  return candidates.find((candidate) => existsSync(path.join(root, candidate)));
 }
 
 const { adaptMenusToCategories } = await importTypeScriptModule(
@@ -212,6 +251,7 @@ assert.equal(mergedCartItems[0].quantity, 2);
 const summaryCards = adaptAdminSummary({
   totalOrders: 2,
   totalSales: 19600,
+  totalPointEarned: 97,
   waitingOrders: 2,
   companyCount: 2,
   menuCount: 6,
@@ -225,7 +265,7 @@ assert.deepEqual(summaryCards, [
   { label: "등록 메뉴", value: "6개" },
   { label: "결제 방식", value: "데모 승인" },
   { label: "영수증", value: "데모 발급" },
-  { label: "포인트 적립", value: "196 P" },
+  { label: "포인트 적립", value: "97 P" },
 ]);
 
 const backendOrder = {
@@ -237,7 +277,7 @@ const backendOrder = {
   sourceChannel: "dajeong_ai",
   status: "waiting",
   totalPrice: 16400,
-  pointEarned: 164,
+  pointEarned: 0,
   fulfillmentType: "dine_in",
   paymentMethod: "credit_card",
   pointAccrual: { enabled: false, phone: null },
@@ -274,8 +314,13 @@ assert.equal(adminOrder.number, 101);
 assert.equal(adminOrder.customer, "다정 데모 사용자");
 assert.equal(adminOrder.source, "Dajeong AI");
 assert.equal(adminOrder.targetCompany, "A기업");
+assert.equal(adminOrder.fulfillment, "매장식사");
 assert.equal(adminOrder.status, "대기");
 assert.equal(adminOrder.payment, "신용카드");
+assert.equal(adminOrder.point, "0 P");
+assert.equal(adminOrder.pointBalance, "0 P");
+assert.equal(adminOrder.pointAccrualStatus, "적립 안 함");
+assert.equal(adminOrder.pointPhone, "-");
 assert.equal(adminOrder.receipt, "데모 발급");
 assert.equal(adminOrder.receiptNumber, "R-order-0001");
 assert.equal(adminOrder.amount, "₩ 16,400");
@@ -292,7 +337,18 @@ const kioskOrder = {
   orderNumber: "ORD-20260603-0002",
   waitingNumber: 102,
   sourceChannel: "kiosk_a",
+  pointEarned: 164,
+  fulfillmentType: "pickup",
+  pointAccrual: { enabled: true, phone: "010-1234-5678" },
 };
+
+const kioskAdminOrder = adaptOrderToAdminOrder(kioskOrder);
+
+assert.equal(kioskAdminOrder.fulfillment, "포장");
+assert.equal(kioskAdminOrder.point, "164 P");
+assert.equal(kioskAdminOrder.pointBalance, "164 P");
+assert.equal(kioskAdminOrder.pointAccrualStatus, "적립함");
+assert.equal(kioskAdminOrder.pointPhone, "010-****-5678");
 
 const channelStats = adaptOrdersToChannelStats([backendOrder, kioskOrder]);
 

@@ -76,6 +76,7 @@ if (failures.length === 0) {
   requireIncludes("src/lib/api/types.ts", "fulfillmentType");
   requireIncludes("src/lib/api/types.ts", "paymentMethod");
   requireIncludes("src/lib/api/types.ts", "pointAccrual");
+  requireIncludes("src/lib/api/types.ts", "totalPointEarned");
   requireIncludes("src/views/hooks/useKioskMenu.ts", "getCompanyMenus");
   requireIncludes("src/views/hooks/useKioskMenu.ts", "adaptMenusToCategories");
   requireIncludes("src/views/hooks/useKioskMenu.ts", "isMountedRef");
@@ -141,7 +142,19 @@ if (failures.length === 0) {
   requireExcludes("src/views/AdminPage/index.tsx", "from \"./constants\"");
   requireIncludes("src/lib/adapters/adminAdapter.ts", "selectedOptionGroups");
   requireIncludes("src/lib/adapters/adminAdapter.ts", "SOURCE_CHANNEL_LABELS");
+  requireIncludes("src/lib/adapters/adminAdapter.ts", "FULFILLMENT_TYPE_LABELS");
   requireIncludes("src/lib/adapters/adminAdapter.ts", "targetCompany");
+  requireIncludes("src/lib/adapters/adminAdapter.ts", "totalPointEarned");
+  requireIncludes("src/lib/adapters/adminAdapter.ts", "pointAccrualStatus");
+  requireIncludes("src/lib/adapters/adminAdapter.ts", "pointPhone");
+  requireIncludes("src/lib/adapters/adminAdapter.ts", "maskPhoneNumber");
+  requireIncludes("src/views/AdminPage/types.ts", "fulfillment");
+  requireIncludes("src/views/AdminPage/types.ts", "pointAccrualStatus");
+  requireIncludes("src/views/AdminPage/types.ts", "pointPhone");
+  requireIncludes("src/views/AdminPage/components/OrdersSection.tsx", "order.fulfillment");
+  requireIncludes("src/views/AdminPage/components/OrderDetailSection.tsx", "이용 방식");
+  requireIncludes("src/views/AdminPage/components/OrderDetailSection.tsx", "order.pointAccrualStatus");
+  requireIncludes("src/views/AdminPage/components/OrderDetailSection.tsx", "order.pointPhone");
 
   for (const toolName of [
     "get_companies",
