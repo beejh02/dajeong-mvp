@@ -79,8 +79,15 @@ if (failures.length === 0) {
   requireIncludes("src/views/ChatPage/lib/extractOrderIntent.ts", "/api/order-intent");
   requireIncludes("src/views/ChatPage/lib/extractOrderIntent.ts", "parseOrderText(text)");
   requireIncludes("src/views/ChatPage/lib/extractOrderIntent.ts", "isParsedOrderIntent");
+  requireIncludes("src/views/ChatPage/lib/extractOrderIntent.ts", "isCompanyId");
+  requireIncludes("src/views/ChatPage/lib/extractOrderIntent.ts", "Number.isInteger");
+  requireIncludes("src/views/ChatPage/lib/extractOrderIntent.ts", "value === \"company-a\"");
   requireIncludes("src/app/api/order-intent/route.ts", "request.json()");
   requireIncludes("src/app/api/order-intent/route.ts", "process.env.GEMINI_API_KEY");
+  requireIncludes(
+    "src/app/api/order-intent/route.ts",
+    "console.error(\"Gemini intent extraction failed\", error)",
+  );
   requireIncludes("src/app/api/order-intent/route.ts", "generateObject");
   requireIncludes("src/app/api/order-intent/route.ts", "createGoogleGenerativeAI");
   requireIncludes("src/app/api/order-intent/route.ts", "z.object");

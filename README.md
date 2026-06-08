@@ -12,7 +12,7 @@
 - 관리자 페이지
 - Backend API
 
-현재 다정 AI 주문 화면은 `/api/order-intent` server-side API route를 통해 Gemini Flash 기반 intent extraction을 먼저 시도하고, 실패하면 기존 rule-based intent parser로 fallback한다.
+현재 다정 AI 주문 화면은 Gemini Flash 기반 intent extraction을 우선 사용하고, `GEMINI_API_KEY`가 없거나 Gemini 호출에 실패하면 기존 rule-based intent parser로 fallback한다. rule-based parser는 백업 경로로 유지한다.
 
 MCP Server runtime과 MCP tool 구현도 아직 포함하지 않는다. 현재 MCP 관련 내용은 future work이며, 계획 문서는 `docs/mcp-tool-plan.md`를 기준으로 참고한다.
 

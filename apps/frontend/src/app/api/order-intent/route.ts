@@ -87,7 +87,9 @@ export async function POST(request: Request) {
     });
 
     return Response.json(orderIntentSchema.parse(object), { status: 200 });
-  } catch {
+  } catch (error) {
+    console.error("Gemini intent extraction failed", error);
+
     return Response.json(
       { error: "Gemini intent extraction failed" },
       { status: 500 },

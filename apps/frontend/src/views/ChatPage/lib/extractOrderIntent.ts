@@ -22,6 +22,14 @@ function isStringOrNull(value: unknown): value is string | null {
   return typeof value === "string" || value === null;
 }
 
+function isCompanyId(value: unknown) {
+  return value === "company-a" || value === "company-b" || value === null;
+}
+
+function isPositiveInteger(value: unknown) {
+  return typeof value === "number" && Number.isInteger(value) && value >= 1;
+}
+
 function isStringArray(value: unknown): value is string[] {
   return Array.isArray(value) && value.every((item) => typeof item === "string");
 }
@@ -47,10 +55,10 @@ function isParsedOrderIntent(value: unknown): value is ParsedOrderIntent {
 
   return (
     REQUIRED_INTENT_FIELDS.every((field) => field in value) &&
-    isStringOrNull(value.companyId) &&
+    isCompanyId(value.companyId) &&
     isStringOrNull(value.menuKeyword) &&
     isStringArray(value.optionKeywords) &&
-    typeof value.quantity === "number" &&
+    isPositiveInteger(value.quantity) &&
     typeof value.quantityMentioned === "boolean" &&
     isFulfillmentType(value.fulfillmentType) &&
     typeof value.fulfillmentTypeMentioned === "boolean" &&
