@@ -5,7 +5,7 @@
 - AI 응답을 단순 텍스트가 아니라 구조화된 카드 UI로 제공한다.
 - 사용자는 확인, 수정, 거절 버튼으로 결정을 내린다.
 - Gemini는 주문을 바로 확정하지 않는다.
-- 실제 주문 확정은 사용자가 `order_draft_card`에서 확인 버튼을 누른 이후에만 진행된다.
+- 실제 주문 확정은 사용자가 `order_draft`에서 확인 버튼을 누른 이후에만 진행된다.
 - 카드 UI는 접근성이 낮은 사용자도 결정을 쉽게 내리도록 핵심 정보와 선택지를 명확히 보여준다.
 
 ## 2. 공통 ChatResponse Schema
@@ -30,14 +30,14 @@
 
 | Card Type | 목적 | 사용자 액션 필요 여부 |
 | --- | --- | --- |
-| `message_card` | 단순 안내 메시지를 카드로 보여준다. | 필요 없음 |
-| `menu_candidates_card` | 메뉴 검색 결과가 여러 개일 때 후보를 보여준다. | 필요 |
-| `missing_option_card` | 필수 옵션이 누락되었을 때 선택지를 보여준다. | 필요 |
-| `order_draft_card` | 실제 주문 전 사용자 확인용 주문 초안을 보여준다. | 필요 |
-| `order_confirmed_card` | 실제 주문 생성 이후 주문번호와 대기번호를 보여준다. | 필요 없음 |
-| `error_card` | backend API 실패, Gemini 응답 실패, 주문 검증 실패 등을 보여준다. | 상황에 따라 필요 |
+| `message` | 단순 안내 메시지를 카드로 보여준다. | 필요 없음 |
+| `menu_candidates` | 메뉴 검색 결과가 여러 개일 때 후보를 보여준다. | 필요 |
+| `missing_option` | 필수 옵션이 누락되었을 때 선택지를 보여준다. | 필요 |
+| `order_draft` | 실제 주문 전 사용자 확인용 주문 초안을 보여준다. | 필요 |
+| `order_confirmed` | 실제 주문 생성 이후 주문번호와 대기번호를 보여준다. | 필요 없음 |
+| `error` | backend API 실패, Gemini 응답 실패, 주문 검증 실패 등을 보여준다. | 상황에 따라 필요 |
 
-## 4. message_card
+## 4. message
 
 목적:
 
@@ -48,13 +48,13 @@
 
 ```json
 {
-  "type": "message_card",
+  "type": "message",
   "title": "안내",
   "message": "A기업과 B기업 중 어디에서 주문할까요?"
 }
 ```
 
-## 5. menu_candidates_card
+## 5. menu_candidates
 
 목적:
 
@@ -91,7 +91,7 @@
 }
 ```
 
-## 6. missing_option_card
+## 6. missing_option
 
 목적:
 
@@ -125,7 +125,7 @@
 }
 ```
 
-## 7. order_draft_card
+## 7. order_draft
 
 목적:
 
@@ -167,7 +167,7 @@
 }
 ```
 
-## 8. order_confirmed_card
+## 8. order_confirmed
 
 목적:
 
@@ -187,7 +187,7 @@
 }
 ```
 
-## 9. error_card
+## 9. error
 
 목적:
 
@@ -214,7 +214,7 @@
 
 | Action | 의미 | 후속 처리 |
 | --- | --- | --- |
-| `confirm` | 사용자가 현재 주문 초안을 승인한다. | `order_draft_card`의 초안 데이터를 기반으로 `confirm_order` 요청을 보낸다. |
+| `confirm` | 사용자가 현재 주문 초안을 승인한다. | `order_draft`의 초안 데이터를 기반으로 `confirm_order` 요청을 보낸다. |
 | `edit` | 사용자가 주문 내용을 수정한다. | 주문 초안을 수정 가능한 상태로 되돌리고 사용자의 추가 입력을 받는다. |
 | `reject` | 사용자가 초안을 폐기한다. | 현재 초안과 관련 선택 상태를 폐기한다. |
 | `select_option` | 사용자가 부족한 옵션을 선택한다. | 선택한 옵션을 현재 주문 의도 또는 초안 생성 상태에 반영한다. |
@@ -223,11 +223,11 @@
 
 ## 11. Safety Rules
 
-- `order_draft_card`는 실제 주문이 아니다.
-- `confirm_order`는 `order_draft_card`의 `confirm` 액션 이후에만 실행된다.
+- `order_draft`는 실제 주문이 아니다.
+- `confirm_order`는 `order_draft`의 `confirm` 액션 이후에만 실행된다.
 - Gemini가 텍스트 응답만으로 주문을 확정했다고 말하면 안 된다.
 - 사용자의 확인 없이 결제, 주문 생성, 포인트 적립을 확정하면 안 된다.
-- `error_card`는 사용자가 다음 행동을 이해할 수 있도록 복구 가능 여부를 표시해야 한다.
+- `error`는 사용자가 다음 행동을 이해할 수 있도록 복구 가능 여부를 표시해야 한다.
 
 ## 12. 다음 구현 단계
 
@@ -235,6 +235,6 @@
 2. `ChatResponse` TypeScript type 정의
 3. `DajeongCard` union type 정의
 4. ChatPage에서 card 배열을 렌더링할 CardRenderer 컴포넌트 추가
-5. `order_draft_card`의 confirm 버튼에서만 `confirm_order` 요청을 보내도록 연결
-6. `missing_option_card`와 `menu_candidates_card`의 선택 액션을 ChatPage 상태에 반영
-7. `error_card` 재시도 액션 처리
+5. `order_draft`의 confirm 버튼에서만 `confirm_order` 요청을 보내도록 연결
+6. `missing_option`과 `menu_candidates`의 선택 액션을 ChatPage 상태에 반영
+7. `error` 재시도 액션 처리
