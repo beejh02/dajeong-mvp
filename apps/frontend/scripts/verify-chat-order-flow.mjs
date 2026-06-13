@@ -16,9 +16,49 @@ const tempDir = mkdtempSync(path.join(tmpdir(), "dajeong-chat-tests-"));
 const rootNodeModulesPath = path.join(root, "node_modules");
 const tempNodeModulesPath = path.join(tempDir, "node_modules");
 
+function readProjectFile(relativePath) {
+  return readFileSync(path.join(root, relativePath), "utf8");
+}
+
+function requireIncludes(relativePath, expectedText) {
+  const content = readProjectFile(relativePath);
+
+  assert.ok(
+    content.includes(expectedText),
+    `${relativePath} should include ${expectedText}`,
+  );
+}
+
+function requireExcludes(relativePath, unexpectedText) {
+  const content = readProjectFile(relativePath);
+
+  assert.ok(
+    !content.includes(unexpectedText),
+    `${relativePath} should not include ${unexpectedText}`,
+  );
+}
+
 if (existsSync(rootNodeModulesPath) && !existsSync(tempNodeModulesPath)) {
   symlinkSync(rootNodeModulesPath, tempNodeModulesPath, "junction");
 }
+
+requireIncludes("src/views/ChatPage/index.tsx", "/api/chat");
+requireIncludes("src/views/ChatPage/index.tsx", "conversationId");
+requireIncludes("src/views/ChatPage/index.tsx", "chatResponse.cards");
+requireIncludes("src/views/ChatPage/types.ts", "cards?: DajeongCard[]");
+requireIncludes(
+  "src/views/ChatPage/components/ChatMessageList.tsx",
+  "ChatCardRenderer",
+);
+requireIncludes(
+  "src/views/ChatPage/components/ChatCardRenderer.tsx",
+  'case "order_draft"',
+);
+requireExcludes("src/views/ChatPage/index.tsx", "getCompanyMenus");
+requireExcludes("src/views/ChatPage/index.tsx", "createOrder");
+requireExcludes("src/views/ChatPage/index.tsx", "buildOrderDraft");
+requireExcludes("src/views/ChatPage/index.tsx", "extractOrderIntent");
+requireExcludes("src/views/ChatPage/index.tsx", "buildOrderCreateRequest");
 
 async function importTypeScriptModule(relativePath) {
   const outputPath = copyTypeScriptModule(relativePath);

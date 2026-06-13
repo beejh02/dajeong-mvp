@@ -17,6 +17,8 @@ const requiredFiles = [
   "src/app/kiosk-b/page.tsx",
   "src/views/AdminPage/index.tsx",
   "src/views/ChatPage/index.tsx",
+  "src/views/ChatPage/components/ChatCardRenderer.tsx",
+  "src/views/ChatPage/components/ChatMessageList.tsx",
   "src/views/KioskAPage/index.tsx",
   "src/views/KioskBPage/index.tsx",
   "next.config.ts",
@@ -144,11 +146,22 @@ const interactionChecks = [
   {
     file: "src/views/ChatPage/index.tsx",
     patterns: [
-      "extractOrderIntent",
-      "buildOrderDraft",
-      "createOrder",
-      "buildOrderCreateRequest",
-      "user-demo-1",
+      "/api/chat",
+      "chatResponse.cards",
+      "conversationId",
+      "onCardAction={handleCardAction}",
+    ],
+  },
+  {
+    file: "src/views/ChatPage/components/ChatMessageList.tsx",
+    patterns: ["ChatCardRenderer", "message.cards"],
+  },
+  {
+    file: "src/views/ChatPage/components/ChatCardRenderer.tsx",
+    patterns: [
+      'case "menu_candidates"',
+      'case "order_draft"',
+      'case "error"',
     ],
   },
 ];

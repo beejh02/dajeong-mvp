@@ -1,10 +1,20 @@
+import type { CardActionType } from "../../../lib/gemini/cardSchema";
 import type { ChatMessage } from "../types";
+import { ChatCardRenderer } from "./ChatCardRenderer";
 
 type ChatMessageListProps = {
   messages: ChatMessage[];
+  onCardAction: (
+    actionType: CardActionType,
+    value?: string,
+    label?: string,
+  ) => void;
 };
 
-export function ChatMessageList({ messages }: ChatMessageListProps) {
+export function ChatMessageList({
+  messages,
+  onCardAction,
+}: ChatMessageListProps) {
   return (
     <div className="chat-message-list" aria-live="polite">
       {messages.map((message) => (
@@ -16,6 +26,17 @@ export function ChatMessageList({ messages }: ChatMessageListProps) {
             {message.role === "assistant" ? "다정" : "사용자"}
           </span>
           <p>{message.content}</p>
+          {message.cards?.length ? (
+            <div className="chat-card-list">
+              {message.cards.map((card, index) => (
+                <ChatCardRenderer
+                  card={card}
+                  key={`${message.id}-${card.type}-${index}`}
+                  onAction={onCardAction}
+                />
+              ))}
+            </div>
+          ) : null}
         </div>
       ))}
     </div>

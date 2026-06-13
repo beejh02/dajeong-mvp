@@ -5,11 +5,13 @@ import type {
   PaymentMethod,
   PointAccrualRequest,
 } from "../../lib/api/types";
+import type { DajeongCard } from "../../lib/gemini/cardSchema";
 
 export type ChatMessage = {
   id: string;
   role: "assistant" | "user";
   content: string;
+  cards?: DajeongCard[];
 };
 
 export type ParsedOrderIntent = {

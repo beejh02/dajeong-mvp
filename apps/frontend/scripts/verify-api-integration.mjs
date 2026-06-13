@@ -17,8 +17,11 @@ const requiredFiles = [
   "src/lib/adapters/adminAdapter.ts",
   "src/lib/privacy.ts",
   "src/app/chat/page.tsx",
+  "src/app/api/chat/route.ts",
   "src/app/api/order-intent/route.ts",
   "src/views/ChatPage/index.tsx",
+  "src/views/ChatPage/components/ChatCardRenderer.tsx",
+  "src/views/ChatPage/components/ChatMessageList.tsx",
   "src/views/ChatPage/lib/extractOrderIntent.ts",
   "src/views/ChatPage/lib/parseOrderText.ts",
   "src/views/ChatPage/lib/buildOrderDraft.ts",
@@ -70,11 +73,32 @@ if (failures.length === 0) {
   requireIncludes("src/lib/api/admin.ts", "X-Dajeong-Admin-Token");
   requireIncludes("src/lib/privacy.ts", "maskPhoneNumber");
   requireIncludes("src/app/chat/page.tsx", "ChatPage");
-  requireIncludes("src/views/ChatPage/index.tsx", "getCompanyMenus");
-  requireIncludes("src/views/ChatPage/index.tsx", "createOrder");
-  requireIncludes("src/views/ChatPage/index.tsx", "extractOrderIntent");
-  requireIncludes("src/views/ChatPage/index.tsx", "buildOrderCreateRequest");
-  requireIncludes("src/views/ChatPage/index.tsx", "user-demo-1");
+  requireIncludes("src/app/api/chat/route.ts", "runDajeongGeminiChat");
+  requireIncludes("src/views/ChatPage/index.tsx", "/api/chat");
+  requireIncludes("src/views/ChatPage/index.tsx", "chatResponse.cards");
+  requireIncludes("src/views/ChatPage/index.tsx", "conversationId");
+  requireIncludes("src/views/ChatPage/index.tsx", "CONFIRM_DRAFT_MESSAGE");
+  requireIncludes(
+    "src/views/ChatPage/components/ChatMessageList.tsx",
+    "ChatCardRenderer",
+  );
+  requireIncludes(
+    "src/views/ChatPage/components/ChatCardRenderer.tsx",
+    'case "menu_candidates"',
+  );
+  requireIncludes(
+    "src/views/ChatPage/components/ChatCardRenderer.tsx",
+    'case "order_draft"',
+  );
+  requireIncludes(
+    "src/views/ChatPage/components/ChatCardRenderer.tsx",
+    'case "error"',
+  );
+  requireExcludes("src/views/ChatPage/index.tsx", "getCompanyMenus");
+  requireExcludes("src/views/ChatPage/index.tsx", "createOrder");
+  requireExcludes("src/views/ChatPage/index.tsx", "extractOrderIntent");
+  requireExcludes("src/views/ChatPage/index.tsx", "buildOrderCreateRequest");
+  requireExcludes("src/views/ChatPage/index.tsx", "user-demo-1");
   requireExcludes("src/views/ChatPage/index.tsx", "parseOrderText(trimmedInput)");
   requireIncludes("src/views/ChatPage/lib/extractOrderIntent.ts", "/api/order-intent");
   requireIncludes("src/views/ChatPage/lib/extractOrderIntent.ts", "parseOrderText(text)");
