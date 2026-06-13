@@ -25,6 +25,18 @@ async function importTypeScriptModule(relativePath) {
   return import(pathToFileURL(outputPath));
 }
 
+async function suppressExpectedConsoleError(action) {
+  const originalConsoleError = console.error;
+
+  try {
+    console.error = () => {};
+
+    return await action();
+  } finally {
+    console.error = originalConsoleError;
+  }
+}
+
 function copyTypeScriptModule(relativePath) {
   const normalizedRelativePath = relativePath.replaceAll("\\", "/");
   const outputPath = path.join(tempDir, normalizedRelativePath);
@@ -87,8 +99,11 @@ const { mergeParsedOrderIntent, parseOrderText } = await importTypeScriptModule(
 const { extractOrderIntent } = await importTypeScriptModule(
   "src/views/ChatPage/lib/extractOrderIntent.ts",
 );
-const { POST } = await importTypeScriptModule(
+const { POST: orderIntentPOST } = await importTypeScriptModule(
   "src/app/api/order-intent/route.ts",
+);
+const { POST: chatPOST } = await importTypeScriptModule(
+  "src/app/api/chat/route.ts",
 );
 const { buildOrderDraft } = await importTypeScriptModule(
   "src/views/ChatPage/lib/buildOrderDraft.ts",
@@ -173,7 +188,46 @@ const originalGeminiApiKey = process.env.GEMINI_API_KEY;
 try {
   delete process.env.GEMINI_API_KEY;
 
-  const invalidRouteResponse = await POST(
+  const invalidChatJsonResponse = await suppressExpectedConsoleError(() =>
+    chatPOST(
+      new Request("http://localhost/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: "{",
+      }),
+    ),
+  );
+
+  assert.equal(invalidChatJsonResponse.status, 400);
+
+  const emptyMessageChatResponse = await chatPOST(
+    new Request("http://localhost/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: "" }),
+    }),
+  );
+
+  assert.equal(emptyMessageChatResponse.status, 400);
+
+  const noKeyChatResponse = await chatPOST(
+    new Request("http://localhost/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        message: "A기업 불고기버거 하나",
+        conversationId: "conversation-phase-2",
+      }),
+    }),
+  );
+  const noKeyChatBody = await noKeyChatResponse.json();
+
+  assert.equal(noKeyChatResponse.status, 200);
+  assert.equal(noKeyChatBody.conversationId, "conversation-phase-2");
+  assert.equal(noKeyChatBody.cards[0].type, "error");
+  assert.match(noKeyChatBody.message, /Gemini API key/);
+
+  const invalidRouteResponse = await orderIntentPOST(
     new Request("http://localhost/api/order-intent", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -183,7 +237,7 @@ try {
 
   assert.equal(invalidRouteResponse.status, 400);
 
-  const noKeyRouteResponse = await POST(
+  const noKeyRouteResponse = await orderIntentPOST(
     new Request("http://localhost/api/order-intent", {
       method: "POST",
       headers: { "Content-Type": "application/json" },

@@ -1,4 +1,5 @@
 import type { ChatResponse } from "../../../lib/gemini/cardSchema";
+import { runDajeongGeminiChat } from "../../../lib/gemini/chatRunner";
 
 type ChatRequest = {
   message: string;
@@ -46,21 +47,6 @@ function createInvalidRequestResponse(): ChatResponse {
   };
 }
 
-function createMockChatResponse(conversationId: string | undefined): ChatResponse {
-  return {
-    message: "Gemini function calling 연결 전 임시 응답입니다.",
-    cards: [
-      {
-        type: "message",
-        title: "임시 응답",
-        message: "현재 /api/chat route가 정상적으로 연결되었습니다.",
-      },
-    ],
-    requiredUserAction: false,
-    conversationId,
-  };
-}
-
 function createUnexpectedErrorResponse(): ChatResponse {
   return {
     message: "Chat request failed.",
@@ -98,7 +84,12 @@ export async function POST(request: Request) {
       return Response.json(createInvalidRequestResponse(), { status: 400 });
     }
 
-    return Response.json(createMockChatResponse(getConversationId(body)), {
+    const chatResponse = await runDajeongGeminiChat({
+      message: body.message,
+      conversationId: getConversationId(body),
+    });
+
+    return Response.json(chatResponse, {
       status: 200,
     });
   } catch (error) {
