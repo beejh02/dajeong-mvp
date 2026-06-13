@@ -11,6 +11,7 @@ import type {
   OrderCreateRequest,
   OrderResponse,
 } from "../api/types";
+import type { GeminiToolName } from "./tools";
 
 export type GetCompaniesArgs = Record<string, never>;
 
@@ -99,6 +100,20 @@ export type ConfirmOrderResult = {
   totalPrice: number;
   recommendedCardType: "order_confirmed";
 };
+
+export type GeminiToolArgs =
+  | GetCompaniesArgs
+  | GetCompanyMenusArgs
+  | SearchMenuArgs
+  | CreateOrderDraftArgs
+  | ConfirmOrderArgs;
+
+export type GeminiToolResult =
+  | CompanyListResponse
+  | MenuListResponse
+  | { menus: MenuItem[] }
+  | CreateOrderDraftResult
+  | ConfirmOrderResult;
 
 async function requestBackendJson<T>(
   path: string,
@@ -493,4 +508,26 @@ export async function handleConfirmOrder(
     totalPrice: order.totalPrice,
     recommendedCardType: "order_confirmed",
   };
+}
+
+// 이 dispatcher는 Gemini가 요청한 tool name을 local handler에 연결한다.
+// confirm_order의 사용자 확인 검증은 handleConfirmOrder 내부에서 다시 수행한다.
+export async function handleGeminiToolCall(
+  name: GeminiToolName,
+  args: unknown,
+): Promise<GeminiToolResult> {
+  switch (name) {
+    case "get_companies":
+      return handleGetCompanies(args as GetCompaniesArgs);
+    case "get_company_menus":
+      return handleGetCompanyMenus(args as GetCompanyMenusArgs);
+    case "search_menu":
+      return handleSearchMenu(args as SearchMenuArgs);
+    case "create_order_draft":
+      return handleCreateOrderDraft(args as CreateOrderDraftArgs);
+    case "confirm_order":
+      return handleConfirmOrder(args as ConfirmOrderArgs);
+    default:
+      throw new Error(`Unknown Gemini tool: ${name}`);
+  }
 }
