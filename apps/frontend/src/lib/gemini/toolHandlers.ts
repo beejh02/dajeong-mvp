@@ -1,9 +1,16 @@
 // 이 파일은 Gemini function calling의 local tool handler를 제공한다.
-// 이번 단계에서는 조회성 low-risk tool만 구현한다.
-// 주문 생성은 confirm_order handler에서만 다루며, 이 파일의 현재 구현에는 포함하지 않는다.
+// 조회성 tool과 주문 초안 tool을 포함한다.
+// 실제 주문 생성은 confirm_order에서만 수행한다.
+// confirm_order는 사용자 확인 이후에만 실행되어야 한다.
 
 import { BACKEND_API_URL } from "../api/client";
-import type { CompanyListResponse, MenuItem, MenuListResponse } from "../api/types";
+import type {
+  CompanyListResponse,
+  MenuItem,
+  MenuListResponse,
+  OrderCreateRequest,
+  OrderResponse,
+} from "../api/types";
 
 export type GetCompaniesArgs = Record<string, never>;
 
@@ -61,8 +68,53 @@ export type CreateOrderDraftResult = {
   recommendedCardType: "order_draft";
 };
 
-async function requestBackendJson<T>(path: string): Promise<T> {
-  const response = await fetch(`${BACKEND_API_URL}${path}`, { cache: "no-store" });
+export type ConfirmOrderArgs = {
+  draftId: string;
+  confirmedByUser: boolean;
+  order: {
+    companyId: string;
+    userId: string;
+    sourceChannel: "dajeong_ai";
+    items: Array<{
+      menuId: string;
+      quantity: number;
+      selectedOptionGroups: Array<{
+        groupId: string;
+        choiceIds: string[];
+      }>;
+    }>;
+    fulfillmentType: "dine_in" | "pickup";
+    paymentMethod: "credit_card" | "coupon" | "cash";
+    pointAccrual: {
+      enabled: boolean;
+      phone: string;
+    };
+  };
+};
+
+export type ConfirmOrderResult = {
+  orderNumber: string;
+  waitingNumber: number;
+  status: string;
+  totalPrice: number;
+  recommendedCardType: "order_confirmed";
+};
+
+async function requestBackendJson<T>(
+  path: string,
+  init: RequestInit = {},
+): Promise<T> {
+  const headers = new Headers(init.headers);
+
+  if (init.body && !headers.has("Content-Type")) {
+    headers.set("Content-Type", "application/json");
+  }
+
+  const response = await fetch(`${BACKEND_API_URL}${path}`, {
+    cache: "no-store",
+    ...init,
+    headers,
+  });
 
   if (!response.ok) {
     throw new Error(`Backend API request failed: ${path} (${response.status})`);
@@ -117,68 +169,109 @@ function requirePaymentMethod(value: unknown): CreateOrderDraftArgs["paymentMeth
   return value;
 }
 
+function normalizeOrderItems(
+  rawItems: unknown,
+  fieldName: string,
+): CreateOrderDraftArgs["items"] {
+  if (!Array.isArray(rawItems) || rawItems.length === 0) {
+    throw new Error(`${fieldName} must include at least one item.`);
+  }
+
+  return rawItems.map((rawItem, itemIndex) => {
+    const item = requireObject(rawItem, `${fieldName}[${itemIndex}]`);
+    const quantity = item.quantity;
+    const selectedOptionGroups = item.selectedOptionGroups;
+
+    if (typeof quantity !== "number" || !Number.isInteger(quantity) || quantity < 1) {
+      throw new Error(`${fieldName}[${itemIndex}].quantity must be an integer greater than 0.`);
+    }
+
+    if (!Array.isArray(selectedOptionGroups)) {
+      throw new Error(`${fieldName}[${itemIndex}].selectedOptionGroups must be an array.`);
+    }
+
+    return {
+      menuId: requireNonEmptyString(item.menuId, `${fieldName}[${itemIndex}].menuId`),
+      quantity,
+      selectedOptionGroups: selectedOptionGroups.map((rawGroup, groupIndex) => {
+        const group = requireObject(
+          rawGroup,
+          `${fieldName}[${itemIndex}].selectedOptionGroups[${groupIndex}]`,
+        );
+
+        return {
+          groupId: requireNonEmptyString(
+            group.groupId,
+            `${fieldName}[${itemIndex}].selectedOptionGroups[${groupIndex}].groupId`,
+          ),
+          choiceIds: requireStringArray(
+            group.choiceIds,
+            `${fieldName}[${itemIndex}].selectedOptionGroups[${groupIndex}].choiceIds`,
+          ),
+        };
+      }),
+    };
+  });
+}
+
+function normalizePointAccrual(
+  value: unknown,
+  fieldName: string,
+): CreateOrderDraftArgs["pointAccrual"] {
+  const pointAccrual = requireObject(value, fieldName);
+
+  if (typeof pointAccrual.enabled !== "boolean") {
+    throw new Error(`${fieldName}.enabled must be a boolean.`);
+  }
+
+  if (typeof pointAccrual.phone !== "string") {
+    throw new Error(`${fieldName}.phone must be a string.`);
+  }
+
+  return {
+    enabled: pointAccrual.enabled,
+    phone: pointAccrual.phone,
+  };
+}
+
 function normalizeCreateOrderDraftArgs(
   args: CreateOrderDraftArgs,
 ): CreateOrderDraftArgs {
   const input = requireObject(args, "args");
-  const rawItems = input.items;
-  const pointAccrual = requireObject(input.pointAccrual, "pointAccrual");
-
-  if (!Array.isArray(rawItems) || rawItems.length === 0) {
-    throw new Error("items must include at least one item.");
-  }
-
-  if (typeof pointAccrual.enabled !== "boolean") {
-    throw new Error("pointAccrual.enabled must be a boolean.");
-  }
-
-  if (typeof pointAccrual.phone !== "string") {
-    throw new Error("pointAccrual.phone must be a string.");
-  }
 
   return {
     companyId: requireNonEmptyString(input.companyId, "companyId"),
     userId: requireNonEmptyString(input.userId, "userId"),
-    items: rawItems.map((rawItem, itemIndex) => {
-      const item = requireObject(rawItem, `items[${itemIndex}]`);
-      const quantity = item.quantity;
-      const selectedOptionGroups = item.selectedOptionGroups;
-
-      if (typeof quantity !== "number" || !Number.isInteger(quantity) || quantity < 1) {
-        throw new Error(`items[${itemIndex}].quantity must be an integer greater than 0.`);
-      }
-
-      if (!Array.isArray(selectedOptionGroups)) {
-        throw new Error(`items[${itemIndex}].selectedOptionGroups must be an array.`);
-      }
-
-      return {
-        menuId: requireNonEmptyString(item.menuId, `items[${itemIndex}].menuId`),
-        quantity,
-        selectedOptionGroups: selectedOptionGroups.map((rawGroup, groupIndex) => {
-          const group = requireObject(
-            rawGroup,
-            `items[${itemIndex}].selectedOptionGroups[${groupIndex}]`,
-          );
-
-          return {
-            groupId: requireNonEmptyString(
-              group.groupId,
-              `items[${itemIndex}].selectedOptionGroups[${groupIndex}].groupId`,
-            ),
-            choiceIds: requireStringArray(
-              group.choiceIds,
-              `items[${itemIndex}].selectedOptionGroups[${groupIndex}].choiceIds`,
-            ),
-          };
-        }),
-      };
-    }),
+    items: normalizeOrderItems(input.items, "items"),
     fulfillmentType: requireFulfillmentType(input.fulfillmentType),
     paymentMethod: requirePaymentMethod(input.paymentMethod),
-    pointAccrual: {
-      enabled: pointAccrual.enabled,
-      phone: pointAccrual.phone,
+    pointAccrual: normalizePointAccrual(input.pointAccrual, "pointAccrual"),
+  };
+}
+
+function normalizeConfirmOrderArgs(args: ConfirmOrderArgs): ConfirmOrderArgs {
+  const input = requireObject(args, "args");
+  const order = requireObject(input.order, "order");
+
+  if (input.confirmedByUser !== true) {
+    throw new Error("confirmedByUser must be true.");
+  }
+
+  if (order.sourceChannel !== "dajeong_ai") {
+    throw new Error("order.sourceChannel must be dajeong_ai.");
+  }
+
+  return {
+    draftId: requireNonEmptyString(input.draftId, "draftId"),
+    confirmedByUser: true,
+    order: {
+      companyId: requireNonEmptyString(order.companyId, "order.companyId"),
+      userId: requireNonEmptyString(order.userId, "order.userId"),
+      sourceChannel: "dajeong_ai",
+      items: normalizeOrderItems(order.items, "order.items"),
+      fulfillmentType: requireFulfillmentType(order.fulfillmentType),
+      paymentMethod: requirePaymentMethod(order.paymentMethod),
+      pointAccrual: normalizePointAccrual(order.pointAccrual, "order.pointAccrual"),
     },
   };
 }
@@ -364,5 +457,40 @@ export async function handleCreateOrderDraft(
     warnings: [],
     requiredUserAction: true,
     recommendedCardType: "order_draft",
+  };
+}
+
+// 이 handler는 실제 주문을 생성한다.
+// 반드시 confirmedByUser가 true일 때만 POST /orders를 호출해야 한다.
+// Gemini가 임의로 주문을 확정하지 못하도록 local handler에서 한 번 더 차단한다.
+export async function handleConfirmOrder(
+  args: ConfirmOrderArgs,
+): Promise<ConfirmOrderResult> {
+  const normalizedArgs = normalizeConfirmOrderArgs(args);
+  const phone = normalizedArgs.order.pointAccrual.phone.trim();
+  const orderRequest: OrderCreateRequest = {
+    companyId: normalizedArgs.order.companyId,
+    userId: normalizedArgs.order.userId,
+    sourceChannel: "dajeong_ai",
+    items: normalizedArgs.order.items,
+    fulfillmentType: normalizedArgs.order.fulfillmentType,
+    paymentMethod: normalizedArgs.order.paymentMethod,
+    pointAccrual: {
+      enabled: normalizedArgs.order.pointAccrual.enabled,
+      phone: phone === "" ? null : phone,
+    },
+  };
+
+  const order = await requestBackendJson<OrderResponse>("/orders", {
+    method: "POST",
+    body: JSON.stringify(orderRequest),
+  });
+
+  return {
+    orderNumber: order.orderNumber,
+    waitingNumber: order.waitingNumber,
+    status: order.status,
+    totalPrice: order.totalPrice,
+    recommendedCardType: "order_confirmed",
   };
 }
