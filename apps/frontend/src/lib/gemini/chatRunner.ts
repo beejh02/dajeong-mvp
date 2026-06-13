@@ -1,10 +1,9 @@
 import { generateText, jsonSchema, stepCountIs, tool } from "ai";
 
 import { createDajeongGeminiClient, getGeminiModel } from "./client";
+import { callDajeongMcpTool } from "./mcpClientAdapter";
 import { DAJEONG_GEMINI_SYSTEM_PROMPT } from "./systemPrompt";
-import { dajeongFunctionDeclarations } from "./tools";
-import type { GeminiToolName } from "./tools";
-import { handleGeminiToolCall } from "./toolHandlers";
+import { callDajeongMcpToolDeclaration } from "./tools";
 import type { ChatResponse } from "./cardSchema";
 
 const MAX_TOOL_CALL_ROUNDS = 5;
@@ -18,42 +17,22 @@ export type RunDajeongGeminiChatInput = {
   conversationId?: string;
 };
 
-type FunctionDeclaration = (typeof dajeongFunctionDeclarations)[number];
-
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-function isGeminiToolName(value: string): value is GeminiToolName {
-  return dajeongFunctionDeclarations.some((declaration) => declaration.name === value);
-}
-
-function assertGeminiToolName(value: string): GeminiToolName {
-  if (!isGeminiToolName(value)) {
-    throw new Error(`Unknown Gemini tool: ${value}`);
-  }
-
-  return value;
-}
-
-function createToolFromDeclaration(declaration: FunctionDeclaration) {
-  return tool({
-    description: declaration.description,
-    inputSchema: jsonSchema(
-      declaration.parameters as unknown as Parameters<typeof jsonSchema>[0],
-    ),
-    execute: async (args) =>
-      handleGeminiToolCall(assertGeminiToolName(declaration.name), args),
-  });
-}
-
 function createDajeongTools() {
-  return Object.fromEntries(
-    dajeongFunctionDeclarations.map((declaration) => [
-      declaration.name,
-      createToolFromDeclaration(declaration),
-    ]),
-  );
+  return {
+    [callDajeongMcpToolDeclaration.name]: tool({
+      description: callDajeongMcpToolDeclaration.description,
+      inputSchema: jsonSchema(
+        callDajeongMcpToolDeclaration.parameters as unknown as Parameters<
+          typeof jsonSchema
+        >[0],
+      ),
+      execute: async (args) => callDajeongMcpTool(args),
+    }),
+  };
 }
 
 function getResponseText(response: unknown): string {
