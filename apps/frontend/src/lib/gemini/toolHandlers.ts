@@ -1,4 +1,4 @@
-// 이 파일은 Gemini function calling의 local tool handler를 제공한다.
+// 이 파일은 Dajeong MCP tool의 local fallback handler를 제공한다.
 // 조회성 tool과 주문 초안 tool을 포함한다.
 // 실제 주문 생성은 confirm_order에서만 수행한다.
 // confirm_order는 사용자 확인 이후에만 실행되어야 한다.
@@ -11,7 +11,7 @@ import type {
   OrderCreateRequest,
   OrderResponse,
 } from "../api/types";
-import type { GeminiToolName } from "./tools";
+import type { DajeongMcpToolName } from "./tools";
 
 export type GetCompaniesArgs = Record<string, never>;
 
@@ -101,14 +101,14 @@ export type ConfirmOrderResult = {
   recommendedCardType: "order_confirmed";
 };
 
-export type GeminiToolArgs =
+export type DajeongMcpToolArgs =
   | GetCompaniesArgs
   | GetCompanyMenusArgs
   | SearchMenuArgs
   | CreateOrderDraftArgs
   | ConfirmOrderArgs;
 
-export type GeminiToolResult =
+export type DajeongMcpToolResult =
   | CompanyListResponse
   | MenuListResponse
   | { menus: MenuItem[] }
@@ -477,7 +477,7 @@ export async function handleCreateOrderDraft(
 
 // 이 handler는 실제 주문을 생성한다.
 // 반드시 confirmedByUser가 true일 때만 POST /orders를 호출해야 한다.
-// Gemini가 임의로 주문을 확정하지 못하도록 local handler에서 한 번 더 차단한다.
+// Gateway나 MCP client가 임의로 주문을 확정하지 못하도록 local handler에서 한 번 더 차단한다.
 export async function handleConfirmOrder(
   args: ConfirmOrderArgs,
 ): Promise<ConfirmOrderResult> {
@@ -510,12 +510,12 @@ export async function handleConfirmOrder(
   };
 }
 
-// 이 dispatcher는 Gemini가 요청한 tool name을 local handler에 연결한다.
+// 이 dispatcher는 Dajeong MCP tool name을 local fallback handler에 연결한다.
 // confirm_order의 사용자 확인 검증은 handleConfirmOrder 내부에서 다시 수행한다.
 export async function handleGeminiToolCall(
-  name: GeminiToolName,
+  name: DajeongMcpToolName,
   args: unknown,
-): Promise<GeminiToolResult> {
+): Promise<DajeongMcpToolResult> {
   switch (name) {
     case "get_companies":
       return handleGetCompanies(args as GetCompaniesArgs);
@@ -528,6 +528,6 @@ export async function handleGeminiToolCall(
     case "confirm_order":
       return handleConfirmOrder(args as ConfirmOrderArgs);
     default:
-      throw new Error(`Unknown Gemini tool: ${name}`);
+      throw new Error(`Unknown Dajeong MCP tool: ${name}`);
   }
 }

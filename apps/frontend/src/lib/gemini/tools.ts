@@ -1,14 +1,15 @@
 // Gemini에는 MCP gateway function만 노출한다.
 // 실제 MCP tool 실행은 mcpClientAdapter.ts에서 처리한다.
 
-export type DajeongMcpToolName =
-  | "get_companies"
-  | "get_company_menus"
-  | "search_menu"
-  | "create_order_draft"
-  | "confirm_order";
+export const dajeongMcpToolNames = [
+  "get_companies",
+  "get_company_menus",
+  "search_menu",
+  "create_order_draft",
+  "confirm_order",
+] as const;
 
-export type GeminiToolName = DajeongMcpToolName;
+export type DajeongMcpToolName = (typeof dajeongMcpToolNames)[number];
 
 export type DajeongMcpGatewayToolName = Exclude<
   DajeongMcpToolName,

@@ -1,14 +1,10 @@
 import { handleGeminiToolCall } from "./toolHandlers";
-import type { GeminiToolResult } from "./toolHandlers";
-import type { DajeongMcpGatewayInput, DajeongMcpToolName } from "./tools";
-
-const DAJEONG_MCP_TOOL_NAMES = [
-  "get_companies",
-  "get_company_menus",
-  "search_menu",
-  "create_order_draft",
-  "confirm_order",
-] as const satisfies readonly DajeongMcpToolName[];
+import type { DajeongMcpToolResult } from "./toolHandlers";
+import {
+  dajeongMcpToolNames,
+  type DajeongMcpGatewayInput,
+  type DajeongMcpToolName,
+} from "./tools";
 
 type NormalizedDajeongMcpGatewayInput = DajeongMcpGatewayInput & {
   toolName: DajeongMcpToolName;
@@ -19,7 +15,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function isDajeongMcpToolName(value: string): value is DajeongMcpToolName {
-  return DAJEONG_MCP_TOOL_NAMES.some((toolName) => toolName === value);
+  return dajeongMcpToolNames.some((toolName) => toolName === value);
 }
 
 function normalizeGatewayInput(
@@ -51,7 +47,7 @@ function normalizeGatewayInput(
 
 export async function callDajeongMcpTool(
   input: unknown,
-): Promise<GeminiToolResult> {
+): Promise<DajeongMcpToolResult> {
   const normalizedInput = normalizeGatewayInput(input);
 
   if (normalizedInput.toolName === "confirm_order") {
