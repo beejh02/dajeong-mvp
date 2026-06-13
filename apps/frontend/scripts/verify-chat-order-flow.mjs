@@ -111,6 +111,9 @@ const { buildOrderDraft } = await importTypeScriptModule(
 const { buildOrderCreateRequest } = await importTypeScriptModule(
   "src/views/ChatPage/lib/validateOrderDraft.ts",
 );
+const { createChatResponseFromToolResults } = await importTypeScriptModule(
+  "src/lib/gemini/cardBuilders.ts",
+);
 
 const companyAResponse = {
   company: {
@@ -352,6 +355,129 @@ assert.deepEqual(buildOrderCreateRequest(readyDraft.draft, "user-demo-1", "dajeo
 assert.equal(
   buildOrderDraft(parseOrderText("불고기버거 하나"), companyAResponse).status,
   "missing_company",
+);
+
+const draftChatResponse = createChatResponseFromToolResults(
+  "주문 초안을 확인해 주세요.",
+  [
+    {
+      toolInput: {
+        toolName: "create_order_draft",
+        arguments: {},
+      },
+      toolResult: {
+        draftId: "draft-phase-3a",
+        companyId: "company-a",
+        companyName: "A기업",
+        items: [
+          {
+            menuId: "menu-a-002",
+            menuName: "A 불고기 버거",
+            quantity: 1,
+            selectedOptions: [
+              {
+                groupId: "bun",
+                groupTitle: "번 선택",
+                choices: [{ id: "bun-normal", name: "일반", priceDelta: 0 }],
+              },
+              {
+                groupId: "drink",
+                groupTitle: "음료",
+                choices: [
+                  { id: "drink-zero-coke", name: "제로콜라", priceDelta: 0 },
+                ],
+              },
+            ],
+            unitPrice: 7600,
+            itemPrice: 7600,
+          },
+        ],
+        totalPrice: 7600,
+        warnings: [],
+        requiredUserAction: true,
+        recommendedCardType: "order_draft",
+      },
+    },
+  ],
+  "conversation-phase-3a",
+);
+
+assert.equal(draftChatResponse.message, "주문 초안을 확인해 주세요.");
+assert.equal(draftChatResponse.conversationId, "conversation-phase-3a");
+assert.equal(draftChatResponse.requiredUserAction, true);
+assert.equal(draftChatResponse.cards.length, 1);
+assert.deepEqual(draftChatResponse.cards[0], {
+  type: "order_draft",
+  title: "주문 초안",
+  draftId: "draft-phase-3a",
+  companyName: "A기업",
+  items: [
+    {
+      menuName: "A 불고기 버거",
+      quantity: 1,
+      options: ["번 선택: 일반", "음료: 제로콜라"],
+      price: 7600,
+    },
+  ],
+  totalPrice: 7600,
+  actions: [
+    { type: "confirm", label: "주문 확정" },
+    { type: "edit", label: "수정" },
+    { type: "reject", label: "취소" },
+  ],
+});
+
+const searchChatResponse = createChatResponseFromToolResults(
+  "메뉴 후보를 골라 주세요.",
+  [
+    {
+      toolInput: {
+        toolName: "search_menu",
+        arguments: { companyId: "company-a", query: "버거" },
+      },
+      toolResult: {
+        menus: [
+          ...Array.from({ length: 6 }, (_, index) => ({
+            id: `menu-${index + 1}`,
+            companyId: "company-a",
+            name: `테스트 버거 ${index + 1}`,
+            category: "burger",
+            price: 5000 + index,
+            description: `테스트 메뉴 ${index + 1}`,
+            imageUrl: `/images/menu-${index + 1}.png`,
+            isAvailable: true,
+            optionGroups: [],
+          })),
+          {
+            id: "menu-unavailable",
+            companyId: "company-a",
+            name: "품절 버거",
+            category: "burger",
+            price: 9000,
+            description: "품절 메뉴",
+            imageUrl: "/images/menu-unavailable.png",
+            isAvailable: false,
+            optionGroups: [],
+          },
+        ],
+      },
+    },
+  ],
+);
+
+assert.equal(searchChatResponse.requiredUserAction, true);
+assert.equal(searchChatResponse.cards.length, 1);
+assert.equal(searchChatResponse.cards[0].type, "menu_candidates");
+assert.equal(searchChatResponse.cards[0].candidates.length, 5);
+assert.deepEqual(
+  searchChatResponse.cards[0].actions.map((action) => action.type),
+  ["select_menu", "select_menu", "select_menu", "select_menu", "select_menu"],
+);
+assert.equal(
+  searchChatResponse.cards[0].candidates.some(
+    (candidate) => candidate.menuId === "menu-unavailable",
+  ),
+  false,
 );
 
 console.log("Chat order flow verification passed.");

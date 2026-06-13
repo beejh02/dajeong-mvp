@@ -2,6 +2,10 @@ import { generateText, jsonSchema, stepCountIs, tool } from "ai";
 
 import { createDajeongGeminiClient, getGeminiModel } from "./client";
 import { callDajeongMcpTool } from "./mcpClientAdapter";
+import {
+  createChatResponseFromToolResults,
+  type CapturedDajeongToolResult,
+} from "./cardBuilders";
 import { DAJEONG_GEMINI_SYSTEM_PROMPT } from "./systemPrompt";
 import { callDajeongMcpToolDeclaration } from "./tools";
 import type { ChatResponse } from "./cardSchema";
@@ -21,7 +25,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-function createDajeongTools() {
+function createDajeongTools(capturedToolResults: CapturedDajeongToolResult[]) {
   return {
     [callDajeongMcpToolDeclaration.name]: tool({
       description: callDajeongMcpToolDeclaration.description,
@@ -30,7 +34,16 @@ function createDajeongTools() {
           typeof jsonSchema
         >[0],
       ),
-      execute: async (args) => callDajeongMcpTool(args),
+      execute: async (args) => {
+        const result = await callDajeongMcpTool(args);
+
+        capturedToolResults.push({
+          toolInput: args,
+          toolResult: result,
+        });
+
+        return result;
+      },
     }),
   };
 }
@@ -43,24 +56,6 @@ function getResponseText(response: unknown): string {
   const text = response.text;
 
   return typeof text === "string" ? text.trim() : "";
-}
-
-function createMessageChatResponse(
-  message: string,
-  conversationId?: string,
-): ChatResponse {
-  return {
-    message,
-    cards: [
-      {
-        type: "message",
-        title: "다정 AI",
-        message,
-      },
-    ],
-    requiredUserAction: false,
-    ...(conversationId ? { conversationId } : {}),
-  };
 }
 
 function createErrorChatResponse(
@@ -102,17 +97,22 @@ export async function runDajeongGeminiChat(
   try {
     const google = createDajeongGeminiClient();
     const modelName = getGeminiModel();
+    const capturedToolResults: CapturedDajeongToolResult[] = [];
     const response = await generateText({
       model: google(modelName),
       system: DAJEONG_GEMINI_SYSTEM_PROMPT,
       prompt: input.message.trim(),
-      tools: createDajeongTools(),
+      tools: createDajeongTools(capturedToolResults),
       stopWhen: stepCountIs(MAX_TOOL_CALL_ROUNDS),
       temperature: 0,
     });
     const finalText = getResponseText(response) || DEFAULT_SUCCESS_MESSAGE;
 
-    return createMessageChatResponse(finalText, input.conversationId);
+    return createChatResponseFromToolResults(
+      finalText,
+      capturedToolResults,
+      input.conversationId,
+    );
   } catch (error) {
     if (isMissingApiKeyError(error)) {
       return createErrorChatResponse(MISSING_API_KEY_MESSAGE, input.conversationId);
