@@ -1,16 +1,16 @@
 import type {
   CardAction,
-  CardActionType,
   DajeongCard,
 } from "../../../lib/gemini/cardSchema";
 
+export type ChatCardActionPayload = {
+  action: CardAction;
+  card: DajeongCard;
+};
+
 type ChatCardRendererProps = {
   card: DajeongCard;
-  onAction: (
-    actionType: CardActionType,
-    value?: string,
-    label?: string,
-  ) => void;
+  onAction: (payload: ChatCardActionPayload) => void;
 };
 
 function formatPrice(price: number) {
@@ -19,6 +19,7 @@ function formatPrice(price: number) {
 
 function renderActionButtons(
   actions: CardAction[] | undefined,
+  card: DajeongCard,
   onAction: ChatCardRendererProps["onAction"],
 ) {
   if (!actions?.length) return null;
@@ -28,7 +29,7 @@ function renderActionButtons(
       {actions.map((action, index) => (
         <button
           key={`${action.type}-${action.value ?? action.label}-${index}`}
-          onClick={() => onAction(action.type, action.value, action.label)}
+          onClick={() => onAction({ action, card })}
           type="button"
         >
           {action.label}
@@ -72,9 +73,7 @@ export function ChatCardRenderer({
                   <p>{candidate.description}</p>
                   {action ? (
                     <button
-                      onClick={() =>
-                        onAction(action.type, action.value, action.label)
-                      }
+                      onClick={() => onAction({ action, card })}
                       type="button"
                     >
                       {action.label}
@@ -100,11 +99,14 @@ export function ChatCardRenderer({
                 <button
                   key={option.value}
                   onClick={() =>
-                    onAction(
-                      action?.type ?? "select_option",
-                      action?.value ?? option.value,
-                      action?.label ?? option.label,
-                    )
+                    onAction({
+                      action: action ?? {
+                        type: "select_option",
+                        value: option.value,
+                        label: option.label,
+                      },
+                      card,
+                    })
                   }
                   type="button"
                 >
@@ -144,7 +146,7 @@ export function ChatCardRenderer({
               </dd>
             </div>
           </dl>
-          {renderActionButtons(card.actions, onAction)}
+          {renderActionButtons(card.actions, card, onAction)}
         </section>
       );
 
@@ -175,7 +177,7 @@ export function ChatCardRenderer({
         <section className="chat-card chat-card-error">
           <h3>{card.title}</h3>
           <p>{card.message}</p>
-          {renderActionButtons(card.actions, onAction)}
+          {renderActionButtons(card.actions, card, onAction)}
         </section>
       );
 

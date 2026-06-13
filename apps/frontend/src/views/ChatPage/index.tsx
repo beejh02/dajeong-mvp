@@ -3,11 +3,13 @@
 import { useCallback, useState } from "react";
 import Link from "next/link";
 import type {
-  CardActionType,
   ChatResponse,
   DajeongCard,
+  OrderDraftCard,
+  OrderDraftConfirmationPayload,
 } from "../../lib/gemini/cardSchema";
 import { ChatInput } from "./components/ChatInput";
+import type { ChatCardActionPayload } from "./components/ChatCardRenderer";
 import { ChatMessageList } from "./components/ChatMessageList";
 import type { ChatMessage } from "./types";
 
@@ -15,8 +17,10 @@ const INITIAL_ASSISTANT_MESSAGE =
   "안녕하세요. 어떤 기업에서 무엇을 주문할까요?";
 const CHAT_ERROR_MESSAGE =
   "채팅 요청을 처리하지 못했습니다. 잠시 후 다시 시도해 주세요.";
-const CONFIRM_DRAFT_MESSAGE =
-  "주문 확정 처리는 다음 단계에서 연결합니다. 현재는 주문 초안 확인까지만 가능합니다.";
+const CONFIRM_ORDER_ERROR_MESSAGE =
+  "주문 확정을 처리하지 못했습니다. 다시 시도해 주세요.";
+const MISSING_CONFIRMATION_PAYLOAD_MESSAGE =
+  "주문 확정에 필요한 정보가 부족합니다. 주문 초안을 다시 만들어 주세요.";
 const EDIT_DRAFT_MESSAGE = "수정할 내용을 입력해 주세요.";
 const REJECT_DRAFT_MESSAGE = "주문 초안을 취소했습니다. 다시 주문해 주세요.";
 
@@ -94,6 +98,29 @@ async function requestChatResponse(
   return body;
 }
 
+async function requestConfirmOrderResponse(
+  confirmationPayload: OrderDraftConfirmationPayload,
+  conversationId: string | undefined,
+) {
+  const response = await fetch("/api/chat/confirm-order", {
+    body: JSON.stringify({
+      confirmationPayload,
+      ...(conversationId ? { conversationId } : {}),
+    }),
+    headers: {
+      "Content-Type": "application/json",
+    },
+    method: "POST",
+  });
+  const body: unknown = await response.json();
+
+  if (!isChatResponse(body)) {
+    throw new Error("Invalid confirm-order response");
+  }
+
+  return body;
+}
+
 export default function ChatPage() {
   const [messages, setMessages] = useState<ChatMessage[]>([
     createMessage("assistant", INITIAL_ASSISTANT_MESSAGE),
@@ -148,6 +175,44 @@ export default function ChatPage() {
     [appendMessage, conversationId, isLoading],
   );
 
+  const confirmOrderDraft = useCallback(
+    async (card: OrderDraftCard) => {
+      if (isLoading) return;
+
+      if (!card.confirmationPayload) {
+        setErrorMessage(MISSING_CONFIRMATION_PAYLOAD_MESSAGE);
+        appendMessage("assistant", MISSING_CONFIRMATION_PAYLOAD_MESSAGE);
+        return;
+      }
+
+      setErrorMessage(null);
+      setIsLoading(true);
+
+      try {
+        const chatResponse = await requestConfirmOrderResponse(
+          card.confirmationPayload,
+          conversationId,
+        );
+
+        appendMessage(
+          "assistant",
+          chatResponse.message,
+          chatResponse.cards,
+        );
+
+        if (chatResponse.conversationId) {
+          setConversationId(chatResponse.conversationId);
+        }
+      } catch {
+        setErrorMessage(CONFIRM_ORDER_ERROR_MESSAGE);
+        appendMessage("assistant", CONFIRM_ORDER_ERROR_MESSAGE);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [appendMessage, conversationId, isLoading],
+  );
+
   const handleSubmit = useCallback(() => {
     const trimmedInput = inputValue.trim();
 
@@ -158,34 +223,39 @@ export default function ChatPage() {
   }, [inputValue, isLoading, sendUserMessage]);
 
   const handleCardAction = useCallback(
-    (actionType: CardActionType, value?: string, label?: string) => {
-      if (actionType === "confirm") {
-        appendMessage("assistant", CONFIRM_DRAFT_MESSAGE);
+    ({ action, card }: ChatCardActionPayload) => {
+      if (action.type === "confirm") {
+        if (card.type !== "order_draft") {
+          appendMessage("assistant", MISSING_CONFIRMATION_PAYLOAD_MESSAGE);
+          return;
+        }
+
+        void confirmOrderDraft(card);
         return;
       }
 
-      if (actionType === "edit") {
+      if (action.type === "edit") {
         appendMessage("assistant", EDIT_DRAFT_MESSAGE);
         return;
       }
 
-      if (actionType === "reject") {
+      if (action.type === "reject") {
         appendMessage("assistant", REJECT_DRAFT_MESSAGE);
         return;
       }
 
-      const actionText = value ?? label;
+      const actionText = action.value ?? action.label;
 
       if (!actionText) return;
 
-      if (actionType === "select_menu") {
+      if (action.type === "select_menu") {
         void sendUserMessage(`메뉴로 선택할게: ${actionText}`);
         return;
       }
 
       void sendUserMessage(actionText);
     },
-    [appendMessage, sendUserMessage],
+    [appendMessage, confirmOrderDraft, sendUserMessage],
   );
 
   return (

@@ -54,11 +54,21 @@ requireIncludes(
   "src/views/ChatPage/components/ChatCardRenderer.tsx",
   'case "order_draft"',
 );
+requireIncludes(
+  "src/lib/gemini/mcpClientAdapter.ts",
+  "trustedConfirmDajeongOrder",
+);
+requireIncludes(
+  "src/app/api/chat/confirm-order/route.ts",
+  "trustedConfirmDajeongOrder",
+);
+requireIncludes("src/views/ChatPage/index.tsx", "/api/chat/confirm-order");
 requireExcludes("src/views/ChatPage/index.tsx", "getCompanyMenus");
 requireExcludes("src/views/ChatPage/index.tsx", "createOrder");
 requireExcludes("src/views/ChatPage/index.tsx", "buildOrderDraft");
 requireExcludes("src/views/ChatPage/index.tsx", "extractOrderIntent");
 requireExcludes("src/views/ChatPage/index.tsx", "buildOrderCreateRequest");
+requireExcludes("src/views/ChatPage/index.tsx", "confirmedByUser");
 
 async function importTypeScriptModule(relativePath) {
   const outputPath = copyTypeScriptModule(relativePath);
@@ -145,6 +155,9 @@ const { POST: orderIntentPOST } = await importTypeScriptModule(
 const { POST: chatPOST } = await importTypeScriptModule(
   "src/app/api/chat/route.ts",
 );
+const { POST: confirmOrderPOST } = await importTypeScriptModule(
+  "src/app/api/chat/confirm-order/route.ts",
+);
 const { buildOrderDraft } = await importTypeScriptModule(
   "src/views/ChatPage/lib/buildOrderDraft.ts",
 );
@@ -154,6 +167,8 @@ const { buildOrderCreateRequest } = await importTypeScriptModule(
 const { createChatResponseFromToolResults } = await importTypeScriptModule(
   "src/lib/gemini/cardBuilders.ts",
 );
+const { callDajeongMcpTool, trustedConfirmDajeongOrder } =
+  await importTypeScriptModule("src/lib/gemini/mcpClientAdapter.ts");
 
 const companyAResponse = {
   company: {
@@ -295,6 +310,107 @@ try {
   } else {
     process.env.GEMINI_API_KEY = originalGeminiApiKey;
   }
+}
+
+await assert.rejects(
+  () =>
+    callDajeongMcpTool({
+      toolName: "confirm_order",
+      arguments: {},
+    }),
+  /confirm_order is not callable/,
+);
+
+const validConfirmationPayload = {
+  draftId: "draft-phase-4b",
+  order: {
+    companyId: "company-a",
+    userId: "user-demo-1",
+    sourceChannel: "kiosk_a",
+    confirmedByUser: false,
+    items: [
+      {
+        menuId: "menu-a-002",
+        quantity: 1,
+        selectedOptionGroups: [
+          { groupId: "bun", choiceIds: ["bun-normal"] },
+          { groupId: "drink", choiceIds: ["drink-zero-coke"] },
+        ],
+      },
+    ],
+    fulfillmentType: "dine_in",
+    paymentMethod: "credit_card",
+    pointAccrual: { enabled: false, phone: null },
+  },
+};
+
+try {
+  const confirmFetchCalls = [];
+
+  globalThis.fetch = async (_url, init = {}) => {
+    confirmFetchCalls.push({
+      body: init.body ? JSON.parse(String(init.body)) : null,
+      method: init.method,
+    });
+
+    return {
+      ok: true,
+      status: 200,
+      json: async () => ({
+        orderNumber: "ORD-PHASE-4B",
+        waitingNumber: 12,
+        status: "waiting",
+        totalPrice: 7600,
+      }),
+    };
+  };
+
+  const trustedConfirmResult = await trustedConfirmDajeongOrder(
+    validConfirmationPayload,
+  );
+
+  assert.deepEqual(trustedConfirmResult, {
+    orderNumber: "ORD-PHASE-4B",
+    waitingNumber: 12,
+    status: "waiting",
+    totalPrice: 7600,
+    recommendedCardType: "order_confirmed",
+  });
+  assert.equal(confirmFetchCalls[0].method, "POST");
+  assert.equal(confirmFetchCalls[0].body.sourceChannel, "dajeong_ai");
+  assert.equal(confirmFetchCalls[0].body.pointAccrual.phone, null);
+  assert.equal("confirmedByUser" in confirmFetchCalls[0].body, false);
+
+  const invalidConfirmResponse = await confirmOrderPOST(
+    new Request("http://localhost/api/chat/confirm-order", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ confirmationPayload: { draftId: "" } }),
+    }),
+  );
+
+  assert.equal(invalidConfirmResponse.status, 400);
+
+  const validConfirmResponse = await confirmOrderPOST(
+    new Request("http://localhost/api/chat/confirm-order", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        confirmationPayload: validConfirmationPayload,
+        conversationId: "conversation-phase-4b",
+      }),
+    }),
+  );
+  const validConfirmBody = await validConfirmResponse.json();
+
+  assert.equal(validConfirmResponse.status, 200);
+  assert.equal(validConfirmBody.conversationId, "conversation-phase-4b");
+  assert.equal(validConfirmBody.requiredUserAction, false);
+  assert.equal(validConfirmBody.cards[0].type, "order_confirmed");
+  assert.equal(validConfirmBody.cards[0].orderNumber, "ORD-PHASE-4B");
+  assert.match(validConfirmBody.message, /ORD-PHASE-4B/);
+} finally {
+  globalThis.fetch = originalFetch;
 }
 
 try {

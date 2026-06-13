@@ -1,14 +1,12 @@
-import type { CardActionType } from "../../../lib/gemini/cardSchema";
 import type { ChatMessage } from "../types";
-import { ChatCardRenderer } from "./ChatCardRenderer";
+import {
+  ChatCardRenderer,
+  type ChatCardActionPayload,
+} from "./ChatCardRenderer";
 
 type ChatMessageListProps = {
   messages: ChatMessage[];
-  onCardAction: (
-    actionType: CardActionType,
-    value?: string,
-    label?: string,
-  ) => void;
+  onCardAction: (payload: ChatCardActionPayload) => void;
 };
 
 export function ChatMessageList({

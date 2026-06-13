@@ -18,7 +18,9 @@ const requiredFiles = [
   "src/lib/privacy.ts",
   "src/app/chat/page.tsx",
   "src/app/api/chat/route.ts",
+  "src/app/api/chat/confirm-order/route.ts",
   "src/app/api/order-intent/route.ts",
+  "src/lib/gemini/mcpClientAdapter.ts",
   "src/views/ChatPage/index.tsx",
   "src/views/ChatPage/components/ChatCardRenderer.tsx",
   "src/views/ChatPage/components/ChatMessageList.tsx",
@@ -75,9 +77,13 @@ if (failures.length === 0) {
   requireIncludes("src/app/chat/page.tsx", "ChatPage");
   requireIncludes("src/app/api/chat/route.ts", "runDajeongGeminiChat");
   requireIncludes("src/views/ChatPage/index.tsx", "/api/chat");
+  requireIncludes("src/views/ChatPage/index.tsx", "/api/chat/confirm-order");
   requireIncludes("src/views/ChatPage/index.tsx", "chatResponse.cards");
   requireIncludes("src/views/ChatPage/index.tsx", "conversationId");
-  requireIncludes("src/views/ChatPage/index.tsx", "CONFIRM_DRAFT_MESSAGE");
+  requireIncludes("src/views/ChatPage/index.tsx", "confirmationPayload");
+  requireIncludes("src/app/api/chat/confirm-order/route.ts", "trustedConfirmDajeongOrder");
+  requireIncludes("src/lib/gemini/mcpClientAdapter.ts", "trustedConfirmDajeongOrder");
+  requireIncludes("src/lib/gemini/mcpClientAdapter.ts", "confirmedByUser: true");
   requireIncludes(
     "src/views/ChatPage/components/ChatMessageList.tsx",
     "ChatCardRenderer",
@@ -99,6 +105,7 @@ if (failures.length === 0) {
   requireExcludes("src/views/ChatPage/index.tsx", "extractOrderIntent");
   requireExcludes("src/views/ChatPage/index.tsx", "buildOrderCreateRequest");
   requireExcludes("src/views/ChatPage/index.tsx", "user-demo-1");
+  requireExcludes("src/views/ChatPage/index.tsx", "confirmedByUser");
   requireExcludes("src/views/ChatPage/index.tsx", "parseOrderText(trimmedInput)");
   requireIncludes("src/views/ChatPage/lib/extractOrderIntent.ts", "/api/order-intent");
   requireIncludes("src/views/ChatPage/lib/extractOrderIntent.ts", "parseOrderText(text)");
