@@ -59,10 +59,44 @@ requireIncludes(
   "trustedConfirmDajeongOrder",
 );
 requireIncludes(
+  "src/lib/gemini/mcpClientAdapter.ts",
+  "Confirm orders only through the trusted UI confirmation route.",
+);
+requireExcludes("src/lib/gemini/mcpClientAdapter.ts", "Phase 1");
+requireIncludes(
   "src/app/api/chat/confirm-order/route.ts",
   "trustedConfirmDajeongOrder",
 );
 requireIncludes("src/views/ChatPage/index.tsx", "/api/chat/confirm-order");
+requireIncludes("src/views/ChatPage/index.tsx", "parseChatResponseBody");
+requireIncludes(
+  "src/views/ChatPage/index.tsx",
+  'return parseChatResponseBody(response, "Invalid confirm-order response")',
+);
+for (const guardName of [
+  "isCardAction",
+  "isMessageCard",
+  "isMenuCandidatesCard",
+  "isMissingOptionCard",
+  "isOrderDraftCard",
+  "isOrderConfirmedCard",
+  "isErrorCard",
+]) {
+  requireIncludes("src/views/ChatPage/index.tsx", `function ${guardName}`);
+}
+requireIncludes(
+  "../../docs/gemini-tool-contract.md",
+  "MCP Client Adapter currently uses local fallback toolHandlers",
+);
+requireIncludes(
+  "../../docs/gemini-tool-contract.md",
+  "Real apps/mcp-server is still pending",
+);
+requireIncludes(
+  "../../docs/mcp-tool-plan.md",
+  "confirm_order is blocked through the Gemini gateway",
+);
+requireIncludes("../../todo.md", "trusted confirm-order route");
 requireExcludes("src/views/ChatPage/index.tsx", "getCompanyMenus");
 requireExcludes("src/views/ChatPage/index.tsx", "createOrder");
 requireExcludes("src/views/ChatPage/index.tsx", "buildOrderDraft");

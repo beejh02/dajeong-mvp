@@ -363,6 +363,14 @@ const response = await ai.models.generateContent({
 9. Card UI 렌더링 구현
 10. `confirm_order`는 UI confirm 이후에만 MCP Server로 요청
 
-## Current implementation note
+## Current implementation status
+
+- Gemini gateway function `call_dajeong_mcp_tool` is implemented.
+- MCP Client Adapter exists at `apps/frontend/src/lib/gemini/mcpClientAdapter.ts`.
+- MCP Client Adapter currently uses local fallback toolHandlers instead of a real MCP server.
+- `trustedConfirmDajeongOrder` is implemented for the UI confirm path only.
+- `/api/chat/confirm-order` exists and adds `confirmedByUser=true` server-side.
+- confirm_order is blocked through the Gemini gateway and allowed only through the trusted UI confirmation route.
+- Real apps/mcp-server is still pending.
 
 현재 레포지토리에는 Gemini local `toolHandlers`와 `chatRunner`가 존재할 수 있다. 이는 초기 prototype 또는 MCP Server tool 구현으로 이전할 후보 코드다. 최종 목표는 외부 데이터와 외부 서비스 접근을 Dajeong MCP Server로 이동하는 것이다.

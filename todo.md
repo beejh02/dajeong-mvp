@@ -1,5 +1,19 @@
 # TODO
 
+## MCP-first fallback status
+
+- [x] Gemini gateway refactor
+- [x] /api/chat runner connection
+- [x] ChatResponse card building
+- [x] ChatPage /api/chat migration
+- [x] order_draft confirmationPayload
+- [x] trusted confirm-order route
+- [ ] real apps/mcp-server scaffold
+- [ ] moving local toolHandlers into MCP server tools
+- [ ] frontend adapter switch from local fallback to actual MCP server
+- [ ] stronger persistence/idempotency for draft confirmation
+- [ ] production auth/session handling
+
 ## Phase 0. 문서 정리
 
 - [ ] README.md 작성

@@ -30,7 +30,9 @@ const requiredFiles = [
   "src/views/ChatPage/lib/validateOrderDraft.ts",
   "src/views/hooks/useKioskMenu.ts",
   "src/views/hooks/useKioskOrderFlow.ts",
+  "../../docs/gemini-tool-contract.md",
   "../../docs/mcp-tool-plan.md",
+  "../../todo.md",
 ];
 
 function source(file) {
@@ -84,6 +86,27 @@ if (failures.length === 0) {
   requireIncludes("src/app/api/chat/confirm-order/route.ts", "trustedConfirmDajeongOrder");
   requireIncludes("src/lib/gemini/mcpClientAdapter.ts", "trustedConfirmDajeongOrder");
   requireIncludes("src/lib/gemini/mcpClientAdapter.ts", "confirmedByUser: true");
+  requireIncludes(
+    "src/lib/gemini/mcpClientAdapter.ts",
+    "Confirm orders only through the trusted UI confirmation route.",
+  );
+  requireExcludes("src/lib/gemini/mcpClientAdapter.ts", "Phase 1");
+  requireIncludes("src/views/ChatPage/index.tsx", "parseChatResponseBody");
+  requireIncludes(
+    "src/views/ChatPage/index.tsx",
+    'return parseChatResponseBody(response, "Invalid confirm-order response")',
+  );
+  for (const guardName of [
+    "isCardAction",
+    "isMessageCard",
+    "isMenuCandidatesCard",
+    "isMissingOptionCard",
+    "isOrderDraftCard",
+    "isOrderConfirmedCard",
+    "isErrorCard",
+  ]) {
+    requireIncludes("src/views/ChatPage/index.tsx", `function ${guardName}`);
+  }
   requireIncludes(
     "src/views/ChatPage/components/ChatMessageList.tsx",
     "ChatCardRenderer",
@@ -242,6 +265,19 @@ if (failures.length === 0) {
   requireIncludes("../../docs/mcp-tool-plan.md", "fulfillmentType");
   requireIncludes("../../docs/mcp-tool-plan.md", "paymentMethod");
   requireIncludes("../../docs/mcp-tool-plan.md", "pointAccrual");
+  requireIncludes(
+    "../../docs/gemini-tool-contract.md",
+    "MCP Client Adapter currently uses local fallback toolHandlers",
+  );
+  requireIncludes(
+    "../../docs/gemini-tool-contract.md",
+    "Real apps/mcp-server is still pending",
+  );
+  requireIncludes(
+    "../../docs/mcp-tool-plan.md",
+    "confirm_order is blocked through the Gemini gateway",
+  );
+  requireIncludes("../../todo.md", "trusted confirm-order route");
 
   requireExcludes("src/lib/adapters/menuAdapter.ts", "options: menu.optionGroups.flatMap");
   requireExcludes("src/views/kioskCart.ts", "selectedOptionIds");

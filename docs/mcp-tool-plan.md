@@ -10,6 +10,16 @@
 - 향후 MCP tool도 frontend와 같은 backend endpoint를 호출해야 하며, frontend UI 컴포넌트에 직접 연결하지 않는다.
 - 주문의 `companyId`는 실제 주문 대상 기업이며, `sourceChannel`은 주문 유입 채널이다. Dajeong AI 주문은 `companyId`를 실제 기업 id로 유지하고 `sourceChannel`을 `dajeong_ai`로 보낸다.
 
+## Current implementation status
+
+- Gemini gateway function `call_dajeong_mcp_tool` is implemented.
+- MCP Client Adapter exists at `apps/frontend/src/lib/gemini/mcpClientAdapter.ts`.
+- MCP Client Adapter currently uses local fallback toolHandlers instead of a real MCP server.
+- `trustedConfirmDajeongOrder` is implemented for the UI confirm path only.
+- `/api/chat/confirm-order` exists and adds `confirmedByUser=true` server-side.
+- confirm_order is blocked through the Gemini gateway and allowed only through the trusted UI confirmation route.
+- Real apps/mcp-server is still pending.
+
 ## Planned Tools
 
 ### get_companies

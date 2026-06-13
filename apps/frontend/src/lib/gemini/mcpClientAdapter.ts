@@ -205,13 +205,13 @@ export async function callDajeongMcpTool(
 
   if (normalizedInput.toolName === "confirm_order") {
     throw new Error(
-      "confirm_order is not callable through the Gemini MCP gateway in Phase 1. Confirm orders only after the trusted UI order_draft confirm action.",
+      "confirm_order is not callable through the Gemini MCP gateway. Confirm orders only through the trusted UI confirmation route.",
     );
   }
 
   // Temporary local fallback until apps/mcp-server is implemented.
   // The adapter boundary keeps Gemini on the MCP-first contract while reusing
-  // the existing local handlers behind it for Phase 1.
+  // the existing local handlers until the real MCP server is implemented.
   return handleGeminiToolCall(
     normalizedInput.toolName,
     normalizedInput.arguments,

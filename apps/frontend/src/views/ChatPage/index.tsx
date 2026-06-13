@@ -3,8 +3,14 @@
 import { useCallback, useState } from "react";
 import Link from "next/link";
 import type {
+  CardAction,
   ChatResponse,
   DajeongCard,
+  ErrorCard,
+  MenuCandidatesCard,
+  MessageCard,
+  MissingOptionCard,
+  OrderConfirmedCard,
   OrderDraftCard,
   OrderDraftConfirmationPayload,
 } from "../../lib/gemini/cardSchema";
@@ -24,25 +30,156 @@ const MISSING_CONFIRMATION_PAYLOAD_MESSAGE =
 const EDIT_DRAFT_MESSAGE = "수정할 내용을 입력해 주세요.";
 const REJECT_DRAFT_MESSAGE = "주문 초안을 취소했습니다. 다시 주문해 주세요.";
 
-const DAJEONG_CARD_TYPES = new Set([
-  "message",
-  "menu_candidates",
-  "missing_option",
-  "order_draft",
-  "order_confirmed",
-  "error",
+const CARD_ACTION_TYPES = new Set<CardAction["type"]>([
+  "confirm",
+  "edit",
+  "reject",
+  "select_option",
+  "select_menu",
+  "retry",
 ]);
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-function isDajeongCard(value: unknown): value is DajeongCard {
+function isStringArray(value: unknown): value is string[] {
+  return Array.isArray(value) && value.every((item) => typeof item === "string");
+}
+
+function isCardAction(value: unknown): value is CardAction {
   return (
     isRecord(value) &&
     typeof value.type === "string" &&
-    DAJEONG_CARD_TYPES.has(value.type)
+    CARD_ACTION_TYPES.has(value.type as CardAction["type"]) &&
+    typeof value.label === "string" &&
+    (value.value === undefined || typeof value.value === "string")
   );
+}
+
+function isCardActionArray(value: unknown): value is CardAction[] {
+  return Array.isArray(value) && value.every(isCardAction);
+}
+
+function isMessageCard(value: unknown): value is MessageCard {
+  return (
+    isRecord(value) &&
+    value.type === "message" &&
+    typeof value.title === "string" &&
+    typeof value.message === "string"
+  );
+}
+
+function isMenuCandidate(value: unknown) {
+  return (
+    isRecord(value) &&
+    typeof value.menuId === "string" &&
+    typeof value.name === "string" &&
+    typeof value.price === "number" &&
+    typeof value.description === "string"
+  );
+}
+
+function isMenuCandidatesCard(value: unknown): value is MenuCandidatesCard {
+  return (
+    isRecord(value) &&
+    value.type === "menu_candidates" &&
+    typeof value.title === "string" &&
+    typeof value.message === "string" &&
+    Array.isArray(value.candidates) &&
+    value.candidates.every(isMenuCandidate) &&
+    isCardActionArray(value.actions)
+  );
+}
+
+function isMissingOption(value: unknown) {
+  return (
+    isRecord(value) &&
+    typeof value.label === "string" &&
+    typeof value.value === "string"
+  );
+}
+
+function isMissingOptionCard(value: unknown): value is MissingOptionCard {
+  return (
+    isRecord(value) &&
+    value.type === "missing_option" &&
+    typeof value.title === "string" &&
+    typeof value.question === "string" &&
+    typeof value.groupId === "string" &&
+    Array.isArray(value.options) &&
+    value.options.every(isMissingOption) &&
+    isCardActionArray(value.actions)
+  );
+}
+
+function isOrderDraftItem(value: unknown) {
+  return (
+    isRecord(value) &&
+    typeof value.menuName === "string" &&
+    typeof value.quantity === "number" &&
+    isStringArray(value.options) &&
+    typeof value.price === "number"
+  );
+}
+
+function isOrderDraftCard(value: unknown): value is OrderDraftCard {
+  return (
+    isRecord(value) &&
+    value.type === "order_draft" &&
+    typeof value.title === "string" &&
+    typeof value.draftId === "string" &&
+    typeof value.companyName === "string" &&
+    Array.isArray(value.items) &&
+    value.items.every(isOrderDraftItem) &&
+    typeof value.totalPrice === "number" &&
+    isCardActionArray(value.actions)
+  );
+}
+
+function isOrderConfirmedCard(value: unknown): value is OrderConfirmedCard {
+  return (
+    isRecord(value) &&
+    value.type === "order_confirmed" &&
+    typeof value.title === "string" &&
+    typeof value.orderNumber === "string" &&
+    typeof value.waitingNumber === "number" &&
+    typeof value.status === "string" &&
+    typeof value.totalPrice === "number" &&
+    typeof value.message === "string"
+  );
+}
+
+function isErrorCard(value: unknown): value is ErrorCard {
+  return (
+    isRecord(value) &&
+    value.type === "error" &&
+    typeof value.title === "string" &&
+    typeof value.message === "string" &&
+    typeof value.recoverable === "boolean" &&
+    (value.actions === undefined || isCardActionArray(value.actions))
+  );
+}
+
+function isDajeongCard(value: unknown): value is DajeongCard {
+  if (!isRecord(value)) return false;
+
+  switch (value.type) {
+    case "message":
+      return isMessageCard(value);
+    case "menu_candidates":
+      return isMenuCandidatesCard(value);
+    case "missing_option":
+      return isMissingOptionCard(value);
+    case "order_draft":
+      return isOrderDraftCard(value);
+    case "order_confirmed":
+      return isOrderConfirmedCard(value);
+    case "error":
+      return isErrorCard(value);
+    default:
+      return false;
+  }
 }
 
 function isChatResponse(value: unknown): value is ChatResponse {
@@ -89,10 +226,20 @@ async function requestChatResponse(
     throw new Error(`Chat request failed with ${response.status}`);
   }
 
-  const body: unknown = await response.json();
+  return parseChatResponseBody(response, "Invalid chat response");
+}
+
+async function parseChatResponseBody(response: Response, errorMessage: string) {
+  let body: unknown;
+
+  try {
+    body = await response.json();
+  } catch {
+    throw new Error(errorMessage);
+  }
 
   if (!isChatResponse(body)) {
-    throw new Error("Invalid chat response");
+    throw new Error(errorMessage);
   }
 
   return body;
@@ -112,13 +259,8 @@ async function requestConfirmOrderResponse(
     },
     method: "POST",
   });
-  const body: unknown = await response.json();
 
-  if (!isChatResponse(body)) {
-    throw new Error("Invalid confirm-order response");
-  }
-
-  return body;
+  return parseChatResponseBody(response, "Invalid confirm-order response");
 }
 
 export default function ChatPage() {
