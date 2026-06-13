@@ -4,6 +4,7 @@ import type {
   DajeongCard,
   MenuCandidatesCard,
   OrderDraftCard,
+  OrderDraftConfirmationPayload,
 } from "./cardSchema";
 
 const MAX_MENU_CANDIDATES = 5;
@@ -16,6 +17,7 @@ export type CapturedDajeongToolResult = {
 
 type DajeongToolInput = {
   toolName: string;
+  arguments?: unknown;
 };
 
 type CreateOrderDraftResultLike = {
@@ -48,12 +50,74 @@ type MenuCandidateLike = {
   isAvailable: boolean;
 };
 
+type OrderDraftToolArguments = OrderDraftConfirmationPayload["order"];
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 function isDajeongToolInput(value: unknown): value is DajeongToolInput {
   return isRecord(value) && typeof value.toolName === "string";
+}
+
+function isFulfillmentType(value: unknown): value is OrderDraftToolArguments["fulfillmentType"] {
+  return value === "dine_in" || value === "pickup";
+}
+
+function isPaymentMethod(value: unknown): value is OrderDraftToolArguments["paymentMethod"] {
+  return value === "credit_card" || value === "coupon" || value === "cash";
+}
+
+function isPointAccrualRequestLike(
+  value: unknown,
+): value is OrderDraftToolArguments["pointAccrual"] {
+  return (
+    isRecord(value) &&
+    typeof value.enabled === "boolean" &&
+    (value.phone === undefined ||
+      value.phone === null ||
+      typeof value.phone === "string")
+  );
+}
+
+function isSelectedOptionGroupRequestLike(
+  value: unknown,
+): value is OrderDraftToolArguments["items"][number]["selectedOptionGroups"][number] {
+  return (
+    isRecord(value) &&
+    typeof value.groupId === "string" &&
+    Array.isArray(value.choiceIds) &&
+    value.choiceIds.every((choiceId) => typeof choiceId === "string")
+  );
+}
+
+function isOrderItemRequestLike(
+  value: unknown,
+): value is OrderDraftToolArguments["items"][number] {
+  return (
+    isRecord(value) &&
+    typeof value.menuId === "string" &&
+    typeof value.quantity === "number" &&
+    Number.isInteger(value.quantity) &&
+    value.quantity > 0 &&
+    Array.isArray(value.selectedOptionGroups) &&
+    value.selectedOptionGroups.every(isSelectedOptionGroupRequestLike)
+  );
+}
+
+function isOrderDraftToolArguments(
+  value: unknown,
+): value is OrderDraftToolArguments {
+  return (
+    isRecord(value) &&
+    typeof value.companyId === "string" &&
+    typeof value.userId === "string" &&
+    Array.isArray(value.items) &&
+    value.items.every(isOrderItemRequestLike) &&
+    isFulfillmentType(value.fulfillmentType) &&
+    isPaymentMethod(value.paymentMethod) &&
+    isPointAccrualRequestLike(value.pointAccrual)
+  );
 }
 
 function isSelectedOptionGroupLike(
@@ -129,12 +193,40 @@ function formatSelectedOptions(
   });
 }
 
+function createConfirmationPayload(
+  draftId: string,
+  toolArguments: unknown,
+): OrderDraftConfirmationPayload | undefined {
+  if (!isOrderDraftToolArguments(toolArguments)) {
+    return undefined;
+  }
+
+  return {
+    draftId,
+    order: {
+      companyId: toolArguments.companyId,
+      userId: toolArguments.userId,
+      sourceChannel: "dajeong_ai",
+      items: toolArguments.items,
+      fulfillmentType: toolArguments.fulfillmentType,
+      paymentMethod: toolArguments.paymentMethod,
+      pointAccrual: toolArguments.pointAccrual,
+    },
+  };
+}
+
 export function createOrderDraftCard(
   result: unknown,
+  toolArguments?: unknown,
 ): OrderDraftCard | undefined {
   if (!isCreateOrderDraftResultLike(result)) {
     return undefined;
   }
+
+  const confirmationPayload = createConfirmationPayload(
+    result.draftId,
+    toolArguments,
+  );
 
   return {
     type: "order_draft",
@@ -148,6 +240,7 @@ export function createOrderDraftCard(
       price: item.itemPrice,
     })),
     totalPrice: result.totalPrice,
+    ...(confirmationPayload ? { confirmationPayload } : {}),
     actions: [
       { type: "confirm", label: "주문 확정" },
       { type: "edit", label: "수정" },
@@ -200,7 +293,10 @@ function createCardFromCapturedResult(
 
   switch (capturedResult.toolInput.toolName) {
     case "create_order_draft":
-      return createOrderDraftCard(capturedResult.toolResult);
+      return createOrderDraftCard(
+        capturedResult.toolResult,
+        capturedResult.toolInput.arguments,
+      );
     case "search_menu":
       return createMenuCandidatesCard(capturedResult.toolResult);
     case "get_company_menus":

@@ -2,6 +2,8 @@
 // as TypeScript types. order_draft is not an actual order and must only lead to
 // confirm_order after a confirm action.
 
+import type { OrderCreateRequest } from "../api/types";
+
 export type CardActionType =
   | "confirm"
   | "edit"
@@ -47,6 +49,13 @@ export type MissingOptionCard = {
   actions: CardAction[];
 };
 
+export type OrderDraftConfirmationPayload = {
+  draftId: string;
+  order: Omit<OrderCreateRequest, "sourceChannel"> & {
+    sourceChannel: "dajeong_ai";
+  };
+};
+
 export type OrderDraftCard = {
   type: "order_draft";
   title: string;
@@ -59,6 +68,7 @@ export type OrderDraftCard = {
     price: number;
   }>;
   totalPrice: number;
+  confirmationPayload?: OrderDraftConfirmationPayload;
   actions: CardAction[];
 };
 

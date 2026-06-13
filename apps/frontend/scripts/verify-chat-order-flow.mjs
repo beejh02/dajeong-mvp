@@ -403,7 +403,23 @@ const draftChatResponse = createChatResponseFromToolResults(
     {
       toolInput: {
         toolName: "create_order_draft",
-        arguments: {},
+        arguments: {
+          companyId: "company-a",
+          userId: "user-demo-1",
+          items: [
+            {
+              menuId: "menu-a-002",
+              quantity: 1,
+              selectedOptionGroups: [
+                { groupId: "bun", choiceIds: ["bun-normal"] },
+                { groupId: "drink", choiceIds: ["drink-zero-coke"] },
+              ],
+            },
+          ],
+          fulfillmentType: "dine_in",
+          paymentMethod: "credit_card",
+          pointAccrual: { enabled: false, phone: null },
+        },
       },
       toolResult: {
         draftId: "draft-phase-3a",
@@ -460,12 +476,71 @@ assert.deepEqual(draftChatResponse.cards[0], {
     },
   ],
   totalPrice: 7600,
+  confirmationPayload: {
+    draftId: "draft-phase-3a",
+    order: {
+      companyId: "company-a",
+      userId: "user-demo-1",
+      sourceChannel: "dajeong_ai",
+      items: [
+        {
+          menuId: "menu-a-002",
+          quantity: 1,
+          selectedOptionGroups: [
+            { groupId: "bun", choiceIds: ["bun-normal"] },
+            { groupId: "drink", choiceIds: ["drink-zero-coke"] },
+          ],
+        },
+      ],
+      fulfillmentType: "dine_in",
+      paymentMethod: "credit_card",
+      pointAccrual: { enabled: false, phone: null },
+    },
+  },
   actions: [
     { type: "confirm", label: "주문 확정" },
     { type: "edit", label: "수정" },
     { type: "reject", label: "취소" },
   ],
 });
+assert.equal(
+  "confirmedByUser" in draftChatResponse.cards[0].confirmationPayload.order,
+  false,
+);
+
+const invalidPayloadDraftChatResponse = createChatResponseFromToolResults(
+  "주문 초안을 확인해 주세요.",
+  [
+    {
+      toolInput: {
+        toolName: "create_order_draft",
+        arguments: {
+          companyId: "company-a",
+        },
+      },
+      toolResult: {
+        draftId: "draft-invalid-payload",
+        companyName: "A기업",
+        items: [
+          {
+            menuName: "A 불고기 버거",
+            quantity: 1,
+            selectedOptions: [],
+            itemPrice: 7600,
+          },
+        ],
+        totalPrice: 7600,
+        recommendedCardType: "order_draft",
+      },
+    },
+  ],
+);
+
+assert.equal(invalidPayloadDraftChatResponse.cards[0].type, "order_draft");
+assert.equal(
+  "confirmationPayload" in invalidPayloadDraftChatResponse.cards[0],
+  false,
+);
 
 const searchChatResponse = createChatResponseFromToolResults(
   "메뉴 후보를 골라 주세요.",
