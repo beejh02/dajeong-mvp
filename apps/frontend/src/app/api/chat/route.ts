@@ -1,33 +1,7 @@
-type CardAction = {
-  type: "retry";
-  label: string;
-};
-
-type MessageCard = {
-  type: "message";
-  title: string;
-  message: string;
-};
-
-type ErrorCard = {
-  type: "error";
-  title: string;
-  message: string;
-  recoverable: boolean;
-  actions: CardAction[];
-};
-
-type DajeongCard = MessageCard | ErrorCard;
+import type { ChatResponse } from "../../../lib/gemini/cardSchema";
 
 type ChatRequest = {
   message: string;
-  conversationId?: string;
-};
-
-type ChatResponse = {
-  message: string;
-  cards: DajeongCard[];
-  requiredUserAction: boolean;
   conversationId?: string;
 };
 
