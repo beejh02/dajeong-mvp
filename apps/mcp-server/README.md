@@ -1,6 +1,11 @@
 # Dajeong MCP Server
 
-Standalone TypeScript scaffold for the future Dajeong MCP tool server.
+TypeScript package for the Dajeong MCP tool boundary.
+
+This package now contains both:
+
+- the direct registry used by frontend server mode through monorepo import
+- the standalone MCP stdio transport scaffold for future MCP clients
 
 This package owns the backend-facing tool boundary for:
 
@@ -10,7 +15,12 @@ This package owns the backend-facing tool boundary for:
 - `create_order_draft`
 - `confirm_order`
 
-The frontend is not wired to this package yet. The current frontend MCP Client Adapter still uses local fallback `toolHandlers`; switching that adapter to this server is planned for Phase 5C.
+The frontend MCP Client Adapter can run in two modes:
+
+- `DAJEONG_MCP_RUNTIME_MODE=local`: default local fallback `toolHandlers`
+- `DAJEONG_MCP_RUNTIME_MODE=server`: direct registry import from this package
+
+Frontend server mode does not use MCP stdio transport yet. Frontend MCP transport client wiring remains optional and pending for a later phase.
 
 ## Environment
 
@@ -29,6 +39,15 @@ pnpm install
 pnpm verify
 pnpm typecheck
 pnpm build
+pnpm start
 ```
 
-`src/index.ts` currently exports `callDajeongMcpServerTool`. MCP stdio transport registration is intentionally left as Phase 5C work so this scaffold does not change frontend traffic.
+`pnpm start` runs the built stdio entrypoint with `node dist/stdio.js`.
+
+## Runtime entrypoints
+
+`src/index.ts` exports the direct registry APIs, including `callDajeongMcpServerTool`, and does not start transport. This keeps the frontend server-mode import path side-effect free.
+
+`src/stdio.ts` is the standalone MCP stdio runtime entrypoint. It creates the MCP server, connects `StdioServerTransport`, and is intended to run after `pnpm build` through `pnpm start`.
+
+`src/mcpServer.ts` registers the MCP server handlers and forwards tool calls to the direct registry. `src/toolSchemas.ts` defines the five advertised MCP tools.
