@@ -10,8 +10,8 @@
 - [x] trusted confirm-order route
 - [x] real apps/mcp-server scaffold
 - [x] frontend MCP adapter runtime switch preparation
+- [x] frontend adapter switch from local fallback to actual MCP server direct registry mode
 - [ ] moving local toolHandlers into MCP server tools
-- [ ] frontend adapter switch from local fallback to actual MCP server
 - [ ] MCP server transport wiring
 - [ ] stronger persistence/idempotency for draft confirmation
 - [ ] production auth/session handling

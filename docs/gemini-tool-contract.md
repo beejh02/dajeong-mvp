@@ -28,8 +28,8 @@ User
 - MCP Client Adapter는 Gemini function call을 MCP tool call로 변환한다.
 - 실제 tool 구현은 Dajeong MCP Server에 둔다.
 - 현재 frontend local `toolHandlers`는 임시 구현 또는 MCP Server로 이전할 후보 코드로 간주한다.
-- `apps/mcp-server` scaffold는 존재하지만 아직 frontend adapter에 연결하지 않았다.
-- `DAJEONG_MCP_RUNTIME_MODE=local`이 기본값이며, `server` mode는 Phase 5C-2 전까지 실제 transport를 사용하지 않는다.
+- `apps/mcp-server`는 `DAJEONG_MCP_RUNTIME_MODE=server`에서 monorepo direct import로 연결된다.
+- `DAJEONG_MCP_RUNTIME_MODE=local`이 기본값이며, `server` mode는 아직 stdio/transport를 사용하지 않는다.
 - Frontend는 Gemini function이나 MCP tool을 직접 호출하지 않고 `/api/chat`을 통해 `ChatResponse`를 받는다.
 
 ## 2. Gemini Gateway Functions
@@ -370,12 +370,12 @@ const response = await ai.models.generateContent({
 - Gemini gateway function `call_dajeong_mcp_tool` is implemented.
 - MCP Client Adapter exists at `apps/frontend/src/lib/gemini/mcpClientAdapter.ts`.
 - MCP Client Adapter currently uses local fallback toolHandlers instead of a real MCP server.
-- Frontend MCP adapter has a local/server runtime mode switch, but server mode is intentionally not wired yet.
+- Frontend MCP adapter has a local/server runtime mode switch.
 - Gemini gateway remains unchanged.
 - `trustedConfirmDajeongOrder` is implemented for the UI confirm path only.
 - Trusted confirmation route `/api/chat/confirm-order` exists and adds `confirmedByUser=true` server-side.
-- Trusted confirmation route still uses local fallback until server wiring.
+- trusted confirmation route can use local or server runtime depending on DAJEONG_MCP_RUNTIME_MODE.
 - confirm_order remains blocked through the Gemini gateway and allowed only through the trusted UI confirmation route.
-- apps/mcp-server scaffold exists but is not wired yet.
+- apps/mcp-server is wired for server mode, but stdio/transport remains pending.
 
 현재 레포지토리에는 Gemini local `toolHandlers`와 `chatRunner`가 존재할 수 있다. 이는 초기 prototype 또는 MCP Server tool 구현으로 이전할 후보 코드다. 최종 목표는 외부 데이터와 외부 서비스 접근을 Dajeong MCP Server로 이동하는 것이다.
