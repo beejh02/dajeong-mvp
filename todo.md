@@ -13,6 +13,8 @@
 - [x] frontend adapter switch from local fallback to actual MCP server direct registry mode
 - [x] server mode direct registry wiring validation
 - [x] MCP server transport wiring scaffold
+- [x] Phase 5F MVP demo flow QA
+- [x] Phase 5G README and presentation-ready documentation cleanup
 - [ ] moving local toolHandlers into MCP server tools
 - [ ] frontend adapter switch to MCP transport client
 - [ ] local fallback removal
@@ -21,7 +23,10 @@
 
 ## Phase 0. 문서 정리
 
-- [ ] README.md 작성
+- [x] README.md 작성
+- [x] docs/mvp-demo-flow-qa.md 작성
+- [x] docs/mvp-architecture.md 작성
+- [x] docs/presentation-outline.md 작성
 - [ ] project-spec.md 작성
 - [ ] docs/00-project-intent.md 작성
 - [ ] docs/01-mvp-scope.md 작성

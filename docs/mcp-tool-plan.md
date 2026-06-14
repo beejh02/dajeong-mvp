@@ -1,6 +1,6 @@
 # MCP Tool Plan
 
-이 문서는 다정 MVP의 향후 MCP Server tool 설계 초안이다. 현재 작업 범위에서는 MCP runtime을 구현하지 않고, Kiosk A/B, Admin Page, 향후 AI 응답 계층이 같은 Backend API 계약을 사용하도록 준비한다.
+이 문서는 다정 MVP의 MCP Server tool 설계와 단계별 통합 상태를 정리한다. 현재 레포지토리는 frontend server mode direct registry import와 standalone MCP stdio transport scaffold를 갖고 있지만, frontend MCP transport client는 아직 구현하지 않았다.
 
 ## 현재 통합 원칙
 
