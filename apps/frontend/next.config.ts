@@ -8,6 +8,7 @@ const nextConfig: NextConfig = {
   experimental: {
     externalDir: true,
   },
+  // Direct server-mode imports from apps/mcp-server use these monorepo aliases.
   turbopack: {
     resolveAlias: {
       "../backendClient.js": "../mcp-server/src/backendClient.ts",

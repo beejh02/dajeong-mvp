@@ -174,6 +174,28 @@ for (const check of interactionChecks) {
   }
 }
 
+const nextConfigChecks = [
+  "serverExternalPackages",
+  '"@ai-sdk/google"',
+  '"ai"',
+  "externalDir: true",
+  "root: repoRoot",
+  "../mcp-server/src/backendClient.ts",
+  "../mcp-server/src/types.ts",
+  "../mcp-server/src/toolRegistry.ts",
+  "../mcp-server/src/tools/confirmOrder.ts",
+  "../mcp-server/src/tools/createOrderDraft.ts",
+  "../mcp-server/src/tools/getCompanies.ts",
+  "../mcp-server/src/tools/getCompanyMenus.ts",
+  "../mcp-server/src/tools/searchMenu.ts",
+];
+
+for (const pattern of nextConfigChecks) {
+  if (!sourceIncludes("next.config.ts", pattern)) {
+    failures.push(`missing Next MCP server-mode config marker ${pattern}`);
+  }
+}
+
 if (failures.length > 0) {
   console.error("Next structure verification failed:");
   for (const failure of failures) {

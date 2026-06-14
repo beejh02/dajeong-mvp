@@ -14,7 +14,7 @@
 
 현재 다정 AI 주문 화면은 Gemini Flash 기반 intent extraction을 우선 사용하고, `GEMINI_API_KEY`가 없거나 Gemini 호출에 실패하면 기존 rule-based intent parser로 fallback한다. rule-based parser는 백업 경로로 유지한다.
 
-`apps/mcp-server`에는 향후 MCP tool 서버를 위한 TypeScript scaffold가 있다. 현재 frontend MCP Client Adapter는 여전히 local fallback `toolHandlers`를 사용하며, 실제 MCP server로 traffic을 전환하는 작업은 다음 단계로 남아 있다. MCP 관련 계획 문서는 `docs/mcp-tool-plan.md`를 기준으로 참고한다.
+`apps/mcp-server`에는 향후 MCP tool 서버를 위한 TypeScript scaffold가 있다. 현재 frontend MCP Client Adapter는 local fallback `toolHandlers`를 기본값으로 유지하며, `DAJEONG_MCP_RUNTIME_MODE=server`에서는 `apps/mcp-server` direct registry import로 라우팅한다. server mode is direct registry import, not MCP transport. MCP 관련 계획 문서는 `docs/mcp-tool-plan.md`를 기준으로 참고한다.
 
 ## 문서
 
@@ -75,6 +75,27 @@ pnpm dev
 ```
 
 Frontend는 기본적으로 `NEXT_PUBLIC_BACKEND_API_URL` 환경변수를 통해 Backend API 주소를 참조한다. 로컬 개발 기본값은 `http://127.0.0.1:8000`이다.
+
+### MCP runtime mode smoke commands
+
+Local fallback smoke: `DAJEONG_MCP_RUNTIME_MODE=local pnpm dev`
+
+```powershell
+cd apps/frontend
+$env:DAJEONG_MCP_RUNTIME_MODE="local"
+pnpm dev
+```
+
+Server mode direct registry smoke: `DAJEONG_MCP_RUNTIME_MODE=server BACKEND_API_URL=http://localhost:8000 pnpm dev`
+
+```powershell
+cd apps/frontend
+$env:DAJEONG_MCP_RUNTIME_MODE="server"
+$env:BACKEND_API_URL="http://localhost:8000"
+pnpm dev
+```
+
+Server mode remains a monorepo direct import from `apps/frontend` to `apps/mcp-server`; MCP stdio/HTTP transport is still pending.
 
 ## MCP Server scaffold 확인
 

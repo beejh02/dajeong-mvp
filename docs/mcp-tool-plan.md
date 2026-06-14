@@ -14,10 +14,12 @@
 
 - Gemini gateway function `call_dajeong_mcp_tool` is implemented.
 - MCP Client Adapter exists at `apps/frontend/src/lib/gemini/mcpClientAdapter.ts`.
-- MCP Client Adapter currently uses local fallback toolHandlers instead of a real MCP server.
+- MCP Client Adapter currently uses local fallback toolHandlers by default and can route server mode to the apps/mcp-server direct registry import.
 - apps/mcp-server scaffold exists and exports a direct tool registry entrypoint.
 - DAJEONG_MCP_RUNTIME_MODE=server routes to apps/mcp-server direct registry import.
 - This is not MCP transport yet; it is monorepo direct-import wiring.
+- Phase 5C-3 validates the direct registry wiring before MCP transport.
+- Phase 5C-3 verification covers the frontend adapter import, Next externalDir/alias support, ChatPage API-import isolation, and MCP server registry structure.
 - Local mode remains the default fallback.
 - `trustedConfirmDajeongOrder` is implemented for the UI confirm path only.
 - `/api/chat/confirm-order` exists and adds `confirmedByUser=true` server-side.

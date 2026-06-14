@@ -3,6 +3,7 @@ import {
   existsSync,
   mkdirSync,
   mkdtempSync,
+  readdirSync,
   readFileSync,
   symlinkSync,
   writeFileSync,
@@ -36,6 +37,30 @@ function requireExcludes(relativePath, unexpectedText) {
     !content.includes(unexpectedText),
     `${relativePath} should not include ${unexpectedText}`,
   );
+}
+
+function listProjectFiles(relativeDir) {
+  const fullDir = path.join(root, relativeDir);
+  const entries = readdirSync(fullDir, { withFileTypes: true });
+  const files = [];
+
+  for (const entry of entries) {
+    const relativePath = path.join(relativeDir, entry.name).replaceAll("\\", "/");
+
+    if (entry.isDirectory()) {
+      files.push(...listProjectFiles(relativePath));
+    } else if (entry.isFile() && /\.(ts|tsx)$/.test(entry.name)) {
+      files.push(relativePath);
+    }
+  }
+
+  return files;
+}
+
+function requireChatPageExcludes(unexpectedText) {
+  for (const relativePath of listProjectFiles("src/views/ChatPage")) {
+    requireExcludes(relativePath, unexpectedText);
+  }
 }
 
 if (existsSync(rootNodeModulesPath) && !existsSync(tempNodeModulesPath)) {
@@ -74,10 +99,18 @@ requireIncludes(
   "src/lib/gemini/mcpClientAdapter.ts",
   "callDajeongMcpServerTool",
 );
+requireIncludes(
+  "src/lib/gemini/mcpClientAdapter.ts",
+  'import { callDajeongMcpServerTool } from "../../../../mcp-server/src/index"',
+);
 requireExcludes("src/lib/gemini/mcpClientAdapter.ts", "server is not wired yet");
 requireIncludes(
   "src/lib/gemini/mcpClientAdapter.ts",
   "Confirm orders only through the trusted UI confirmation route.",
+);
+requireIncludes(
+  "src/lib/gemini/mcpClientAdapter.ts",
+  'callDajeongMcpServerTool("confirm_order", normalizedConfirmArgs)',
 );
 requireExcludes("src/lib/gemini/mcpClientAdapter.ts", "Phase 1");
 requireIncludes(
@@ -114,8 +147,20 @@ requireIncludes(
   "apps/mcp-server is wired for server mode, but stdio/transport remains pending",
 );
 requireIncludes(
+  "../../docs/gemini-tool-contract.md",
+  "Gemini gateway remains unchanged in Phase 5C-3.",
+);
+requireIncludes(
+  "../../docs/gemini-tool-contract.md",
+  "Server mode remains server-side direct import only.",
+);
+requireIncludes(
   "../../docs/mcp-tool-plan.md",
   "DAJEONG_MCP_RUNTIME_MODE=server routes to apps/mcp-server direct registry import",
+);
+requireIncludes(
+  "../../docs/mcp-tool-plan.md",
+  "Phase 5C-3 validates the direct registry wiring before MCP transport.",
 );
 requireIncludes(
   "../../docs/mcp-tool-plan.md",
@@ -134,12 +179,45 @@ requireIncludes(
   "../../todo.md",
   "frontend adapter switch from local fallback to actual MCP server direct registry mode",
 );
+requireIncludes(
+  "../../todo.md",
+  "server mode direct registry wiring validation",
+);
+requireIncludes("../../README.md", "DAJEONG_MCP_RUNTIME_MODE=local pnpm dev");
+requireIncludes(
+  "../../README.md",
+  "DAJEONG_MCP_RUNTIME_MODE=server BACKEND_API_URL=http://localhost:8000 pnpm dev",
+);
+requireIncludes(
+  "../../README.md",
+  "server mode is direct registry import, not MCP transport",
+);
 requireExcludes("src/views/ChatPage/index.tsx", "getCompanyMenus");
 requireExcludes("src/views/ChatPage/index.tsx", "createOrder");
 requireExcludes("src/views/ChatPage/index.tsx", "buildOrderDraft");
 requireExcludes("src/views/ChatPage/index.tsx", "extractOrderIntent");
 requireExcludes("src/views/ChatPage/index.tsx", "buildOrderCreateRequest");
 requireExcludes("src/views/ChatPage/index.tsx", "confirmedByUser");
+for (const apiModule of [
+  "client",
+  "companies",
+  "menus",
+  "orders",
+  "admin",
+]) {
+  requireChatPageExcludes(`src/lib/api/${apiModule}`);
+  requireChatPageExcludes(`@/lib/api/${apiModule}`);
+  requireChatPageExcludes(`lib/api/${apiModule}`);
+}
+for (const apiFunction of [
+  "getCompanies(",
+  "getCompanyMenus(",
+  "createOrder(",
+  "getAdminSummary(",
+  "getAdminOrders(",
+]) {
+  requireChatPageExcludes(apiFunction);
+}
 
 async function importTypeScriptModule(relativePath) {
   const outputPath = copyTypeScriptModule(relativePath);

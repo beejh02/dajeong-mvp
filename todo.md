@@ -11,7 +11,9 @@
 - [x] real apps/mcp-server scaffold
 - [x] frontend MCP adapter runtime switch preparation
 - [x] frontend adapter switch from local fallback to actual MCP server direct registry mode
+- [x] server mode direct registry wiring validation
 - [ ] moving local toolHandlers into MCP server tools
+- [ ] local fallback removal
 - [ ] MCP server transport wiring
 - [ ] stronger persistence/idempotency for draft confirmation
 - [ ] production auth/session handling

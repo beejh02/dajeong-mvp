@@ -52,6 +52,17 @@ for (const filePath of requiredFiles) {
 }
 
 const registry = readAppFile("src/toolRegistry.ts");
+const index = readAppFile("src/index.ts");
+
+assert(
+  index.includes("callDajeongMcpServerTool"),
+  "src/index.ts must export callDajeongMcpServerTool",
+);
+assert(
+  index.includes("dajeongMcpToolRegistry"),
+  "src/index.ts must export dajeongMcpToolRegistry",
+);
+
 for (const toolName of expectedToolNames) {
   assert(
     registry.includes(toolName),
@@ -106,6 +117,19 @@ for (const filePath of sourceFiles) {
   assert(
     !source.match(/from\s+["'][.][.][\/\\][.][.][\/\\](frontend|backend)/),
     `${filePath} must stay independent from sibling apps`,
+  );
+  assert(
+    !source.includes("@modelcontextprotocol/sdk"),
+    `${filePath} must not add MCP SDK transport wiring yet`,
+  );
+  assert(
+    !source.includes("StdioServerTransport") &&
+      !source.includes("StreamableHTTPServerTransport"),
+    `${filePath} must not add MCP stdio or HTTP transport yet`,
+  );
+  assert(
+    !source.includes("createServer("),
+    `${filePath} must not start an HTTP server yet`,
   );
 }
 
