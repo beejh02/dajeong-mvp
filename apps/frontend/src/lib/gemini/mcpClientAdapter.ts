@@ -1,3 +1,4 @@
+import { callDajeongMcpServerTool } from "../../../../mcp-server/src/index";
 import { handleGeminiToolCall } from "./toolHandlers";
 import type {
   ConfirmOrderArgs,
@@ -16,19 +17,10 @@ type NormalizedDajeongMcpGatewayInput = DajeongMcpGatewayInput & {
 
 type DajeongMcpRuntimeMode = "local" | "server";
 
-const SERVER_MODE_NOT_WIRED_ERROR =
-  "DAJEONG_MCP_RUNTIME_MODE=server is not wired yet. Use local mode until Phase 5C-2.";
-
 export function getDajeongMcpRuntimeMode(): DajeongMcpRuntimeMode {
   const value = process.env.DAJEONG_MCP_RUNTIME_MODE;
 
   return value === "server" ? "server" : "local";
-}
-
-function assertLocalMcpRuntimeMode() {
-  if (getDajeongMcpRuntimeMode() === "server") {
-    throw new Error(SERVER_MODE_NOT_WIRED_ERROR);
-  }
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -215,6 +207,29 @@ function normalizeGatewayInput(
   };
 }
 
+function normalizeConfirmOrderResult(value: unknown): ConfirmOrderResult {
+  const result = requireObject(value, "confirm_order result");
+
+  if (typeof result.waitingNumber !== "number") {
+    throw new Error("confirm_order result.waitingNumber must be a number.");
+  }
+
+  if (typeof result.totalPrice !== "number") {
+    throw new Error("confirm_order result.totalPrice must be a number.");
+  }
+
+  return {
+    orderNumber: requireNonEmptyString(
+      result.orderNumber,
+      "confirm_order result.orderNumber",
+    ),
+    waitingNumber: result.waitingNumber,
+    status: requireNonEmptyString(result.status, "confirm_order result.status"),
+    totalPrice: result.totalPrice,
+    recommendedCardType: "order_confirmed",
+  };
+}
+
 export async function callDajeongMcpTool(
   input: unknown,
 ): Promise<DajeongMcpToolResult> {
@@ -226,11 +241,14 @@ export async function callDajeongMcpTool(
     );
   }
 
-  assertLocalMcpRuntimeMode();
+  if (getDajeongMcpRuntimeMode() === "server") {
+    return callDajeongMcpServerTool(
+      normalizedInput.toolName,
+      normalizedInput.arguments,
+    );
+  }
 
-  // Temporary local fallback until apps/mcp-server is implemented.
-  // The adapter boundary keeps Gemini on the MCP-first contract while reusing
-  // the existing local handlers until the real MCP server is implemented.
+  // Local fallback remains the default until MCP transport wiring exists.
   return handleGeminiToolCall(
     normalizedInput.toolName,
     normalizedInput.arguments,
@@ -240,9 +258,13 @@ export async function callDajeongMcpTool(
 export async function trustedConfirmDajeongOrder(
   input: unknown,
 ): Promise<ConfirmOrderResult> {
-  assertLocalMcpRuntimeMode();
-
   const normalizedConfirmArgs = normalizeTrustedConfirmArgs(input);
+
+  if (getDajeongMcpRuntimeMode() === "server") {
+    return normalizeConfirmOrderResult(
+      await callDajeongMcpServerTool("confirm_order", normalizedConfirmArgs),
+    );
+  }
 
   return handleGeminiToolCall(
     "confirm_order",

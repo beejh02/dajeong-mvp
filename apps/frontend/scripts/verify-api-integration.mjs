@@ -91,13 +91,13 @@ if (failures.length === 0) {
   requireIncludes("src/lib/gemini/mcpClientAdapter.ts", 'value === "server" ? "server" : "local"');
   requireIncludes(
     "src/lib/gemini/mcpClientAdapter.ts",
-    "DAJEONG_MCP_RUNTIME_MODE=server is not wired yet. Use local mode until Phase 5C-2.",
+    "callDajeongMcpServerTool",
   );
+  requireExcludes("src/lib/gemini/mcpClientAdapter.ts", "server is not wired yet");
   requireIncludes(
     "src/lib/gemini/mcpClientAdapter.ts",
     "Confirm orders only through the trusted UI confirmation route.",
   );
-  requireExcludes("src/lib/gemini/mcpClientAdapter.ts", "callDajeongMcpServerTool");
   requireExcludes("src/lib/gemini/mcpClientAdapter.ts", "Phase 1");
   requireIncludes("src/views/ChatPage/index.tsx", "parseChatResponseBody");
   requireIncludes(
@@ -279,30 +279,33 @@ if (failures.length === 0) {
   );
   requireIncludes(
     "../../docs/gemini-tool-contract.md",
-    "Trusted confirmation route still uses local fallback until server wiring",
+    "trusted confirmation route can use local or server runtime depending on DAJEONG_MCP_RUNTIME_MODE",
   );
   requireIncludes(
     "../../docs/gemini-tool-contract.md",
-    "apps/mcp-server scaffold exists but is not wired yet",
+    "apps/mcp-server is wired for server mode, but stdio/transport remains pending",
   );
   requireIncludes(
     "../../docs/mcp-tool-plan.md",
-    "Frontend MCP adapter now has a runtime mode switch, but server mode is intentionally not wired yet",
+    "DAJEONG_MCP_RUNTIME_MODE=server routes to apps/mcp-server direct registry import",
   );
   requireIncludes(
     "../../docs/mcp-tool-plan.md",
-    "DAJEONG_MCP_RUNTIME_MODE=local",
+    "monorepo direct-import wiring",
   );
   requireIncludes(
     "../../docs/mcp-tool-plan.md",
-    "DAJEONG_MCP_RUNTIME_MODE=server",
+    "Local mode remains the default fallback",
   );
   requireIncludes(
     "../../docs/mcp-tool-plan.md",
     "confirm_order is blocked through the Gemini gateway",
   );
   requireIncludes("../../todo.md", "trusted confirm-order route");
-  requireIncludes("../../todo.md", "frontend MCP adapter runtime switch preparation");
+  requireIncludes(
+    "../../todo.md",
+    "frontend adapter switch from local fallback to actual MCP server direct registry mode",
+  );
 
   requireExcludes("src/lib/adapters/menuAdapter.ts", "options: menu.optionGroups.flatMap");
   requireExcludes("src/views/kioskCart.ts", "selectedOptionIds");
