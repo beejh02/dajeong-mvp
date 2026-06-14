@@ -8,7 +8,7 @@
 - [x] ChatPage /api/chat migration
 - [x] order_draft confirmationPayload
 - [x] trusted confirm-order route
-- [ ] real apps/mcp-server scaffold
+- [x] real apps/mcp-server scaffold
 - [ ] moving local toolHandlers into MCP server tools
 - [ ] frontend adapter switch from local fallback to actual MCP server
 - [ ] stronger persistence/idempotency for draft confirmation
