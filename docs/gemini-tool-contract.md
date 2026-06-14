@@ -29,6 +29,7 @@ User
 - 실제 tool 구현은 Dajeong MCP Server에 둔다.
 - 현재 frontend local `toolHandlers`는 임시 구현 또는 MCP Server로 이전할 후보 코드로 간주한다.
 - `apps/mcp-server` scaffold는 존재하지만 아직 frontend adapter에 연결하지 않았다.
+- `DAJEONG_MCP_RUNTIME_MODE=local`이 기본값이며, `server` mode는 Phase 5C-2 전까지 실제 transport를 사용하지 않는다.
 - Frontend는 Gemini function이나 MCP tool을 직접 호출하지 않고 `/api/chat`을 통해 `ChatResponse`를 받는다.
 
 ## 2. Gemini Gateway Functions
@@ -369,9 +370,11 @@ const response = await ai.models.generateContent({
 - Gemini gateway function `call_dajeong_mcp_tool` is implemented.
 - MCP Client Adapter exists at `apps/frontend/src/lib/gemini/mcpClientAdapter.ts`.
 - MCP Client Adapter currently uses local fallback toolHandlers instead of a real MCP server.
+- Frontend MCP adapter has a local/server runtime mode switch, but server mode is intentionally not wired yet.
 - Gemini gateway remains unchanged.
 - `trustedConfirmDajeongOrder` is implemented for the UI confirm path only.
 - Trusted confirmation route `/api/chat/confirm-order` exists and adds `confirmedByUser=true` server-side.
+- Trusted confirmation route still uses local fallback until server wiring.
 - confirm_order remains blocked through the Gemini gateway and allowed only through the trusted UI confirmation route.
 - apps/mcp-server scaffold exists but is not wired yet.
 

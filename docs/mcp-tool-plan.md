@@ -16,10 +16,13 @@
 - MCP Client Adapter exists at `apps/frontend/src/lib/gemini/mcpClientAdapter.ts`.
 - MCP Client Adapter currently uses local fallback toolHandlers instead of a real MCP server.
 - apps/mcp-server scaffold exists, but frontend adapter still uses local fallback.
+- Frontend MCP adapter now has a runtime mode switch, but server mode is intentionally not wired yet.
+- `DAJEONG_MCP_RUNTIME_MODE=local` is the default.
+- `DAJEONG_MCP_RUNTIME_MODE=server` is reserved for Phase 5C-2 and currently fails safely.
 - `trustedConfirmDajeongOrder` is implemented for the UI confirm path only.
 - `/api/chat/confirm-order` exists and adds `confirmedByUser=true` server-side.
 - confirm_order is blocked through the Gemini gateway and allowed only through the trusted UI confirmation route.
-- Frontend switching to the real MCP server is Phase 5C.
+- Frontend switching to the real MCP server is still pending after Phase 5C-1.
 - Local `toolHandlers` are still source-compatible migration candidates for the MCP server tools.
 
 ## Planned Tools
