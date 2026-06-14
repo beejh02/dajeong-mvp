@@ -58,6 +58,18 @@ for (const toolName of expectedToolNames) {
     `src/toolRegistry.ts must include ${toolName}`,
   );
 }
+assert(
+  registry.includes("(args: unknown)"),
+  "src/toolRegistry.ts must use unknown-accepting tool handlers",
+);
+assert(
+  !registry.includes("(args: never)"),
+  "src/toolRegistry.ts must not use never tool handler args",
+);
+assert(
+  !registry.includes("args as never"),
+  "src/toolRegistry.ts must not cast args as never",
+);
 
 const createOrderDraft = readAppFile("src/tools/createOrderDraft.ts");
 assert(

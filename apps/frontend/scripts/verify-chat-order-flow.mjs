@@ -60,8 +60,25 @@ requireIncludes(
 );
 requireIncludes(
   "src/lib/gemini/mcpClientAdapter.ts",
+  "DAJEONG_MCP_RUNTIME_MODE",
+);
+requireIncludes(
+  "src/lib/gemini/mcpClientAdapter.ts",
+  "getDajeongMcpRuntimeMode",
+);
+requireIncludes(
+  "src/lib/gemini/mcpClientAdapter.ts",
+  'value === "server" ? "server" : "local"',
+);
+requireIncludes(
+  "src/lib/gemini/mcpClientAdapter.ts",
+  "DAJEONG_MCP_RUNTIME_MODE=server is not wired yet. Use local mode until Phase 5C-2.",
+);
+requireIncludes(
+  "src/lib/gemini/mcpClientAdapter.ts",
   "Confirm orders only through the trusted UI confirmation route.",
 );
+requireExcludes("src/lib/gemini/mcpClientAdapter.ts", "callDajeongMcpServerTool");
 requireExcludes("src/lib/gemini/mcpClientAdapter.ts", "Phase 1");
 requireIncludes(
   "src/app/api/chat/confirm-order/route.ts",
@@ -90,13 +107,30 @@ requireIncludes(
 );
 requireIncludes(
   "../../docs/gemini-tool-contract.md",
+  "Trusted confirmation route still uses local fallback until server wiring",
+);
+requireIncludes(
+  "../../docs/gemini-tool-contract.md",
   "apps/mcp-server scaffold exists but is not wired yet",
+);
+requireIncludes(
+  "../../docs/mcp-tool-plan.md",
+  "Frontend MCP adapter now has a runtime mode switch, but server mode is intentionally not wired yet",
+);
+requireIncludes(
+  "../../docs/mcp-tool-plan.md",
+  "DAJEONG_MCP_RUNTIME_MODE=local",
+);
+requireIncludes(
+  "../../docs/mcp-tool-plan.md",
+  "DAJEONG_MCP_RUNTIME_MODE=server",
 );
 requireIncludes(
   "../../docs/mcp-tool-plan.md",
   "confirm_order is blocked through the Gemini gateway",
 );
 requireIncludes("../../todo.md", "trusted confirm-order route");
+requireIncludes("../../todo.md", "frontend MCP adapter runtime switch preparation");
 requireExcludes("src/views/ChatPage/index.tsx", "getCompanyMenus");
 requireExcludes("src/views/ChatPage/index.tsx", "createOrder");
 requireExcludes("src/views/ChatPage/index.tsx", "buildOrderDraft");
@@ -201,7 +235,11 @@ const { buildOrderCreateRequest } = await importTypeScriptModule(
 const { createChatResponseFromToolResults } = await importTypeScriptModule(
   "src/lib/gemini/cardBuilders.ts",
 );
-const { callDajeongMcpTool, trustedConfirmDajeongOrder } =
+const {
+  callDajeongMcpTool,
+  getDajeongMcpRuntimeMode,
+  trustedConfirmDajeongOrder,
+} =
   await importTypeScriptModule("src/lib/gemini/mcpClientAdapter.ts");
 
 const companyAResponse = {
@@ -355,6 +393,46 @@ await assert.rejects(
   /confirm_order is not callable/,
 );
 
+const originalMcpRuntimeMode = process.env.DAJEONG_MCP_RUNTIME_MODE;
+
+try {
+  delete process.env.DAJEONG_MCP_RUNTIME_MODE;
+  assert.equal(getDajeongMcpRuntimeMode(), "local");
+
+  process.env.DAJEONG_MCP_RUNTIME_MODE = "local";
+  assert.equal(getDajeongMcpRuntimeMode(), "local");
+
+  process.env.DAJEONG_MCP_RUNTIME_MODE = "unexpected";
+  assert.equal(getDajeongMcpRuntimeMode(), "local");
+
+  process.env.DAJEONG_MCP_RUNTIME_MODE = "server";
+  assert.equal(getDajeongMcpRuntimeMode(), "server");
+
+  await assert.rejects(
+    () =>
+      callDajeongMcpTool({
+        toolName: "get_companies",
+        arguments: {},
+      }),
+    /DAJEONG_MCP_RUNTIME_MODE=server is not wired yet/,
+  );
+
+  await assert.rejects(
+    () =>
+      callDajeongMcpTool({
+        toolName: "confirm_order",
+        arguments: {},
+      }),
+    /confirm_order is not callable/,
+  );
+} finally {
+  if (originalMcpRuntimeMode === undefined) {
+    delete process.env.DAJEONG_MCP_RUNTIME_MODE;
+  } else {
+    process.env.DAJEONG_MCP_RUNTIME_MODE = originalMcpRuntimeMode;
+  }
+}
+
 const validConfirmationPayload = {
   draftId: "draft-phase-4b",
   order: {
@@ -379,6 +457,22 @@ const validConfirmationPayload = {
 };
 
 try {
+  process.env.DAJEONG_MCP_RUNTIME_MODE = "server";
+
+  await assert.rejects(
+    () => trustedConfirmDajeongOrder(validConfirmationPayload),
+    /DAJEONG_MCP_RUNTIME_MODE=server is not wired yet/,
+  );
+} finally {
+  if (originalMcpRuntimeMode === undefined) {
+    delete process.env.DAJEONG_MCP_RUNTIME_MODE;
+  } else {
+    process.env.DAJEONG_MCP_RUNTIME_MODE = originalMcpRuntimeMode;
+  }
+}
+
+try {
+  delete process.env.DAJEONG_MCP_RUNTIME_MODE;
   const confirmFetchCalls = [];
 
   globalThis.fetch = async (_url, init = {}) => {

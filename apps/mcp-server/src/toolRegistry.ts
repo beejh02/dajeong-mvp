@@ -34,14 +34,17 @@ export type DajeongMcpToolResult =
   | CreateOrderDraftResult
   | ConfirmOrderResult;
 
-type ToolHandler = (args: never) => Promise<DajeongMcpToolResult>;
+type ToolHandler = (args: unknown) => Promise<DajeongMcpToolResult>;
 
 export const dajeongMcpToolRegistry = {
-  get_companies: getCompaniesTool,
-  get_company_menus: getCompanyMenusTool,
-  search_menu: searchMenuTool,
-  create_order_draft: createOrderDraftTool,
-  confirm_order: confirmOrderTool,
+  get_companies: (args) => getCompaniesTool(args as Record<string, never>),
+  get_company_menus: (args) =>
+    getCompanyMenusTool(args as { companyId: string }),
+  search_menu: (args) =>
+    searchMenuTool(args as { companyId: string; query: string }),
+  create_order_draft: (args) =>
+    createOrderDraftTool(args as CreateOrderDraftArgs),
+  confirm_order: (args) => confirmOrderTool(args as ConfirmOrderArgs),
 } satisfies Record<DajeongMcpToolName, ToolHandler>;
 
 export async function callDajeongMcpServerTool(
@@ -54,5 +57,5 @@ export async function callDajeongMcpServerTool(
     throw new Error(`Unknown Dajeong MCP tool: ${String(toolName)}`);
   }
 
-  return handler(args as never);
+  return handler(args);
 }

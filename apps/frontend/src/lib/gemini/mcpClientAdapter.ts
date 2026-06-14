@@ -14,6 +14,23 @@ type NormalizedDajeongMcpGatewayInput = DajeongMcpGatewayInput & {
   toolName: DajeongMcpToolName;
 };
 
+type DajeongMcpRuntimeMode = "local" | "server";
+
+const SERVER_MODE_NOT_WIRED_ERROR =
+  "DAJEONG_MCP_RUNTIME_MODE=server is not wired yet. Use local mode until Phase 5C-2.";
+
+export function getDajeongMcpRuntimeMode(): DajeongMcpRuntimeMode {
+  const value = process.env.DAJEONG_MCP_RUNTIME_MODE;
+
+  return value === "server" ? "server" : "local";
+}
+
+function assertLocalMcpRuntimeMode() {
+  if (getDajeongMcpRuntimeMode() === "server") {
+    throw new Error(SERVER_MODE_NOT_WIRED_ERROR);
+  }
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
@@ -209,6 +226,8 @@ export async function callDajeongMcpTool(
     );
   }
 
+  assertLocalMcpRuntimeMode();
+
   // Temporary local fallback until apps/mcp-server is implemented.
   // The adapter boundary keeps Gemini on the MCP-first contract while reusing
   // the existing local handlers until the real MCP server is implemented.
@@ -221,6 +240,8 @@ export async function callDajeongMcpTool(
 export async function trustedConfirmDajeongOrder(
   input: unknown,
 ): Promise<ConfirmOrderResult> {
+  assertLocalMcpRuntimeMode();
+
   const normalizedConfirmArgs = normalizeTrustedConfirmArgs(input);
 
   return handleGeminiToolCall(

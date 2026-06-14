@@ -86,10 +86,18 @@ if (failures.length === 0) {
   requireIncludes("src/app/api/chat/confirm-order/route.ts", "trustedConfirmDajeongOrder");
   requireIncludes("src/lib/gemini/mcpClientAdapter.ts", "trustedConfirmDajeongOrder");
   requireIncludes("src/lib/gemini/mcpClientAdapter.ts", "confirmedByUser: true");
+  requireIncludes("src/lib/gemini/mcpClientAdapter.ts", "DAJEONG_MCP_RUNTIME_MODE");
+  requireIncludes("src/lib/gemini/mcpClientAdapter.ts", "getDajeongMcpRuntimeMode");
+  requireIncludes("src/lib/gemini/mcpClientAdapter.ts", 'value === "server" ? "server" : "local"');
+  requireIncludes(
+    "src/lib/gemini/mcpClientAdapter.ts",
+    "DAJEONG_MCP_RUNTIME_MODE=server is not wired yet. Use local mode until Phase 5C-2.",
+  );
   requireIncludes(
     "src/lib/gemini/mcpClientAdapter.ts",
     "Confirm orders only through the trusted UI confirmation route.",
   );
+  requireExcludes("src/lib/gemini/mcpClientAdapter.ts", "callDajeongMcpServerTool");
   requireExcludes("src/lib/gemini/mcpClientAdapter.ts", "Phase 1");
   requireIncludes("src/views/ChatPage/index.tsx", "parseChatResponseBody");
   requireIncludes(
@@ -271,13 +279,30 @@ if (failures.length === 0) {
   );
   requireIncludes(
     "../../docs/gemini-tool-contract.md",
+    "Trusted confirmation route still uses local fallback until server wiring",
+  );
+  requireIncludes(
+    "../../docs/gemini-tool-contract.md",
     "apps/mcp-server scaffold exists but is not wired yet",
+  );
+  requireIncludes(
+    "../../docs/mcp-tool-plan.md",
+    "Frontend MCP adapter now has a runtime mode switch, but server mode is intentionally not wired yet",
+  );
+  requireIncludes(
+    "../../docs/mcp-tool-plan.md",
+    "DAJEONG_MCP_RUNTIME_MODE=local",
+  );
+  requireIncludes(
+    "../../docs/mcp-tool-plan.md",
+    "DAJEONG_MCP_RUNTIME_MODE=server",
   );
   requireIncludes(
     "../../docs/mcp-tool-plan.md",
     "confirm_order is blocked through the Gemini gateway",
   );
   requireIncludes("../../todo.md", "trusted confirm-order route");
+  requireIncludes("../../todo.md", "frontend MCP adapter runtime switch preparation");
 
   requireExcludes("src/lib/adapters/menuAdapter.ts", "options: menu.optionGroups.flatMap");
   requireExcludes("src/views/kioskCart.ts", "selectedOptionIds");
