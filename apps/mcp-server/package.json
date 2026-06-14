@@ -1,0 +1,14 @@
+{
+  "name": "@dajeong/mcp-server",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "verify": "node scripts/verify-mcp-server-structure.mjs"
+  },
+  "devDependencies": {
+    "typescript": "~6.0.2"
+  }
+}

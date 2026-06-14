@@ -271,7 +271,7 @@ if (failures.length === 0) {
   );
   requireIncludes(
     "../../docs/gemini-tool-contract.md",
-    "Real apps/mcp-server is still pending",
+    "apps/mcp-server scaffold exists but is not wired yet",
   );
   requireIncludes(
     "../../docs/mcp-tool-plan.md",

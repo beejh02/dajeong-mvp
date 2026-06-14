@@ -1,8 +1,8 @@
 # Dajeong MVP
 
-다정은 사용자의 자연어 요청을 기반으로 여러 기업 서비스의 주문 흐름을 통합하는 AI 서비스 연결 플랫폼 MVP이다. 현재 MVP는 A/B 기업 키오스크, 다정 AI 주문 화면, 관리자 페이지, Backend API를 구현하며, MCP Server runtime은 향후 확장 항목으로 계획한다.
+다정은 사용자의 자연어 요청을 기반으로 여러 기업 서비스의 주문 흐름을 통합하는 AI 서비스 연결 플랫폼 MVP이다. 현재 MVP는 A/B 기업 키오스크, 다정 AI 주문 화면, 관리자 페이지, Backend API를 구현하며, MCP Server runtime은 향후 확장 항목으로 단계적으로 준비한다.
 
-다정은 MCP tool 확장을 고려한 AI 서비스 연결 플랫폼 MVP로 설계되었지만, 현재 레포지토리는 MCP Server runtime이 이미 완성된 서비스가 아니다.
+다정은 MCP tool 확장을 고려한 AI 서비스 연결 플랫폼 MVP로 설계되었지만, 현재 레포지토리는 MCP Server runtime이 frontend traffic을 처리하는 완성 서비스가 아니다.
 
 ## 현재 구현 범위
 
@@ -14,7 +14,7 @@
 
 현재 다정 AI 주문 화면은 Gemini Flash 기반 intent extraction을 우선 사용하고, `GEMINI_API_KEY`가 없거나 Gemini 호출에 실패하면 기존 rule-based intent parser로 fallback한다. rule-based parser는 백업 경로로 유지한다.
 
-MCP Server runtime과 MCP tool 구현도 아직 포함하지 않는다. 현재 MCP 관련 내용은 future work이며, 계획 문서는 `docs/mcp-tool-plan.md`를 기준으로 참고한다.
+`apps/mcp-server`에는 향후 MCP tool 서버를 위한 TypeScript scaffold가 있다. 현재 frontend MCP Client Adapter는 여전히 local fallback `toolHandlers`를 사용하며, 실제 MCP server로 traffic을 전환하는 작업은 다음 단계로 남아 있다. MCP 관련 계획 문서는 `docs/mcp-tool-plan.md`를 기준으로 참고한다.
 
 ## 문서
 
@@ -75,3 +75,17 @@ pnpm dev
 ```
 
 Frontend는 기본적으로 `NEXT_PUBLIC_BACKEND_API_URL` 환경변수를 통해 Backend API 주소를 참조한다. 로컬 개발 기본값은 `http://127.0.0.1:8000`이다.
+
+## MCP Server scaffold 확인
+
+PowerShell에서 MCP server scaffold 구조와 TypeScript 빌드 준비 상태를 확인한다.
+
+```powershell
+cd apps/mcp-server
+pnpm install
+pnpm verify
+pnpm typecheck
+pnpm build
+```
+
+`BACKEND_API_URL`을 설정하지 않으면 MCP server scaffold는 `http://localhost:8000`을 기본 Backend API 주소로 사용한다. 이 scaffold는 아직 frontend adapter에 연결하지 않는다.

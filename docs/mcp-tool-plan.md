@@ -15,10 +15,12 @@
 - Gemini gateway function `call_dajeong_mcp_tool` is implemented.
 - MCP Client Adapter exists at `apps/frontend/src/lib/gemini/mcpClientAdapter.ts`.
 - MCP Client Adapter currently uses local fallback toolHandlers instead of a real MCP server.
+- apps/mcp-server scaffold exists, but frontend adapter still uses local fallback.
 - `trustedConfirmDajeongOrder` is implemented for the UI confirm path only.
 - `/api/chat/confirm-order` exists and adds `confirmedByUser=true` server-side.
 - confirm_order is blocked through the Gemini gateway and allowed only through the trusted UI confirmation route.
-- Real apps/mcp-server is still pending.
+- Frontend switching to the real MCP server is Phase 5C.
+- Local `toolHandlers` are still source-compatible migration candidates for the MCP server tools.
 
 ## Planned Tools
 
