@@ -5,10 +5,14 @@
   "type": "module",
   "scripts": {
     "build": "tsc -p tsconfig.json",
+    "start": "node dist/stdio.js",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "verify": "node scripts/verify-mcp-server-structure.mjs"
   },
   "devDependencies": {
     "typescript": "~6.0.2"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0"
   }
 }

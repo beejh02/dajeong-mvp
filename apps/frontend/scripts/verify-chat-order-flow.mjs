@@ -144,11 +144,11 @@ requireIncludes(
 );
 requireIncludes(
   "../../docs/gemini-tool-contract.md",
-  "apps/mcp-server is wired for server mode, but stdio/transport remains pending",
+  "apps/mcp-server has a standalone MCP stdio transport scaffold, but frontend server mode still uses direct registry import",
 );
 requireIncludes(
   "../../docs/gemini-tool-contract.md",
-  "Gemini gateway remains unchanged in Phase 5C-3.",
+  "Gemini gateway remains unchanged in Phase 5D.",
 );
 requireIncludes(
   "../../docs/gemini-tool-contract.md",
@@ -160,11 +160,11 @@ requireIncludes(
 );
 requireIncludes(
   "../../docs/mcp-tool-plan.md",
-  "Phase 5C-3 validates the direct registry wiring before MCP transport.",
+  "Phase 5C-3 validated the direct registry wiring before MCP transport.",
 );
 requireIncludes(
   "../../docs/mcp-tool-plan.md",
-  "monorepo direct-import wiring",
+  "Frontend server mode is still monorepo direct-import wiring, not an MCP transport client",
 );
 requireIncludes(
   "../../docs/mcp-tool-plan.md",
@@ -183,6 +183,8 @@ requireIncludes(
   "../../todo.md",
   "server mode direct registry wiring validation",
 );
+requireIncludes("../../todo.md", "MCP server transport wiring scaffold");
+requireIncludes("../../todo.md", "frontend adapter switch to MCP transport client");
 requireIncludes("../../README.md", "DAJEONG_MCP_RUNTIME_MODE=local pnpm dev");
 requireIncludes(
   "../../README.md",
@@ -192,6 +194,7 @@ requireIncludes(
   "../../README.md",
   "server mode is direct registry import, not MCP transport",
 );
+requireIncludes("../../README.md", "node dist/stdio.js");
 requireExcludes("src/views/ChatPage/index.tsx", "getCompanyMenus");
 requireExcludes("src/views/ChatPage/index.tsx", "createOrder");
 requireExcludes("src/views/ChatPage/index.tsx", "buildOrderDraft");

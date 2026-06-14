@@ -14,7 +14,7 @@
 
 현재 다정 AI 주문 화면은 Gemini Flash 기반 intent extraction을 우선 사용하고, `GEMINI_API_KEY`가 없거나 Gemini 호출에 실패하면 기존 rule-based intent parser로 fallback한다. rule-based parser는 백업 경로로 유지한다.
 
-`apps/mcp-server`에는 향후 MCP tool 서버를 위한 TypeScript scaffold가 있다. 현재 frontend MCP Client Adapter는 local fallback `toolHandlers`를 기본값으로 유지하며, `DAJEONG_MCP_RUNTIME_MODE=server`에서는 `apps/mcp-server` direct registry import로 라우팅한다. server mode is direct registry import, not MCP transport. MCP 관련 계획 문서는 `docs/mcp-tool-plan.md`를 기준으로 참고한다.
+`apps/mcp-server`에는 향후 MCP tool 서버를 위한 TypeScript scaffold가 있다. 현재 frontend MCP Client Adapter는 local fallback `toolHandlers`를 기본값으로 유지하며, `DAJEONG_MCP_RUNTIME_MODE=server`에서는 `apps/mcp-server` direct registry import로 라우팅한다. server mode is direct registry import, not MCP transport. MCP stdio transport is available as a standalone `apps/mcp-server` entrypoint, but frontend server mode does not use it yet. MCP 관련 계획 문서는 `docs/mcp-tool-plan.md`를 기준으로 참고한다.
 
 ## 문서
 
@@ -95,7 +95,7 @@ $env:BACKEND_API_URL="http://localhost:8000"
 pnpm dev
 ```
 
-Server mode remains a monorepo direct import from `apps/frontend` to `apps/mcp-server`; MCP stdio/HTTP transport is still pending.
+Server mode remains a monorepo direct import from `apps/frontend` to `apps/mcp-server`; it is not an MCP transport client. MCP stdio transport is available as a standalone `apps/mcp-server` entrypoint, while HTTP transport and frontend MCP transport client wiring remain pending.
 
 ## MCP Server scaffold 확인
 
@@ -107,6 +107,7 @@ pnpm install
 pnpm verify
 pnpm typecheck
 pnpm build
+pnpm start
 ```
 
-`BACKEND_API_URL`을 설정하지 않으면 MCP server scaffold는 `http://localhost:8000`을 기본 Backend API 주소로 사용한다. 이 scaffold는 아직 frontend adapter에 연결하지 않는다.
+`pnpm start` runs the built MCP stdio server with `node dist/stdio.js`. `BACKEND_API_URL`을 설정하지 않으면 MCP server scaffold는 `http://localhost:8000`을 기본 Backend API 주소로 사용한다. 이 stdio transport scaffold는 아직 frontend adapter에 연결하지 않는다.

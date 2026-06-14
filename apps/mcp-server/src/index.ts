@@ -8,5 +8,5 @@ export type {
   DajeongMcpToolResult,
 } from "./toolRegistry.js";
 
-// TODO(Phase 5C): register these tools with MCP stdio transport after the
-// frontend adapter is ready to stop using local fallback toolHandlers.
+// Runtime startup stays isolated in src/stdio.ts so the frontend server mode
+// direct import path can keep consuming registry exports only.

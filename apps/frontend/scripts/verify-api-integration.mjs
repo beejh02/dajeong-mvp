@@ -283,7 +283,7 @@ if (failures.length === 0) {
   );
   requireIncludes(
     "../../docs/gemini-tool-contract.md",
-    "apps/mcp-server is wired for server mode, but stdio/transport remains pending",
+    "apps/mcp-server has a standalone MCP stdio transport scaffold, but frontend server mode still uses direct registry import",
   );
   requireIncludes(
     "../../docs/mcp-tool-plan.md",
@@ -291,7 +291,7 @@ if (failures.length === 0) {
   );
   requireIncludes(
     "../../docs/mcp-tool-plan.md",
-    "monorepo direct-import wiring",
+    "Frontend server mode is still monorepo direct-import wiring, not an MCP transport client",
   );
   requireIncludes(
     "../../docs/mcp-tool-plan.md",
@@ -306,6 +306,8 @@ if (failures.length === 0) {
     "../../todo.md",
     "frontend adapter switch from local fallback to actual MCP server direct registry mode",
   );
+  requireIncludes("../../todo.md", "MCP server transport wiring scaffold");
+  requireIncludes("../../todo.md", "frontend adapter switch to MCP transport client");
 
   requireExcludes("src/lib/adapters/menuAdapter.ts", "options: menu.optionGroups.flatMap");
   requireExcludes("src/views/kioskCart.ts", "selectedOptionIds");

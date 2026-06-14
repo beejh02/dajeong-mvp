@@ -29,7 +29,8 @@ User
 - 실제 tool 구현은 Dajeong MCP Server에 둔다.
 - 현재 frontend local `toolHandlers`는 임시 구현 또는 MCP Server로 이전할 후보 코드로 간주한다.
 - `apps/mcp-server`는 `DAJEONG_MCP_RUNTIME_MODE=server`에서 monorepo direct import로 연결된다.
-- `DAJEONG_MCP_RUNTIME_MODE=local`이 기본값이며, `server` mode는 아직 stdio/transport를 사용하지 않는다.
+- `apps/mcp-server` now also exposes a standalone MCP stdio transport entrypoint for future MCP clients.
+- `DAJEONG_MCP_RUNTIME_MODE=local`이 기본값이며, frontend `server` mode는 아직 stdio transport를 사용하지 않는다.
 - Frontend는 Gemini function이나 MCP tool을 직접 호출하지 않고 `/api/chat`을 통해 `ChatResponse`를 받는다.
 
 ## 2. Gemini Gateway Functions
@@ -372,13 +373,13 @@ const response = await ai.models.generateContent({
 - MCP Client Adapter currently uses local fallback toolHandlers by default and can route server mode to the apps/mcp-server direct registry import.
 - Frontend MCP adapter has a local/server runtime mode switch.
 - Gemini gateway remains unchanged.
-- Gemini gateway remains unchanged in Phase 5C-3.
+- Gemini gateway remains unchanged in Phase 5D.
 - `trustedConfirmDajeongOrder` is implemented for the UI confirm path only.
 - Trusted confirmation route `/api/chat/confirm-order` exists and adds `confirmedByUser=true` server-side.
 - trusted confirmation route can use local or server runtime depending on DAJEONG_MCP_RUNTIME_MODE.
 - confirm_order remains blocked through the Gemini gateway and allowed only through the trusted UI confirmation route.
-- apps/mcp-server is wired for server mode, but stdio/transport remains pending.
+- apps/mcp-server has a standalone MCP stdio transport scaffold, but frontend server mode still uses direct registry import.
 - Server mode remains server-side direct import only.
-- Phase 5C-3 verifies the direct registry wiring without changing ChatPage behavior or adding MCP transport.
+- Phase 5D adds MCP stdio transport without changing ChatPage behavior or switching the frontend adapter to MCP transport.
 
 현재 레포지토리에는 Gemini local `toolHandlers`와 `chatRunner`가 존재할 수 있다. 이는 초기 prototype 또는 MCP Server tool 구현으로 이전할 후보 코드다. 최종 목표는 외부 데이터와 외부 서비스 접근을 Dajeong MCP Server로 이동하는 것이다.

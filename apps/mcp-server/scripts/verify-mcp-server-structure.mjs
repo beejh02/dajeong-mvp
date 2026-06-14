@@ -1,4 +1,4 @@
-import { readFileSync, statSync } from "node:fs";
+import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -15,6 +15,9 @@ const requiredFiles = [
   "src/backendClient.ts",
   "src/types.ts",
   "src/toolRegistry.ts",
+  "src/mcpServer.ts",
+  "src/stdio.ts",
+  "src/toolSchemas.ts",
   "src/tools/getCompanies.ts",
   "src/tools/getCompanyMenus.ts",
   "src/tools/searchMenu.ts",
@@ -36,6 +39,10 @@ function readAppFile(filePath) {
   return readFileSync(join(appRoot, filePath), "utf8");
 }
 
+function readRepoFile(filePath) {
+  return readFileSync(join(repoRoot, filePath), "utf8");
+}
+
 function assert(condition, message) {
   if (!condition) {
     throw new Error(message);
@@ -47,12 +54,59 @@ function assertFileExists(filePath) {
   assert(statSync(fullPath).isFile(), `Missing file: ${filePath}`);
 }
 
+function listSourceFiles(rootDir) {
+  const entries = readdirSync(rootDir, { withFileTypes: true });
+  const files = [];
+
+  for (const entry of entries) {
+    const fullPath = join(rootDir, entry.name);
+
+    if (entry.isDirectory()) {
+      files.push(...listSourceFiles(fullPath));
+    } else if (entry.isFile() && /\.(ts|tsx|mts|cts|js|jsx|mjs|cjs)$/.test(entry.name)) {
+      files.push(fullPath);
+    }
+  }
+
+  return files;
+}
+
 for (const filePath of requiredFiles) {
   assertFileExists(filePath);
 }
 
+const packageJson = JSON.parse(readAppFile("package.json"));
+const dependencies = packageJson.dependencies ?? {};
+const devDependencies = packageJson.devDependencies ?? {};
+const scripts = packageJson.scripts ?? {};
+
+assert(
+  dependencies["@modelcontextprotocol/sdk"],
+  "package.json must depend on @modelcontextprotocol/sdk",
+);
+assert(scripts.build === "tsc -p tsconfig.json", "build script must remain");
+assert(
+  scripts.typecheck === "tsc -p tsconfig.json --noEmit",
+  "typecheck script must remain",
+);
+assert(
+  scripts.verify === "node scripts/verify-mcp-server-structure.mjs",
+  "verify script must remain",
+);
+assert(
+  scripts.start === "node dist/stdio.js",
+  "start script must run the built stdio transport entrypoint",
+);
+assert(
+  !devDependencies.tsx,
+  "tsx should not be added when the built start script is used",
+);
+
 const registry = readAppFile("src/toolRegistry.ts");
 const index = readAppFile("src/index.ts");
+const mcpServer = readAppFile("src/mcpServer.ts");
+const stdio = readAppFile("src/stdio.ts");
+const toolSchemas = readAppFile("src/toolSchemas.ts");
 
 assert(
   index.includes("callDajeongMcpServerTool"),
@@ -62,11 +116,42 @@ assert(
   index.includes("dajeongMcpToolRegistry"),
   "src/index.ts must export dajeongMcpToolRegistry",
 );
+assert(
+  !index.includes("@modelcontextprotocol/sdk") &&
+    !index.includes("StdioServerTransport") &&
+    !index.includes(".connect("),
+  "src/index.ts must stay export-only and not start MCP transport",
+);
+
+assert(
+  mcpServer.includes("@modelcontextprotocol/sdk"),
+  "src/mcpServer.ts must import MCP SDK server APIs",
+);
+assert(
+  mcpServer.includes("callDajeongMcpServerTool"),
+  "src/mcpServer.ts must route MCP calls through callDajeongMcpServerTool",
+);
+assert(
+  stdio.includes("StdioServerTransport"),
+  "src/stdio.ts must create a stdio transport",
+);
+assert(
+  stdio.includes(".connect("),
+  "src/stdio.ts must connect the MCP server to stdio transport",
+);
 
 for (const toolName of expectedToolNames) {
   assert(
     registry.includes(toolName),
     `src/toolRegistry.ts must include ${toolName}`,
+  );
+  assert(
+    mcpServer.includes(toolName),
+    `src/mcpServer.ts must register ${toolName}`,
+  );
+  assert(
+    toolSchemas.includes(toolName),
+    `src/toolSchemas.ts must expose ${toolName}`,
   );
 }
 assert(
@@ -119,17 +204,32 @@ for (const filePath of sourceFiles) {
     `${filePath} must stay independent from sibling apps`,
   );
   assert(
-    !source.includes("@modelcontextprotocol/sdk"),
-    `${filePath} must not add MCP SDK transport wiring yet`,
-  );
-  assert(
-    !source.includes("StdioServerTransport") &&
-      !source.includes("StreamableHTTPServerTransport"),
-    `${filePath} must not add MCP stdio or HTTP transport yet`,
+    !source.includes("StreamableHTTPServerTransport"),
+    `${filePath} must not add MCP HTTP transport yet`,
   );
   assert(
     !source.includes("createServer("),
     `${filePath} must not start an HTTP server yet`,
+  );
+}
+
+const frontendPackageJson = JSON.parse(readRepoFile("apps/frontend/package.json"));
+const frontendDependencies = {
+  ...(frontendPackageJson.dependencies ?? {}),
+  ...(frontendPackageJson.devDependencies ?? {}),
+};
+
+assert(
+  !frontendDependencies["@modelcontextprotocol/sdk"],
+  "frontend package.json must not depend on MCP SDK in Phase 5D",
+);
+
+for (const fullPath of listSourceFiles(join(repoRoot, "apps/frontend/src"))) {
+  const source = readFileSync(fullPath, "utf8");
+
+  assert(
+    !source.includes("@modelcontextprotocol/sdk"),
+    `${relative(repoRoot, fullPath)} must not import MCP SDK in Phase 5D`,
   );
 }
 
