@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 const repoRoot = fileURLToPath(new URL("../..", import.meta.url));
 
 const nextConfig: NextConfig = {
+  serverExternalPackages: ["@ai-sdk/google", "ai"],
   experimental: {
     externalDir: true,
   },
