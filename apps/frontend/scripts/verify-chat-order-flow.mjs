@@ -195,6 +195,19 @@ requireIncludes(
   "server mode is direct registry import, not MCP transport",
 );
 requireIncludes("../../README.md", "node dist/stdio.js");
+requireIncludes("../../docs/mvp-demo-flow-qa.md", "MVP Demo Flow QA");
+requireIncludes("../../docs/mvp-demo-flow-qa.md", "natural language input");
+requireIncludes("../../docs/mvp-demo-flow-qa.md", "/api/chat/confirm-order");
+requireIncludes("../../docs/mvp-demo-flow-qa.md", "DAJEONG_MCP_RUNTIME_MODE=\"local\"");
+requireIncludes("../../docs/mvp-demo-flow-qa.md", "DAJEONG_MCP_RUNTIME_MODE=\"server\"");
+requireIncludes("../../docs/mvp-demo-flow-qa.md", "order_draft");
+requireIncludes("../../docs/mvp-demo-flow-qa.md", "confirmationPayload");
+requireIncludes("../../docs/mvp-demo-flow-qa.md", "order_confirmed");
+requireIncludes(
+  "../../docs/mvp-demo-flow-qa.md",
+  "`confirm_order` remains blocked through the Gemini gateway",
+);
+requireIncludes("../../docs/mvp-demo-flow-qa.md", "No frontend MCP transport client");
 requireExcludes("src/views/ChatPage/index.tsx", "getCompanyMenus");
 requireExcludes("src/views/ChatPage/index.tsx", "createOrder");
 requireExcludes("src/views/ChatPage/index.tsx", "buildOrderDraft");
