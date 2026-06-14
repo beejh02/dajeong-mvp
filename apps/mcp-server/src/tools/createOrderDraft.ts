@@ -1,6 +1,7 @@
 import { getCompanyMenus } from "../backendClient.js";
 import type {
   CreateOrderDraftArgs,
+  CreateOrderDraftItem,
   CreateOrderDraftResult,
   FulfillmentType,
   MenuItem,
@@ -145,7 +146,7 @@ function normalizeArgs(args: CreateOrderDraftArgs): CreateOrderDraftArgs {
 function buildSelectedOptions(
   menu: MenuItem,
   selectedOptionGroups: SelectedOptionGroup[],
-): CreateOrderDraftResult["items"][number]["selectedOptions"] {
+): CreateOrderDraftItem["selectedOptions"] {
   const optionGroupsById = new Map(menu.optionGroups.map((group) => [group.id, group]));
   const selectedGroupIds = new Set<string>();
 
@@ -213,6 +214,40 @@ function buildSelectedOptions(
   });
 }
 
+function findMissingRequiredOptionGroup(
+  menu: MenuItem,
+  selectedOptionGroups: SelectedOptionGroup[],
+): MenuItem["optionGroups"][number] | undefined {
+  const selectedGroupIds = new Set(
+    selectedOptionGroups.map((group) => group.groupId),
+  );
+
+  return menu.optionGroups.find(
+    (optionGroup) => optionGroup.required && !selectedGroupIds.has(optionGroup.id),
+  );
+}
+
+function createMissingOptionResult(
+  draftArguments: CreateOrderDraftArgs,
+  menu: MenuItem,
+  optionGroup: MenuItem["optionGroups"][number],
+): CreateOrderDraftResult {
+  return {
+    recommendedCardType: "missing_option",
+    menuId: menu.id,
+    menuName: menu.name,
+    optionGroupId: optionGroup.id,
+    optionGroupTitle: optionGroup.title,
+    choices: optionGroup.choices.map((choice) => ({
+      id: choice.id,
+      name: choice.name,
+      priceDelta: choice.priceDelta,
+    })),
+    draftArguments,
+    requiredUserAction: true,
+  };
+}
+
 function makeDraftId(): string {
   return `draft-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
@@ -223,8 +258,9 @@ export async function createOrderDraftTool(
   const normalizedArgs = normalizeArgs(args);
   const menuResponse = await getCompanyMenus(normalizedArgs.companyId);
   const menusById = new Map(menuResponse.menus.map((menu) => [menu.id, menu]));
+  const items: CreateOrderDraftItem[] = [];
 
-  const items = normalizedArgs.items.map((item) => {
+  for (const item of normalizedArgs.items) {
     const menu = menusById.get(item.menuId);
 
     if (!menu) {
@@ -233,6 +269,15 @@ export async function createOrderDraftTool(
 
     if (!menu.isAvailable) {
       throw new Error(`Menu is not available: ${item.menuId}`);
+    }
+
+    const missingOptionGroup = findMissingRequiredOptionGroup(
+      menu,
+      item.selectedOptionGroups,
+    );
+
+    if (missingOptionGroup) {
+      return createMissingOptionResult(normalizedArgs, menu, missingOptionGroup);
     }
 
     const selectedOptions = buildSelectedOptions(menu, item.selectedOptionGroups);
@@ -247,15 +292,16 @@ export async function createOrderDraftTool(
     );
     const unitPrice = menu.price + optionTotal;
 
-    return {
+    items.push({
       menuId: menu.id,
       menuName: menu.name,
       quantity: item.quantity,
       selectedOptions,
       unitPrice,
       itemPrice: unitPrice * item.quantity,
-    };
-  });
+    });
+  }
+
   const totalPrice = items.reduce((sum, item) => sum + item.itemPrice, 0);
 
   return {

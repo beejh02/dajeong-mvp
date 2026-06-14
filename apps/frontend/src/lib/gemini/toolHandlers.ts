@@ -39,35 +39,56 @@ export type CreateOrderDraftArgs = {
   paymentMethod: "credit_card" | "coupon" | "cash";
   pointAccrual: {
     enabled: boolean;
-    phone: string;
+    phone?: string | null;
   };
 };
 
-export type CreateOrderDraftResult = {
+export type CreateOrderDraftItem = {
+  menuId: string;
+  menuName: string;
+  quantity: number;
+  selectedOptions: Array<{
+    groupId: string;
+    groupTitle: string;
+    choices: Array<{
+      id: string;
+      name: string;
+      priceDelta: number;
+    }>;
+  }>;
+  unitPrice: number;
+  itemPrice: number;
+};
+
+export type CreateOrderDraftReadyResult = {
   draftId: string;
   companyId: string;
   companyName: string;
-  items: Array<{
-    menuId: string;
-    menuName: string;
-    quantity: number;
-    selectedOptions: Array<{
-      groupId: string;
-      groupTitle: string;
-      choices: Array<{
-        id: string;
-        name: string;
-        priceDelta: number;
-      }>;
-    }>;
-    unitPrice: number;
-    itemPrice: number;
-  }>;
+  items: CreateOrderDraftItem[];
   totalPrice: number;
   warnings: string[];
   requiredUserAction: true;
   recommendedCardType: "order_draft";
 };
+
+export type CreateOrderDraftMissingOptionResult = {
+  recommendedCardType: "missing_option";
+  menuId: string;
+  menuName: string;
+  optionGroupId: string;
+  optionGroupTitle: string;
+  choices: Array<{
+    id: string;
+    name: string;
+    priceDelta: number;
+  }>;
+  draftArguments: CreateOrderDraftArgs;
+  requiredUserAction: true;
+};
+
+export type CreateOrderDraftResult =
+  | CreateOrderDraftReadyResult
+  | CreateOrderDraftMissingOptionResult;
 
 export type ConfirmOrderArgs = {
   draftId: string;
@@ -88,7 +109,7 @@ export type ConfirmOrderArgs = {
     paymentMethod: "credit_card" | "coupon" | "cash";
     pointAccrual: {
       enabled: boolean;
-      phone: string;
+      phone?: string | null;
     };
   };
 };
@@ -239,13 +260,20 @@ function normalizePointAccrual(
     throw new Error(`${fieldName}.enabled must be a boolean.`);
   }
 
-  if (typeof pointAccrual.phone !== "string") {
-    throw new Error(`${fieldName}.phone must be a string.`);
+  if (
+    pointAccrual.phone !== undefined &&
+    pointAccrual.phone !== null &&
+    typeof pointAccrual.phone !== "string"
+  ) {
+    throw new Error(`${fieldName}.phone must be a string or null.`);
   }
 
   return {
     enabled: pointAccrual.enabled,
-    phone: pointAccrual.phone,
+    phone:
+      typeof pointAccrual.phone === "string" && pointAccrual.phone.trim() !== ""
+        ? pointAccrual.phone.trim()
+        : null,
   };
 }
 
@@ -294,7 +322,7 @@ function normalizeConfirmOrderArgs(args: ConfirmOrderArgs): ConfirmOrderArgs {
 function buildSelectedOptions(
   menu: MenuItem,
   item: CreateOrderDraftArgs["items"][number],
-): CreateOrderDraftResult["items"][number]["selectedOptions"] {
+): CreateOrderDraftItem["selectedOptions"] {
   const optionGroupsById = new Map(menu.optionGroups.map((group) => [group.id, group]));
   const selectedGroupIds = new Set<string>();
 
@@ -362,6 +390,40 @@ function buildSelectedOptions(
   });
 }
 
+function findMissingRequiredOptionGroup(
+  menu: MenuItem,
+  item: CreateOrderDraftArgs["items"][number],
+): MenuItem["optionGroups"][number] | undefined {
+  const selectedGroupIds = new Set(
+    item.selectedOptionGroups.map((group) => group.groupId),
+  );
+
+  return menu.optionGroups.find(
+    (optionGroup) => optionGroup.required && !selectedGroupIds.has(optionGroup.id),
+  );
+}
+
+function createMissingOptionResult(
+  draftArguments: CreateOrderDraftArgs,
+  menu: MenuItem,
+  optionGroup: MenuItem["optionGroups"][number],
+): CreateOrderDraftResult {
+  return {
+    recommendedCardType: "missing_option",
+    menuId: menu.id,
+    menuName: menu.name,
+    optionGroupId: optionGroup.id,
+    optionGroupTitle: optionGroup.title,
+    choices: optionGroup.choices.map((choice) => ({
+      id: choice.id,
+      name: choice.name,
+      priceDelta: choice.priceDelta,
+    })),
+    draftArguments,
+    requiredUserAction: true,
+  };
+}
+
 export async function handleGetCompanies(
   _args: GetCompaniesArgs,
 ): Promise<CompanyListResponse> {
@@ -426,8 +488,9 @@ export async function handleCreateOrderDraft(
     `/companies/${encodeURIComponent(normalizedArgs.companyId)}/menus`,
   );
   const menusById = new Map(response.menus.map((menu) => [menu.id, menu]));
+  const draftItems: CreateOrderDraftItem[] = [];
 
-  const draftItems = normalizedArgs.items.map((item) => {
+  for (const item of normalizedArgs.items) {
     const menu = menusById.get(item.menuId);
 
     if (!menu) {
@@ -436,6 +499,12 @@ export async function handleCreateOrderDraft(
 
     if (!menu.isAvailable) {
       throw new Error(`Menu is not available: ${item.menuId}`);
+    }
+
+    const missingOptionGroup = findMissingRequiredOptionGroup(menu, item);
+
+    if (missingOptionGroup) {
+      return createMissingOptionResult(normalizedArgs, menu, missingOptionGroup);
     }
 
     const selectedOptions = buildSelectedOptions(menu, item);
@@ -451,15 +520,16 @@ export async function handleCreateOrderDraft(
     const unitPrice = menu.price + optionPriceDelta;
     const itemPrice = unitPrice * item.quantity;
 
-    return {
+    draftItems.push({
       menuId: menu.id,
       menuName: menu.name,
       quantity: item.quantity,
       selectedOptions,
       unitPrice,
       itemPrice,
-    };
-  });
+    });
+  }
+
   const totalPrice = draftItems.reduce((sum, item) => sum + item.itemPrice, 0);
 
   return {
@@ -482,7 +552,7 @@ export async function handleConfirmOrder(
   args: ConfirmOrderArgs,
 ): Promise<ConfirmOrderResult> {
   const normalizedArgs = normalizeConfirmOrderArgs(args);
-  const phone = normalizedArgs.order.pointAccrual.phone.trim();
+  const phone = normalizedArgs.order.pointAccrual.phone?.trim() ?? "";
   const orderRequest: OrderCreateRequest = {
     companyId: normalizedArgs.order.companyId,
     userId: normalizedArgs.order.userId,

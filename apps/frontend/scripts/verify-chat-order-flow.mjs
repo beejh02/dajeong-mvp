@@ -254,7 +254,10 @@ async function suppressExpectedConsoleError(action) {
 
 function copyTypeScriptModule(relativePath) {
   const normalizedRelativePath = relativePath.replaceAll("\\", "/");
-  const outputPath = path.join(tempDir, normalizedRelativePath);
+  const outputPath = path.join(
+    tempDir,
+    normalizedRelativePath.replace(/^(\.\.\/)+/, "external/"),
+  );
 
   if (existsSync(outputPath)) {
     return outputPath;
@@ -340,6 +343,9 @@ const { buildOrderCreateRequest } = await importTypeScriptModule(
 const { createChatResponseFromToolResults } = await importTypeScriptModule(
   "src/lib/gemini/cardBuilders.ts",
 );
+const { handleGeminiToolCall } = await importTypeScriptModule(
+  "src/lib/gemini/toolHandlers.ts",
+);
 const {
   callDajeongMcpTool,
   getDajeongMcpRuntimeMode,
@@ -393,6 +399,21 @@ const companyAResponse = {
       ],
     },
   ],
+};
+
+const missingBunOrderArgs = {
+  companyId: "company-a",
+  userId: "user-demo-1",
+  items: [
+    {
+      menuId: "menu-a-002",
+      quantity: 1,
+      selectedOptionGroups: [],
+    },
+  ],
+  fulfillmentType: "dine_in",
+  paymentMethod: "credit_card",
+  pointAccrual: { enabled: false, phone: "" },
 };
 
 const firstIntent = parseOrderText("A기업 불고기버거 하나 제로콜라로 주문해줘");
@@ -518,6 +539,14 @@ try {
   globalThis.fetch = async (url) => {
     serverModeFetchCalls.push(String(url));
 
+    if (String(url).endsWith("/companies/company-a/menus")) {
+      return {
+        ok: true,
+        status: 200,
+        json: async () => companyAResponse,
+      };
+    }
+
     return {
       ok: true,
       status: 200,
@@ -534,6 +563,19 @@ try {
   );
   assert.equal(serverModeFetchCalls[0], "http://localhost:8000/companies");
 
+  const serverMissingOptionResult = await callDajeongMcpTool({
+    toolName: "create_order_draft",
+    arguments: missingBunOrderArgs,
+  });
+
+  assert.equal(serverMissingOptionResult.recommendedCardType, "missing_option");
+  assert.equal(serverMissingOptionResult.menuId, "menu-a-002");
+  assert.equal(serverMissingOptionResult.optionGroupId, "bun");
+  assert.deepEqual(
+    serverMissingOptionResult.choices.map((choice) => choice.id),
+    ["bun-normal", "bun-toasted"],
+  );
+
   await assert.rejects(
     () =>
       callDajeongMcpTool({
@@ -541,6 +583,36 @@ try {
         arguments: {},
       }),
     /confirm_order is not callable/,
+  );
+} finally {
+  globalThis.fetch = originalFetch;
+  if (originalMcpRuntimeMode === undefined) {
+    delete process.env.DAJEONG_MCP_RUNTIME_MODE;
+  } else {
+    process.env.DAJEONG_MCP_RUNTIME_MODE = originalMcpRuntimeMode;
+  }
+}
+
+try {
+  delete process.env.DAJEONG_MCP_RUNTIME_MODE;
+
+  globalThis.fetch = async () => ({
+    ok: true,
+    status: 200,
+    json: async () => companyAResponse,
+  });
+
+  const localMissingOptionResult = await handleGeminiToolCall(
+    "create_order_draft",
+    missingBunOrderArgs,
+  );
+
+  assert.equal(localMissingOptionResult.recommendedCardType, "missing_option");
+  assert.equal(localMissingOptionResult.menuId, "menu-a-002");
+  assert.equal(localMissingOptionResult.optionGroupId, "bun");
+  assert.deepEqual(
+    localMissingOptionResult.choices.map((choice) => choice.id),
+    ["bun-normal", "bun-toasted"],
   );
 } finally {
   globalThis.fetch = originalFetch;
@@ -986,6 +1058,121 @@ assert.equal(
     (candidate) => candidate.menuId === "menu-unavailable",
   ),
   false,
+);
+
+const missingOptionToolResult = {
+  recommendedCardType: "missing_option",
+  menuId: "menu-a-002",
+  menuName: "A 遺덇퀬湲?踰꾧굅",
+  optionGroupId: "bun",
+  optionGroupTitle: "踰??좏깮",
+  choices: [
+    { id: "bun-normal", name: "?쇰컲", priceDelta: 0 },
+    { id: "bun-toasted", name: "踰?援쎄린", priceDelta: 500 },
+  ],
+  draftArguments: missingBunOrderArgs,
+  requiredUserAction: true,
+};
+
+const rawGeminiJsonText = [
+  "```json",
+  JSON.stringify({
+    message: "Gemini-authored card JSON must not be displayed.",
+    cards: [{ type: "menu_candidates" }],
+  }),
+  "```",
+].join("\n");
+
+const sanitizedMenuResponse = createChatResponseFromToolResults(
+  rawGeminiJsonText,
+  [
+    {
+      toolInput: {
+        toolName: "search_menu",
+        arguments: { companyId: "company-a", query: "踰꾧굅" },
+      },
+      toolResult: searchChatResponse.cards[0].candidates.length
+        ? {
+            menus: [
+              {
+                id: "menu-a-002",
+                companyId: "company-a",
+                name: "A 遺덇퀬湲?踰꾧굅",
+                category: "burger",
+                price: 7600,
+                description: "?ъ숴??遺덇퀬湲??뚯뒪瑜??뷀븳 A湲곗뾽 硫붾돱",
+                imageUrl: "/images/company-a/bulgogi-burger.png",
+                isAvailable: true,
+                optionGroups: [],
+              },
+            ],
+          }
+        : { menus: [] },
+    },
+  ],
+);
+
+assert.equal(sanitizedMenuResponse.cards[0].type, "menu_candidates");
+assert.doesNotMatch(sanitizedMenuResponse.message, /```json|"cards"|^\s*[{[]/);
+
+const prioritizedMissingOptionResponse = createChatResponseFromToolResults(
+  '{"message":"Gemini-authored JSON must not be displayed.","cards":[]}',
+  [
+    {
+      toolInput: {
+        toolName: "create_order_draft",
+        arguments: missingBunOrderArgs,
+      },
+      toolResult: missingOptionToolResult,
+    },
+    {
+      toolInput: {
+        toolName: "search_menu",
+        arguments: { companyId: "company-a", query: "踰꾧굅" },
+      },
+      toolResult: {
+        menus: [
+          {
+            id: "menu-a-001",
+            companyId: "company-a",
+            name: "A ?대옒??踰꾧굅",
+            category: "burger",
+            price: 6900,
+            description: "?대옒??踰꾧굅",
+            imageUrl: "/images/company-a/classic-burger.png",
+            isAvailable: true,
+            optionGroups: [],
+          },
+          {
+            id: "menu-a-002",
+            companyId: "company-a",
+            name: "A 遺덇퀬湲?踰꾧굅",
+            category: "burger",
+            price: 7600,
+            description: "?ъ숴??遺덇퀬湲??뚯뒪瑜??뷀븳 A湲곗뾽 硫붾돱",
+            imageUrl: "/images/company-a/bulgogi-burger.png",
+            isAvailable: true,
+            optionGroups: [],
+          },
+        ],
+      },
+    },
+  ],
+);
+
+assert.equal(prioritizedMissingOptionResponse.cards[0].type, "missing_option");
+assert.equal(prioritizedMissingOptionResponse.cards[0].groupId, "bun");
+assert.deepEqual(
+  prioritizedMissingOptionResponse.cards[0].actions.map((action) => action.type),
+  ["select_option", "select_option"],
+);
+assert.deepEqual(
+  prioritizedMissingOptionResponse.cards[0].actions.map((action) => action.value),
+  ["bun-normal", "bun-toasted"],
+);
+assert.doesNotMatch(
+  prioritizedMissingOptionResponse.message,
+  /"cards"|Gemini-authored JSON|^\s*[{[]/,
 );
 
 console.log("Chat order flow verification passed.");

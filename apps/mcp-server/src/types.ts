@@ -119,27 +119,44 @@ export type CreateOrderDraftArgs = {
   pointAccrual: PointAccrualRequest;
 };
 
-export type CreateOrderDraftResult = {
+export type CreateOrderDraftItem = {
+  menuId: string;
+  menuName: string;
+  quantity: number;
+  selectedOptions: Array<{
+    groupId: string;
+    groupTitle: string;
+    choices: MenuOptionChoice[];
+  }>;
+  unitPrice: number;
+  itemPrice: number;
+};
+
+export type CreateOrderDraftReadyResult = {
   draftId: string;
   companyId: string;
   companyName: string;
-  items: Array<{
-    menuId: string;
-    menuName: string;
-    quantity: number;
-    selectedOptions: Array<{
-      groupId: string;
-      groupTitle: string;
-      choices: MenuOptionChoice[];
-    }>;
-    unitPrice: number;
-    itemPrice: number;
-  }>;
+  items: CreateOrderDraftItem[];
   totalPrice: number;
   warnings: string[];
   requiredUserAction: true;
   recommendedCardType: "order_draft";
 };
+
+export type CreateOrderDraftMissingOptionResult = {
+  recommendedCardType: "missing_option";
+  menuId: string;
+  menuName: string;
+  optionGroupId: string;
+  optionGroupTitle: string;
+  choices: MenuOptionChoice[];
+  draftArguments: CreateOrderDraftArgs;
+  requiredUserAction: true;
+};
+
+export type CreateOrderDraftResult =
+  | CreateOrderDraftReadyResult
+  | CreateOrderDraftMissingOptionResult;
 
 export type ConfirmOrderArgs = {
   draftId: string;

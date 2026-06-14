@@ -3,11 +3,19 @@ import type {
   ChatResponse,
   DajeongCard,
   MenuCandidatesCard,
+  MissingOptionCard,
   OrderDraftCard,
   OrderDraftConfirmationPayload,
 } from "./cardSchema";
 
 const MAX_MENU_CANDIDATES = 5;
+const MENU_CANDIDATES_RESPONSE_MESSAGE =
+  "아래 메뉴 중 원하는 항목을 선택해 주세요.";
+const MISSING_OPTION_RESPONSE_MESSAGE =
+  "선택하신 메뉴에 필요한 옵션을 골라 주세요.";
+const ORDER_DRAFT_RESPONSE_MESSAGE = "주문 초안을 확인해 주세요.";
+const STRUCTURED_TEXT_FALLBACK_MESSAGE =
+  "요청을 처리했습니다. 필요한 내용을 다시 입력해 주세요.";
 const DEFAULT_MESSAGE_TITLE = "다정 AI";
 
 export type CapturedDajeongToolResult = {
@@ -26,6 +34,21 @@ type CreateOrderDraftResultLike = {
   items: DraftItemLike[];
   totalPrice: number;
   recommendedCardType: "order_draft";
+};
+
+type MissingOptionChoiceLike = {
+  id: string;
+  name: string;
+  priceDelta: number;
+};
+
+type MissingOptionResultLike = {
+  recommendedCardType: "missing_option";
+  menuId: string;
+  menuName: string;
+  optionGroupId: string;
+  optionGroupTitle: string;
+  choices: MissingOptionChoiceLike[];
 };
 
 type DraftItemLike = {
@@ -160,6 +183,32 @@ function isCreateOrderDraftResultLike(
   );
 }
 
+function isMissingOptionChoiceLike(
+  value: unknown,
+): value is MissingOptionChoiceLike {
+  return (
+    isRecord(value) &&
+    typeof value.id === "string" &&
+    typeof value.name === "string" &&
+    typeof value.priceDelta === "number"
+  );
+}
+
+function isMissingOptionResultLike(
+  value: unknown,
+): value is MissingOptionResultLike {
+  return (
+    isRecord(value) &&
+    value.recommendedCardType === "missing_option" &&
+    typeof value.menuId === "string" &&
+    typeof value.menuName === "string" &&
+    typeof value.optionGroupId === "string" &&
+    typeof value.optionGroupTitle === "string" &&
+    Array.isArray(value.choices) &&
+    value.choices.every(isMissingOptionChoiceLike)
+  );
+}
+
 function isMenuCandidateLike(value: unknown): value is MenuCandidateLike {
   return (
     isRecord(value) &&
@@ -249,6 +298,42 @@ export function createOrderDraftCard(
   };
 }
 
+function formatPriceDelta(priceDelta: number): string {
+  if (priceDelta === 0) {
+    return "";
+  }
+
+  const prefix = priceDelta > 0 ? "+" : "";
+
+  return ` (${prefix}${priceDelta.toLocaleString("ko-KR")}원)`;
+}
+
+export function createMissingOptionCard(
+  result: unknown,
+): MissingOptionCard | undefined {
+  if (!isMissingOptionResultLike(result) || result.choices.length === 0) {
+    return undefined;
+  }
+
+  const options = result.choices.map((choice) => ({
+    label: `${choice.name}${formatPriceDelta(choice.priceDelta)}`,
+    value: choice.id,
+  }));
+
+  return {
+    type: "missing_option",
+    title: "옵션 선택",
+    question: `${result.menuName}의 ${result.optionGroupTitle}을 골라 주세요.`,
+    groupId: result.optionGroupId,
+    options,
+    actions: options.map<CardAction>((option) => ({
+      type: "select_option",
+      label: option.label,
+      value: option.value,
+    })),
+  };
+}
+
 export function createMenuCandidatesCard(
   result: unknown,
 ): MenuCandidatesCard | undefined {
@@ -269,7 +354,7 @@ export function createMenuCandidatesCard(
   return {
     type: "menu_candidates",
     title: "메뉴 후보",
-    message: "원하는 메뉴를 선택해 주세요.",
+    message: MENU_CANDIDATES_RESPONSE_MESSAGE,
     candidates,
     actions: candidates.map<CardAction>((candidate) => ({
       type: "select_menu",
@@ -293,9 +378,11 @@ function createCardFromCapturedResult(
 
   switch (capturedResult.toolInput.toolName) {
     case "create_order_draft":
-      return createOrderDraftCard(
-        capturedResult.toolResult,
-        capturedResult.toolInput.arguments,
+      return (
+        createOrderDraftCard(
+          capturedResult.toolResult,
+          capturedResult.toolInput.arguments,
+        ) ?? createMissingOptionCard(capturedResult.toolResult)
       );
     case "search_menu":
       return createMenuCandidatesCard(capturedResult.toolResult);
@@ -324,19 +411,99 @@ function createMessageCard(message: string): DajeongCard {
   };
 }
 
+function selectCardFromCapturedResults(
+  message: string,
+  capturedResults: readonly CapturedDajeongToolResult[],
+): DajeongCard | undefined {
+  const cardsByRecency = [...capturedResults]
+    .reverse()
+    .map((capturedResult) => createCardFromCapturedResult(message, capturedResult))
+    .filter((candidateCard): candidateCard is DajeongCard => candidateCard !== undefined);
+
+  for (const cardType of [
+    "order_draft",
+    "missing_option",
+    "menu_candidates",
+  ] satisfies DajeongCard["type"][]) {
+    const card = cardsByRecency.find(
+      (candidateCard) => candidateCard.type === cardType,
+    );
+
+    if (card) {
+      return card;
+    }
+  }
+
+  return cardsByRecency[0];
+}
+
+function isStructuredCardJsonText(message: string): boolean {
+  const trimmed = message.trim();
+
+  if (trimmed === "") {
+    return false;
+  }
+
+  if (/^```(?:json)?/i.test(trimmed) || trimmed.includes("```json")) {
+    return true;
+  }
+
+  if (trimmed.includes('"cards"') || trimmed.includes('"recommendedCardType"')) {
+    return true;
+  }
+
+  const looksLikeJson =
+    (trimmed.startsWith("{") && trimmed.endsWith("}")) ||
+    (trimmed.startsWith("[") && trimmed.endsWith("]"));
+
+  return looksLikeJson && /"(message|cards|type|recommendedCardType)"/.test(trimmed);
+}
+
+function getCardResponseMessage(card: DajeongCard): string {
+  switch (card.type) {
+    case "order_draft":
+      return ORDER_DRAFT_RESPONSE_MESSAGE;
+    case "missing_option":
+      return MISSING_OPTION_RESPONSE_MESSAGE;
+    case "menu_candidates":
+      return MENU_CANDIDATES_RESPONSE_MESSAGE;
+    case "order_confirmed":
+    case "error":
+    case "message":
+      return card.message;
+    default:
+      return STRUCTURED_TEXT_FALLBACK_MESSAGE;
+  }
+}
+
+function createDisplayMessage(
+  message: string,
+  card: DajeongCard | undefined,
+): string {
+  if (card) {
+    return getCardResponseMessage(card);
+  }
+
+  const trimmed = message.trim();
+
+  if (trimmed === "" || isStructuredCardJsonText(trimmed)) {
+    return STRUCTURED_TEXT_FALLBACK_MESSAGE;
+  }
+
+  return trimmed;
+}
+
 export function createChatResponseFromToolResults(
   message: string,
   capturedResults: readonly CapturedDajeongToolResult[],
   conversationId?: string,
 ): ChatResponse {
-  const card = [...capturedResults]
-    .reverse()
-    .map((capturedResult) => createCardFromCapturedResult(message, capturedResult))
-    .find((candidateCard): candidateCard is DajeongCard => candidateCard !== undefined);
-  const cards = card ? [card] : [createMessageCard(message)];
+  const card = selectCardFromCapturedResults(message, capturedResults);
+  const displayMessage = createDisplayMessage(message, card);
+  const cards = card ? [card] : [createMessageCard(displayMessage)];
 
   return {
-    message,
+    message: displayMessage,
     cards,
     requiredUserAction: cards.some(cardRequiresUserAction),
     ...(conversationId ? { conversationId } : {}),
